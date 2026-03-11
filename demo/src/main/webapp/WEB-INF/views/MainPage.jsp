@@ -8,7 +8,7 @@
 </head>
 <body>
 	<form method="GET" action="/test">
-		<button>안녕</button>
+		<button>안녕하세요</button>
 	</form>
 </body>
 </html>
