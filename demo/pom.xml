@@ -11,6 +11,7 @@
 	<groupId>com.example</groupId>
 	<artifactId>ERP</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
+	<packaging>war</packaging> <!--여기 패킹 추가-->
 	<name>ERP</name>
 	<description>Demo project for Spring Boot</description>
 	<url/>
@@ -89,6 +90,13 @@
     		<artifactId>jakarta.servlet.jsp.jstl-api</artifactId>
    			<version>3.0.0</version>
 		</dependency>
+	<!--여기 자카르타 추가 설정-->
+		<dependency>
+   		 	<groupId>org.glassfish.web</groupId>
+    		<artifactId>jakarta.servlet.jsp.jstl</artifactId>
+    		<version>3.0.1</version>
+		</dependency>
+		
 		<dependency>
    		 	<groupId>org.springframework.security</groupId>
     		<artifactId>spring-security-crypto</artifactId>
