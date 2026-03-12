@@ -1,6 +1,5 @@
 package com.example.demo.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -10,11 +9,28 @@ import org.springframework.web.bind.annotation.RequestParam;
 import com.example.demo.Service.UserService;
 
 @Controller
-public class RegisterController {
+public class UserController {
+	private final UserService userService;
+	
+	UserController(UserService userService){
+		this.userService = userService;
+	}
+	
+	@GetMapping("/login")
+	public String loginForm() {
+		return "login";
+	}
 
-	@Autowired
-	private UserService userService;
-
+	@GetMapping("/logout")
+	public String logout() {
+		return "";
+	}
+    
+	@GetMapping("/MainPage")
+	public String Main() {
+		return "MainPage";
+	}
+	
 	// 회원가입 폼
 	@GetMapping("/register")
 	public String registerForm() {
@@ -29,4 +45,5 @@ public class RegisterController {
 		model.addAttribute("message", "회원가입 완료! 로그인 해주세요.");
 		return "login";
 	}
+
 }
