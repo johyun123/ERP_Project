@@ -16,14 +16,15 @@ public class UserController {
 		this.userService = userService;
 	}
 	
+
+	@GetMapping("/")
+	public String def() {
+		return "login";
+	}
+	
 	@GetMapping("/login")
 	public String loginForm() {
 		return "login";
-	}
-
-	@GetMapping("/logout")
-	public String logout() {
-		return "";
 	}
     
 	@GetMapping("/MainPage")

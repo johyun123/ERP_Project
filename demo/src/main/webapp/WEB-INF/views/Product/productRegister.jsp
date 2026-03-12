@@ -6,7 +6,7 @@
 <meta charset="UTF-8">
 <title>제품 등록</title>
 
-<link rel="stylesheet" href="/css/productRegister.css" />
+<link rel="stylesheet" href="/css/Product/productRegister.css" />
 </head>
 
 <body>
