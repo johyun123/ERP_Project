@@ -47,9 +47,8 @@ String userRank = "시스템관리자";
         <li class="has-submenu" onclick="toggleSubmenu(this)">👥 인사관리
             <ul class="submenu">
                 <li onclick="event.stopPropagation(); location.href='/hr/attendance'">근태 관리</li>
-                <li onclick="event.stopPropagation(); location.href='/hr/employees/register'">직원 등록</li>
                 <li onclick="event.stopPropagation(); location.href='/hr/employees'">직원 관리</li>
-                <li onclick="event.stopPropagation(); location.href='/hr/users'">사용자 관리</li>
+                <li onclick="event.stopPropagation(); location.href='/hr/users'">ERP 사용자 관리</li>
             </ul>
         </li>
 

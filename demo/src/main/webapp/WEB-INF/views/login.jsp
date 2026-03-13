@@ -21,5 +21,8 @@
     비밀번호: <input type="password" name="password"><br>
     <input type="submit" value="로그인">
 </form>
+<!-- 이밑으로 지금 회원가입창으로 갈 수 있도록 만들어 놨어요.  -->
+<br>
+<button onclick="location.href='/register'">회원가입</button>
 </body>
 </html>
