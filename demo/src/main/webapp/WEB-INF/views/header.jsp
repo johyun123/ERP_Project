@@ -62,8 +62,8 @@ String userRank = "시스템관리자";
         <li class="has-submenu" onclick="toggleSubmenu(this)">💰 재무관리
             <ul class="submenu">
                 <li onclick="event.stopPropagation(); location.href='/f_register'">지출 등록</li>
-                <li onclick="event.stopPropagation(); location.href='/finance/expense'">지출 내역</li>
-                <li onclick="event.stopPropagation(); location.href='/finance/salary'">급여 내역</li>
+                <li onclick="event.stopPropagation(); location.href='/f_list'">지출 내역</li>
+                <li onclick="event.stopPropagation(); location.href='/f_payrolls'">급여 내역</li>
             </ul>
         </li>
 
