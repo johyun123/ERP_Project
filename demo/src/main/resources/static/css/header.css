@@ -116,6 +116,14 @@ body {
   letter-spacing: 0.3px;
 }
 
+.header-icon {
+	font-size: 15px;
+	margin-right: 3px;
+}
+
+.header-userName {
+	margin: 5px;
+}
 .logout-btn {
   background: var(--primary-gradient);
   color: var(--text-white);

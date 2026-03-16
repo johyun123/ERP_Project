@@ -13,9 +13,10 @@ String userRank = "시스템관리자";
 <div class="header">
     <div class="header-left" onclick="location.href='/MainPage'">ERP CAFE SYSTEM</div>
     <div class="header-right">
-        🔔
+    	<span class="header-icon">📢</span>
+    	<span class="header-icon">🔔</span>
         <span id="clock"></span>
-        👤 <%=userName%>
+        <span class="header-userName">👤 <%=userName%></span>
         <button class="logout-btn" onclick="location.href='/logout'">로그아웃</button>
     </div>
 </div>
