@@ -34,9 +34,9 @@ public class IngredientsController {
         this.purchasesService   = ps;
     }
 
-    // ===========================================================
+    // ============================================================
     // 재고 현황
-    // ===========================================================
+    // ============================================================
     @GetMapping("/inventory")
     public String stock(Model model) {
         model.addAttribute("list", ingredientsService.getAll());
