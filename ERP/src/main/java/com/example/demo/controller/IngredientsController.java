@@ -1,25 +1,29 @@
 package com.example.demo.controller;
 
-import com.example.demo.Domain.Ingredients;
-import com.example.demo.Domain.Purchases;
-import com.example.demo.Domain.PurchaseItems;
-import com.example.demo.Domain.Suppliers;
-import com.example.demo.Service.IngredientsService;
-import com.example.demo.Service.PurchasesService;
-import com.example.demo.Service.SuppliersService;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.example.demo.Domain.Ingredients;
+import com.example.demo.Domain.PurchaseItems;
+import com.example.demo.Domain.Purchases;
+import com.example.demo.Domain.Suppliers;
+import com.example.demo.Service.IngredientsService;
+import com.example.demo.Service.PurchasesService;
+import com.example.demo.Service.SuppliersService;
 
 @Controller
 public class IngredientsController {
