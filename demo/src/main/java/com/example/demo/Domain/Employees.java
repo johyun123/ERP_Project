@@ -16,9 +16,9 @@ public class Employees {
 	private LocalDate hire_date;
 	private LocalDate resign_date;
 	private String profile;
-	private String bankName;
-	private String accountNo;
-	private Boolean is_account_no;
+	private String bank_name;
+	private String account_no;
+	private Boolean is_active;
 
 	public Long getId() {
 		return id;
@@ -116,28 +116,28 @@ public class Employees {
 		this.profile = profile;
 	}
 
-	public String getBankName() {
-		return bankName;
+	public String getBank_name() {
+		return bank_name;
 	}
 
-	public void setBankName(String bankName) {
-		this.bankName = bankName;
+	public void setBank_name(String bank_name) {
+		this.bank_name = bank_name;
 	}
 
-	public String getAccountNo() {
-		return accountNo;
+	public String getAccount_no() {
+		return account_no;
 	}
 
-	public void setAccountNo(String accountNo) {
-		this.accountNo = accountNo;
+	public void setAccount_no(String account_no) {
+		this.account_no = account_no;
 	}
 
-	public Boolean getIs_account_no() {
-		return is_account_no;
+	public Boolean getIs_active() {
+		return is_active;
 	}
 
-	public void setIs_account_no(Boolean is_account_no) {
-		this.is_account_no = is_account_no;
+	public void setIs_active(Boolean is_active) {
+		this.is_active = is_active;
 	}
 
 }

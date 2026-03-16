@@ -23,8 +23,8 @@ public class HRMService {
 	}
 
 	// 단일 직원 조회
-	public Employees getEmployeeById(Long id) {
-		return hrmMapper.selectEmployeeById(id);
+	public Employees getEmployeeById(String emp_num) {
+		return hrmMapper.selectEmployeeById(emp_num);
 	}
 
 	// 직원 등록
@@ -37,8 +37,9 @@ public class HRMService {
 		hrmMapper.updateEmployee(employee);
 	}
 
-	// 직원 삭제 (논리 삭제 or 실제 삭제)
-	public void deleteEmployee(Long id) {
-		hrmMapper.deleteEmployee(id);
+	// 직원 삭제 (논리 삭제)
+	public void deleteEmployee(String emp_num) {
+		hrmMapper.deleteEmployee(emp_num);
 	}
+
 }
