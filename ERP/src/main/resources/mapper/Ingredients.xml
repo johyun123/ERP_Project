@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper 
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.demo.mapper.IngredientsMapper">
+
+    <!-- 공통 컬럼 -->
+    <sql id="ingredientColumns">
+        id, name, unit, stock_qty, min_stock,
+        unit_cost, supplier, created_at, updated_at
+    </sql>
+
+    <!-- 전체 목록 -->
+    <select id="findAll" resultType="com.example.demo.Domain.Ingredients">
+        SELECT <include refid="ingredientColumns"/>
+        FROM ingredients
+        ORDER BY id ASC
+    </select>
+
+    <!-- 단건 조회 -->
+    <select id="findById" parameterType="long"
+            resultType="com.example.demo.Domain.Ingredients">
+        SELECT <include refid="ingredientColumns"/>
+        FROM ingredients
+        WHERE id = #{id}
+    </select>
+
+    <!-- 등록 -->
+    <insert id="insert" parameterType="com.example.demo.Domain.Ingredients"
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO ingredients (name, unit, stock_qty, min_stock, unit_cost, supplier)
+        VALUES (#{name}, #{unit}, #{stock_qty}, #{min_stock}, #{unit_cost}, #{supplier})
+    </insert>
+
+    <!-- 수정 -->
+    <update id="update" parameterType="com.example.demo.Domain.Ingredients">
+        UPDATE ingredients SET 
+        	name       = #{name},
+            unit       = #{unit},
+            stock_qty  = #{stock_qty},
+            min_stock  = #{min_stock},
+            unit_cost  = #{unit_cost},
+            supplier   = #{supplier}
+        WHERE id = #{id}
+    </update>
+
+    <!-- 삭제 -->
+    <delete id="delete" parameterType="long">
+        DELETE FROM ingredients WHERE id = #{id}
+    </delete>
+
+</mapper>

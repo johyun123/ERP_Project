@@ -1,0 +1,86 @@
+@charset "UTF-8";
+
+*{
+	margin:0;
+	padding:0;
+	box-sizing:border-box;
+	font-family: Arial;
+}
+
+/* 전체 배경 */
+body{
+	background:#eeeeee;
+}
+
+/* 제목 */
+.title{
+	text-align:center;
+	font-size:22px;
+	padding:30px;
+	color:#777;
+	font-weight:bold;
+}
+
+/* 테이블 영역 */
+.table-box{
+	width:70%;
+	margin:0 auto;
+	background:white;
+	padding:30px;
+	border-radius:10px;
+	box-shadow:0 3px 8px rgba(0,0,0,0.1);
+}
+
+/* 테이블 */
+table{
+	width:100%;
+	border-collapse:collapse;
+	text-align:center;
+}
+
+/* 헤더 */
+th{
+	padding:15px;
+	border-bottom:2px solid #ddd;
+	color:#777;
+}
+
+/* 데이터 */
+td{
+	padding:15px;
+	border-bottom:1px solid #eee;
+}
+
+/* 버튼 */
+.btn{
+	border:none;
+	padding:6px 10px;
+	border-radius:4px;
+	cursor:pointer;
+	font-size:12px;
+}
+
+/* 수정 버튼 */
+.update{
+	background:#dcdcdc;
+}
+
+/* 삭제 버튼 */
+.delete{
+	background:#ffbcbc;
+}
+
+/* 등록 버튼 */
+.register-box{
+	width:70%;
+	margin:20px auto;
+	text-align:left;
+}
+
+.register-btn{
+	background:#cfcfcf;
+	border:none;
+	padding:8px 14px;
+	border-radius:6px;
+	cursor:pointer;
+}
