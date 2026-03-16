@@ -3,18 +3,19 @@ package com.example.demo.Domain;
 import java.time.LocalDateTime;
 
 public class Ingredients {
-	private long id;
-    private String name;
-    private String unit;
-    private double stock_qty;   
-    private double min_stock;
-    private int unit_cost;
-    private String supplier;
+    private long          id;
+    private String        name;
+    private String        category;
+    private String        unit;
+    private double        stock_qty;
+    private double        min_stock;
+    private int           unit_cost;
+    private String        supplier;
     private LocalDateTime created_at;
     private LocalDateTime updated_at;
-	
     
-    public long getId() {
+    
+	public long getId() {
 		return id;
 	}
 	public void setId(long id) {
@@ -25,6 +26,12 @@ public class Ingredients {
 	}
 	public void setName(String name) {
 		this.name = name;
+	}
+	public String getCategory() {
+		return category;
+	}
+	public void setCategory(String category) {
+		this.category = category;
 	}
 	public String getUnit() {
 		return unit;
@@ -68,6 +75,6 @@ public class Ingredients {
 	public void setUpdated_at(LocalDateTime updated_at) {
 		this.updated_at = updated_at;
 	}
-    
-	
+
+
 }
