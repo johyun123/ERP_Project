@@ -29,11 +29,10 @@ public class UserService {
 		userMapper.save(user);
 	}
 
-	// 로그인
-//	public boolean login(String user_id, String rawPassword) {
-//		User user = userMapper.findById(user_id);
-//		if (user == null)
-//			return false;
-//		return BCrypt.checkpw(rawPassword, user.getUser_pw());
-//	}
+	// UserService.java에 추가
+	public boolean authenticate(String userId, String rawPw) {
+	    User user = userMapper.findById(userId);
+	    if (user == null) return false;
+	    return passwordEncoder.matches(rawPw, user.getUser_pw());
+	}
 }
