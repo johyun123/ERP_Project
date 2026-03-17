@@ -1,5 +1,7 @@
 package com.example.demo.controller;
 
+import java.util.List;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,10 +24,28 @@ public class HRMController {
 		this.hrmService = hrmService;
 	}
 
-	@GetMapping("/employees") // 직원관리
-	public String employessPage(Model model) {
-		model.addAttribute("employees", hrmService.getAllEmployees());
-		return "hr/employees";
+//	@GetMapping("/employees") // 직원관리
+//	public String employessPage(Model model) {
+//		model.addAttribute("employees", hrmService.getAllEmployees());
+//		return "hr/employees";
+//	}
+
+	@GetMapping("/employees") // 직원 관리 및 검사 필터
+	public String listEmployees(@RequestParam(required = false, defaultValue = "all") String status,
+			@RequestParam(required = false) String name, @RequestParam(required = false) String position, Model model) {
+
+		// is_active 필터 결정
+		Integer isActive = null;
+		if ("active".equals(status))
+			isActive = 1;
+		if ("resigned".equals(status))
+			isActive = 0;
+
+		// HRMService에 searchEmployees(name, position, isActive) 메서드 필요
+		List<Employees> employees = hrmService.searchEmployees(name, position, isActive);
+		model.addAttribute("employees", employees);
+
+		return "hr/employees"; // JSP
 	}
 
 	@GetMapping("/employees/register") // 직원 정보 / 등록
@@ -37,7 +57,7 @@ public class HRMController {
 	@PostMapping("/employees/register")
 	public String registerEmployee(Employees employee) {
 		hrmService.addEmployee(employee); // HRMService에 등록 로직 있어야 함
-		return "redirect:/hr/employees";
+		return "redirect:/hr/employees?status=all";
 	}
 
 	// 직원 수정 페이지 이동
@@ -65,7 +85,7 @@ public class HRMController {
 
 		hrmService.updateEmployee(employee);
 
-		return "redirect:/hr/employees";
+		return "redirect:/hr/employees?status=all";
 	}
 
 	// 직원 삭제
@@ -74,7 +94,7 @@ public class HRMController {
 
 		hrmService.deleteEmployee(emp_num);
 
-		return "redirect:/hr/employees";
+		return "redirect:/hr/employees?status=all";
 	}
 
 	@GetMapping("/attendance") // 근태 관리

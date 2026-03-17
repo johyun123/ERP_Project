@@ -27,6 +27,11 @@ public class HRMService {
 		return hrmMapper.selectEmployeeById(emp_num);
 	}
 
+	// 검색 기능 추가
+	public List<Employees> searchEmployees(String name, String position, Integer isActive) {
+		return hrmMapper.searchEmployees(name, position, isActive);
+	}
+
 	// 직원 등록
 	public void addEmployee(Employees employee) {
 		hrmMapper.insertEmployee(employee);

@@ -131,6 +131,8 @@
 
 
 <button type="submit" class="save-btn">등록</button>
+<button type="button" class="save-btn" onclick="location.href='/hr/employees'">
+취소</button>
 
 </form>
 

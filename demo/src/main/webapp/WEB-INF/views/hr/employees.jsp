@@ -21,16 +21,38 @@
 
 <div class="page-title">직원 관리</div>
 
+<!-- 재직 / 퇴사 / 전체 / 직원 등록 버튼  -->
 <div class="top-bar">
-<button onclick="location.href='/hr/employees/register'">
-직원 등록
+<button onclick="location.href='/hr/employees?status=all'">
+	전체
 </button>
+    <button onclick="location.href='/hr/employees?status=active'">
+    재직자
+    </button>
+    <button onclick="location.href='/hr/employees?status=resigned'">
+    퇴사자
+    </button>
+<button onclick="location.href='/hr/employees/register'">
+	직원 등록
+</button>
+
 </div>
+
+
+<!-- 검색 기능 추가  -->
+<form action="/hr/employees" method="get" style="margin:10px 0;">
+    이름: <input type="text" name="name" value="${param.name}">
+    직책: <input type="text" name="position" value="${param.position}">
+    <button type="submit">검색</button>
+</form>
+
+
 
 <div class="table-wrapper">
 
 <table class="employee-table">
 
+<!-- 각 테이블 명  -->
 <thead>
 <tr>
 <th>이름</th>
@@ -55,6 +77,7 @@
 
 <tr>
 
+<!-- 테이블에 들어갈 데이터  -->
 <td>${emp.name}</td>
 <td>${emp.age}</td>
 <td>${emp.phone}</td>
@@ -66,7 +89,16 @@
 <td>${emp.contract_type}</td>
 <td>${emp.bank_name}</td>
 <td>${emp.account_no}</td>
-<td>${emp.is_active}</td>
+
+<!-- 재직 여부 표시  -->
+<td>
+<c:choose>
+    <c:when test="${emp.is_active == 1}">재직</c:when>
+    <c:when test="${emp.is_active == 2}">휴직</c:when>
+    <c:when test="${emp.is_active == 0}">퇴사</c:when>
+    <c:otherwise></c:otherwise>
+</c:choose>
+</td>
 
 <td>
 
@@ -76,11 +108,14 @@ onclick="location.href='/hr/employees/edit?emp_num=${emp.emp_num}'">
 </button>
  --%>
  
+ <!-- 수정 버튼 -->
  <button class="edit-btn"
 onclick="location.href='/hr/employees/edit/${emp.emp_num}'">
 수정
 </button>
  
+ 
+ <!-- 삭제 버튼  -->
 <form action="/hr/employees/delete" method="post" style="display:inline;">
     <input type="hidden" name="emp_num" value="${emp.emp_num}">
     <!-- CSRF 토큰 -->

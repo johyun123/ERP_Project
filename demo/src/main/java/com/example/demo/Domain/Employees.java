@@ -11,14 +11,14 @@ public class Employees {
 	private String phone;
 	private String position;
 	private String contract_type;
-	private Integer hourly_wage;
-	private Integer monthly_salary;
+	private Long hourly_wage;
+	private Long monthly_salary;
 	private LocalDate hire_date;
 	private LocalDate resign_date;
 	private String profile;
 	private String bank_name;
 	private String account_no;
-	private Boolean is_active;
+	private int is_active;
 
 	public Long getId() {
 		return id;
@@ -76,19 +76,19 @@ public class Employees {
 		this.contract_type = contract_type;
 	}
 
-	public Integer getHourly_wage() {
+	public Long getHourly_wage() {
 		return hourly_wage;
 	}
 
-	public void setHourly_wage(Integer hourly_wage) {
+	public void setHourly_wage(Long hourly_wage) {
 		this.hourly_wage = hourly_wage;
 	}
 
-	public Integer getMonthly_salary() {
+	public Long getMonthly_salary() {
 		return monthly_salary;
 	}
 
-	public void setMonthly_salary(Integer monthly_salary) {
+	public void setMonthly_salary(Long monthly_salary) {
 		this.monthly_salary = monthly_salary;
 	}
 
@@ -132,11 +132,11 @@ public class Employees {
 		this.account_no = account_no;
 	}
 
-	public Boolean getIs_active() {
+	public int getIs_active() {
 		return is_active;
 	}
 
-	public void setIs_active(Boolean is_active) {
+	public void setIs_active(int is_active) {
 		this.is_active = is_active;
 	}
 
