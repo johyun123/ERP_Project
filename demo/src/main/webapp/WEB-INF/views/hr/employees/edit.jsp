@@ -130,7 +130,6 @@
 <div class="form-row">
 <label>재직 여부 :</label>
 <select name="is_active">
-<option value="3" ${employee.is_active == 3 ? 'selected' : ''}>선택</option>
 <option value="1" ${employee.is_active == 1 ? 'selected' : ''}>재직</option>
 <option value="2" ${employee.is_active == 2 ? 'selected' : ''}>휴직</option>
 <option value="0" ${employee.is_active == 0 ? 'selected' : ''}>퇴사</option>

@@ -1,40 +1,35 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8"
-    pageEncoding="UTF-8"%>
-    
-    
+<%@ page contentType="text/html;charset=UTF-8" %>
+<%@ page import="java.util.*" %>
+<html>
+
 <%
 String userName = "관리자";
 String userId = "admin";
 String userRank = "시스템관리자";
 %>
 
-<!DOCTYPE html>
+<%@ page contentType="text/html;charset=UTF-8" %>
 <html>
+
 <head>
-<meta charset="UTF-8">
-<title>ERP CAFE SYSTEM</title>
+<title>근태 관리</title>
 
-
-<link rel="stylesheet" href="/css/header.css" />
-<link rel="stylesheet" href="/css/MainPage.css" />
+<link rel="stylesheet" href="/css/header.css"/>
+<link rel="stylesheet" href="/css/MainPage.css"/>
 </head>
 
 <body>
 
+
+
+<h2>근태 관리</h2>
+
+
 <jsp:include page="/WEB-INF/views/header.jsp"/>
-
-<!-- 컨텐츠 -->
-
 <div class="content">
-
-	<div class="dashboard">
-	
-	</div>
-
+<jsp:include page="attendance/calendar.jsp" />
 
 </div>
-
-
-
 </body>
 </html>
+
