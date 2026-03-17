@@ -1,51 +1,306 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8"
-    pageEncoding="UTF-8"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="UTF-8">
-<title>제품 관리</title>
-
-<link rel="stylesheet" href="/css/Product/product.css" />
+    <meta charset="UTF-8">
+    <title>제품 관리</title>
+    <link rel="stylesheet" href="/css/header.css" />
+    <link rel="stylesheet" href="/css/Product/product.css" />
 </head>
-s
+
 <body>
+<jsp:include page="/WEB-INF/views/header.jsp"/>
 
-<div class="title">
-제품 관리
+<div class="content">
+
+    <div class="page-header">
+        <div class="page-title">제품 관리 <span>메뉴를 관리합니다</span></div>
+    </div>
+
+    <div class="table-box">
+        <table>
+            <thead>
+                <tr>
+                    <th>제품번호</th>
+                    <th>카테고리</th>
+                    <th>제품명</th>
+                    <th>판매가</th>
+                    <th>원가</th>
+                    <th>판매여부</th>
+                    <th>관리</th>
+                </tr>
+            </thead>
+            <tbody>
+                <c:forEach var="menu" items="${menuList}">
+                <!-- 한 줄 클릭 시 레시피 상세페이지로 이동 -->
+                <tr onclick="location.href='/product/recipe/${menu.id}'" style="cursor:pointer;">
+                    <td>${menu.id}</td>
+                    <td>${menu.categoryName}</td>
+                    <td>${menu.name}</td>
+                    <td>${menu.price}원</td>
+                    <td>${menu.cost}원</td>
+                    <td>
+                        <span class="badge ${menu.isAvailable == 1 ? 'badge-on' : 'badge-off'}">
+                            ${menu.isAvailable == 1 ? '판매중' : '판매중지'}
+                        </span>
+                    </td>
+                    <td>
+                        <!-- 수정/삭제 버튼 클릭 시 tr onclick 이벤트 전파 막기 -->
+                        <button class="btn update"
+                            onclick="event.stopPropagation(); openUpdateModal(${menu.id}, ${menu.categoryId}, '${menu.name}', '${menu.description}', ${menu.price}, ${menu.cost}, ${menu.isAvailable})">수정</button>
+                        <button class="btn delete"
+                            onclick="event.stopPropagation(); openDeleteModal(${menu.id}, '${menu.name}')">삭제</button>
+                    </td>
+                </tr>
+                </c:forEach>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="bottom-box">
+        <button class="register-btn" onclick="openProductModal()">+ 제품등록</button>
+    </div>
+
 </div>
 
-
-<div class="table-box">
-
-<table>
-
-<thead>
-
-<tr>
-<th>제품번호</th>
-<th>제품명</th>
-<th>가격</th>
-<th>관리</th>
-</tr>
-
-</thead>
-
-<tbody>
-
-</tbody>
-
-</table>
-
+<!-- ===================== 제품등록 모달 ===================== -->
+<div class="modal-overlay" id="productModal">
+    <div class="modal-box">
+        <div class="modal-header">
+            <div class="modal-title">제품 등록</div>
+            <button class="modal-close" onclick="closeProductModal()">✕</button>
+        </div>
+        <form action="/productInsert" method="post">
+            <div class="modal-body">
+                <div class="input-row">
+                    <label>카테고리</label>
+                    <div class="input-with-btn">
+                        <select name="category_id" id="categorySelect" required>
+                            <option value="">카테고리 선택</option>
+                            <c:forEach var="cat" items="${categoryList}">
+                                <option value="${cat.id}">${cat.name}</option>
+                            </c:forEach>
+                        </select>
+                        <button type="button" class="small-btn" onclick="switchToCategoryModal()">+ 카테고리 등록</button>
+                    </div>
+                </div>
+                <div class="input-row">
+                    <label>제품명</label>
+                    <input type="text" name="name" placeholder="제품명 입력" required>
+                </div>
+                <div class="input-row">
+                    <label>설명</label>
+                    <input type="text" name="description" placeholder="제품 설명 입력">
+                </div>
+                <div class="input-row">
+                    <label>판매가</label>
+                    <input type="number" name="price" placeholder="0" min="0" required>
+                </div>
+                <div class="input-row">
+                    <label>원가</label>
+                    <input type="number" name="cost" placeholder="0" min="0" required>
+                </div>
+                <div class="input-row">
+                    <label>판매 여부</label>
+                    <select name="isAvailable">
+                        <option value="1">판매중</option>
+                        <option value="0">판매중지</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="cancel-btn" onclick="closeProductModal()">취소</button>
+                <button type="submit" class="submit-btn">등록</button>
+            </div>
+        </form>
+    </div>
 </div>
 
-
-<div class="register-box">
-<button class="register-btn"
-onclick="location.href='productRegister'">
-제품등록
-</button>
+<!-- ===================== 제품수정 모달 ===================== -->
+<div class="modal-overlay" id="updateModal">
+    <div class="modal-box">
+        <div class="modal-header">
+            <div class="modal-title">제품 수정</div>
+            <button class="modal-close" onclick="closeUpdateModal()">✕</button>
+        </div>
+        <form action="/productUpdate" method="post">
+            <input type="hidden" name="id" id="updateId">
+            <div class="modal-body">
+                <div class="input-row">
+                    <label>카테고리</label>
+                    <select name="category_id" id="updateCategoryId" required>
+                        <c:forEach var="cat" items="${categoryList}">
+                            <option value="${cat.id}">${cat.name}</option>
+                        </c:forEach>
+                    </select>
+                </div>
+                <div class="input-row">
+                    <label>제품명</label>
+                    <input type="text" name="name" id="updateName" required>
+                </div>
+                <div class="input-row">
+                    <label>설명</label>
+                    <input type="text" name="description" id="updateDescription">
+                </div>
+                <div class="input-row">
+                    <label>판매가</label>
+                    <input type="number" name="price" id="updatePrice" min="0" required>
+                </div>
+                <div class="input-row">
+                    <label>원가</label>
+                    <input type="number" name="cost" id="updateCost" min="0" required>
+                </div>
+                <div class="input-row">
+                    <label>판매 여부</label>
+                    <select name="isAvailable" id="updateIsAvailable">
+                        <option value="1">판매중</option>
+                        <option value="0">판매중지</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="cancel-btn" onclick="closeUpdateModal()">취소</button>
+                <button type="submit" class="submit-btn">수정</button>
+            </div>
+        </form>
+    </div>
 </div>
+
+<!-- ===================== 카테고리 등록 모달 ===================== -->
+<div class="modal-overlay" id="categoryModal">
+    <div class="modal-box modal-sm">
+        <div class="modal-header">
+            <div class="modal-title">카테고리 등록</div>
+            <button class="modal-close" onclick="closeCategoryModal()">✕</button>
+        </div>
+        <div class="modal-body">
+            <div class="input-row">
+                <label>카테고리명</label>
+                <input type="text" id="categoryNameInput" placeholder="카테고리명 입력">
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="cancel-btn" onclick="closeCategoryModal()">취소</button>
+            <button type="button" class="submit-btn" onclick="submitCategory()">등록</button>
+        </div>
+    </div>
+</div>
+
+<!-- ===================== 삭제 확인 모달 ===================== -->
+<div class="modal-overlay" id="deleteModal">
+    <div class="modal-box modal-sm">
+        <div class="modal-header">
+            <div class="modal-title">삭제 확인</div>
+            <button class="modal-close" onclick="closeDeleteModal()">✕</button>
+        </div>
+        <div class="modal-body">
+            <p class="delete-msg">
+                <strong id="deleteMenuName"></strong> 을(를)<br>삭제하시겠습니까?
+            </p>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="cancel-btn" onclick="closeDeleteModal()">아니요</button>
+            <button type="button" class="submit-btn btn-danger" onclick="confirmDelete()">예</button>
+        </div>
+    </div>
+</div>
+
+<!-- 삭제용 hidden form -->
+<form id="deleteForm" action="/productDelete" method="post">
+    <input type="hidden" id="deleteMenuId" name="id">
+</form>
+
+<!-- 토스트 메시지 -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* ===== 제품등록 모달 ===== */
+function openProductModal() {
+    document.getElementById('productModal').classList.add('active');
+}
+function closeProductModal() {
+    document.getElementById('productModal').classList.remove('active');
+}
+
+/* ===== 제품수정 모달 ===== */
+function openUpdateModal(id, categoryId, name, description, price, cost, isAvailable) {
+    document.getElementById('updateId').value = id;
+    document.getElementById('updateCategoryId').value = categoryId;
+    document.getElementById('updateName').value = name;
+    document.getElementById('updateDescription').value = description || '';
+    document.getElementById('updatePrice').value = price;
+    document.getElementById('updateCost').value = cost;
+    document.getElementById('updateIsAvailable').value = isAvailable;
+    document.getElementById('updateModal').classList.add('active');
+}
+function closeUpdateModal() {
+    document.getElementById('updateModal').classList.remove('active');
+}
+
+/* ===== 카테고리 모달 ===== */
+function switchToCategoryModal() {
+    document.getElementById('categoryModal').classList.add('active');
+}
+function closeCategoryModal() {
+    document.getElementById('categoryModal').classList.remove('active');
+}
+
+/* 카테고리 AJAX 등록 후 "등록되었습니다" 토스트 표시 */
+function submitCategory() {
+    const name = document.getElementById('categoryNameInput').value.trim();
+    if (!name) { alert('카테고리명을 입력해주세요.'); return; }
+
+    fetch('/categoryInsert', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'name=' + encodeURIComponent(name)
+    })
+    .then(res => res.json())
+    .then(data => {
+        ['categorySelect', 'updateCategoryId'].forEach(selectId => {
+            const select = document.getElementById(selectId);
+            const option = document.createElement('option');
+            option.value = data.id;
+            option.text = data.name;
+            select.appendChild(option);
+        });
+        document.getElementById('categorySelect').value = data.id;
+        document.getElementById('categoryNameInput').value = '';
+        closeCategoryModal();
+        showToast('등록되었습니다 ✓');
+    })
+    .catch(() => alert('카테고리 등록 중 오류가 발생했습니다.'));
+}
+
+/* ===== 토스트 메시지 ===== */
+function showToast(msg) {
+    const toast = document.getElementById('toast');
+    toast.innerText = msg;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2500);
+}
+
+/* ===== 삭제 모달 ===== */
+function openDeleteModal(id, name) {
+    document.getElementById('deleteMenuId').value = id;
+    document.getElementById('deleteMenuName').innerText = name;
+    document.getElementById('deleteModal').classList.add('active');
+}
+function closeDeleteModal() {
+    document.getElementById('deleteModal').classList.remove('active');
+}
+function confirmDelete() {
+    document.getElementById('deleteForm').submit();
+}
+
+/* 모달 바깥 클릭 시 닫기 */
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+    overlay.addEventListener('click', function(e) {
+        if (e.target === this) this.classList.remove('active');
+    });
+});
+</script>
 
 </body>
 </html>
