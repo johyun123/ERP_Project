@@ -32,6 +32,34 @@ body { background: #f0f2ff; }
     margin-bottom: 24px;
 }
 
+.header-left-area {
+    display: flex;
+    align-items: center;
+}
+
+.header-right-area {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.back-btn {
+    background: #ffffff;
+    color: #5b6ef5;
+    border: 1.5px solid #c7ccf9;
+    border-radius: 10px;
+    padding: 10px 18px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.back-btn:hover {
+    background: #e8eaff;
+    transform: translateY(-1px);
+}
+
 .page-title {
     font-family: 'Outfit', sans-serif;
     font-size: 1.4rem;
@@ -40,15 +68,8 @@ body { background: #f0f2ff; }
     letter-spacing: -0.3px;
 }
 
-.page-title span {
-    font-size: 0.85rem;
-    font-weight: 400;
-    color: #9ca3af;
-    margin-left: 10px;
-}
-
 /* ===========================
-   등록 버튼
+   원재료 추가 버튼
 =========================== */
 .register-btn {
     background: linear-gradient(135deg, #5b6ef5 0%, #8b5cf6 100%);
@@ -70,41 +91,77 @@ body { background: #f0f2ff; }
 }
 
 /* ===========================
-   테이블 박스
+   상세 카드
 =========================== */
-.table-box {
+.detail-card {
     background: white;
     border-radius: 16px;
-    padding: 28px;
-    box-shadow: 0 1px 3px rgba(91,110,245,0.08);
     border: 1.5px solid #e5e7f0;
+    box-shadow: 0 1px 3px rgba(91,110,245,0.08);
+    overflow: hidden;
 }
 
-table {
+/* 카드 헤더 */
+.detail-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 28px;
+    border-bottom: 1.5px solid #f0f2ff;
+    background: #fafbff;
+}
+
+.product-name {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #1e1b4b;
+    letter-spacing: -0.3px;
+}
+
+.detail-card-btns {
+    display: flex;
+    gap: 6px;
+}
+
+/* ===========================
+   상세 테이블
+=========================== */
+.detail-table-wrap {
+    padding: 8px 16px 16px;
+}
+
+.detail-table {
     width: 100%;
     border-collapse: collapse;
     text-align: center;
 }
 
-th {
+.detail-table th {
     padding: 14px 16px;
-    border-bottom: 2px solid #e5e7f0;
     color: #9ca3af;
     font-size: 0.82rem;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.8px;
+    border-bottom: 1.5px solid #f0f2ff;
 }
 
-td {
+.detail-table td {
     padding: 16px;
     border-bottom: 1px solid #f3f4f6;
     color: #1e1b4b;
     font-size: 0.9rem;
 }
 
-tr:last-child td { border-bottom: none; }
-tr:hover td { background: #f8f9ff; }
+.detail-table tr:last-child td { border-bottom: none; }
+.detail-table tr:hover td { background: #f8f9ff; }
+
+.empty-msg {
+    color: #9ca3af;
+    font-size: 0.9rem;
+    padding: 32px !important;
+}
 
 /* ===========================
    뱃지
@@ -116,15 +173,8 @@ tr:hover td { background: #f8f9ff; }
     font-weight: 600;
 }
 
-.badge-on {
-    background: #dcfce7;
-    color: #22c55e;
-}
-
-.badge-off {
-    background: #fee2e2;
-    color: #ef4444;
-}
+.badge-on  { background: #dcfce7; color: #22c55e; }
+.badge-off { background: #fee2e2; color: #ef4444; }
 
 /* ===========================
    수정/삭제 버튼
@@ -145,15 +195,6 @@ tr:hover td { background: #f8f9ff; }
 .delete:hover { background: #ef4444; color: white; }
 
 /* ===========================
-   하단 버튼 박스
-=========================== */
-.bottom-box {
-    display: flex;
-    justify-content: flex-end;
-    margin-top: 16px;
-}
-
-/* ===========================
    모달
 =========================== */
 .modal-overlay {
@@ -167,9 +208,7 @@ tr:hover td { background: #f8f9ff; }
     justify-content: center;
 }
 
-.modal-overlay.active {
-    display: flex;
-}
+.modal-overlay.active { display: flex; }
 
 .modal-box {
     background: white;
@@ -180,9 +219,7 @@ tr:hover td { background: #f8f9ff; }
     animation: modalIn 0.22s cubic-bezier(0.4,0,0.2,1);
 }
 
-.modal-sm {
-    width: 360px;
-}
+.modal-sm { width: 360px; }
 
 @keyframes modalIn {
     from { opacity: 0; transform: translateY(20px); }
@@ -247,38 +284,7 @@ tr:hover td { background: #f8f9ff; }
 }
 
 .input-row input:focus,
-.input-row select:focus {
-    border-color: #5b6ef5;
-}
-
-/* 카테고리 선택 + 버튼 나란히 */
-.input-with-btn {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-}
-
-.input-with-btn select {
-    flex: 1;
-}
-
-.small-btn {
-    background: #e8eaff;
-    color: #5b6ef5;
-    border: none;
-    border-radius: 8px;
-    padding: 10px 12px;
-    font-size: 0.78rem;
-    font-weight: 600;
-    cursor: pointer;
-    white-space: nowrap;
-    transition: all 0.2s;
-}
-
-.small-btn:hover {
-    background: #5b6ef5;
-    color: white;
-}
+.input-row select:focus { border-color: #5b6ef5; }
 
 .modal-footer {
     display: flex;
@@ -320,21 +326,6 @@ tr:hover td { background: #f8f9ff; }
     transform: translateY(-1px);
 }
 
-/* ===========================
-   RESPONSIVE
-=========================== */
-@media (max-width: 900px) {
-    .content { margin-left: 68px; }
-}
-
-@media (max-width: 600px) {
-    .content { padding: 16px; }
-    .table-box { padding: 16px; overflow-x: auto; }
-}
-
-/* ===========================
-   삭제 확인 모달
-=========================== */
 .delete-msg {
     text-align: center;
     color: #1e1b4b;
@@ -352,13 +343,8 @@ tr:hover td { background: #f8f9ff; }
     box-shadow: 0 4px 14px rgba(239,68,68,0.4) !important;
 }
 
-/* 카테고리 모달이 제품등록 모달 위에 겹쳐서 보이도록 */
-#categoryModal {
-    z-index: 1000;
-}
-
 /* ===========================
-   토스트 메시지
+   토스트
 =========================== */
 .toast {
     position: fixed;
@@ -380,4 +366,16 @@ tr:hover td { background: #f8f9ff; }
 .toast.show {
     opacity: 1;
     transform: translateX(-50%) translateY(0);
+}
+
+/* ===========================
+   RESPONSIVE
+=========================== */
+@media (max-width: 900px) {
+    .content { margin-left: 68px; }
+}
+
+@media (max-width: 600px) {
+    .content { padding: 16px; }
+    .detail-table-wrap { overflow-x: auto; }
 }
