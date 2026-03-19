@@ -14,9 +14,14 @@ public class HRMService {
 
 	private final HRMMapper hrmMapper;
 
-	// 생성자 주입
+	// 생성자에서 초기화 필수!
 	public HRMService(HRMMapper hrmMapper) {
 		this.hrmMapper = hrmMapper;
+	}
+
+	// HRMService.java (npm_num 기준으로 직원 가져오기)
+	public Employees getEmployeeByNpmNum(String npmNum) {
+		return hrmMapper.selectEmployeeByNpmNum(npmNum);
 	}
 
 	// 전체 직원 조회
@@ -59,7 +64,7 @@ public class HRMService {
 		hrmMapper.deleteEmployee(emp_num);
 	}
 
-	// 기존꺼 대신 이거 사용
+	// 근태 관련 로직
 	public List<Map<String, Object>> getAttendanceWithEmployees(String date) {
 		return hrmMapper.getAttendanceWithEmployees(date);
 	}

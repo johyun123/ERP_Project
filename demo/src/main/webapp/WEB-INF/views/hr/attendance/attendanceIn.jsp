@@ -1,5 +1,5 @@
-<%-- <%@ page contentType="text/html;charset=UTF-8" %>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ page contentType="text/html;charset=UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 
 <html>
 
@@ -7,195 +7,105 @@
 
 <title>근태 상세</title>
 
-<link rel="stylesheet" href="/css/header.css"/>
-<link rel="stylesheet" href="/css/MainPage.css"/>
+<link rel="stylesheet" href="/css/header.css" />
+<link rel="stylesheet" href="/css/MainPage.css" />
 
 <style>
-
-table{
-    width:100%;
-    border-collapse:collapse;
+table {
+	width: 100%;
+	border-collapse: collapse;
 }
 
-th,td{
-    border:1px solid #ddd;
-    padding:10px;
-    text-align:center;
+th, td {
+	border: 1px solid #ddd;
+	padding: 10px;
+	text-align: center;
 }
 
-th{
-    background:#f2f2f2;
+th {
+	background: #f2f2f2;
 }
 
+input {
+	width: 100%;
+	border: none;
+	text-align: center;
+}
 </style>
 
 </head>
 
 <body>
 
-<jsp:include page="/WEB-INF/views/header.jsp"/>
+	<jsp:include page="/WEB-INF/views/header.jsp" />
 
-<div class="content">
+	<div class="content">
 
-<h2>${date} 근태 현황</h2>
+		<h2>${date}근태 현황</h2>
 
-<table>
+		<form action="/hr/saveAttendance" method="post">
 
-<tr>
-<th>직원ID</th>
-<th>근무날짜</th>
-<th>출근시간</th>
-<th>근무시간</th>
-<th>퇴근시간</th>
-<th>특이사항</th>
-</tr>
+			<table>
 
-<c:forEach var="a" items="${attendance}">
+				<tr>
+					<th>직원ID</th>
+					<th>직원이름</th>
+					<th>근무날짜</th>
+					<th>출근시간</th>
+					<th>근무시간</th>
+					<th>퇴근시간</th>
+					<th>특이사항</th>
+				</tr>
 
-<tr>
+				<c:forEach var="a" items="${attendance}" varStatus="s">
 
-<td>${a.employee_id}</td>
-<td>${a.work_date}</td>
-<td>${a.clock_in}</td>
-<td>${a.work_hours}</td>
-<td>${a.clock_out}</td>
-<td>${a.note}</td>
+					<tr>
 
-</tr>
+						<!-- 직원 ID -->
+						<td><input type="text" name="list[${s.index}].employee_id"
+							value="${a.employee_id}" readonly></td>
 
-</c:forEach>
+						<!-- 이름 -->
+						<td>${a.name}</td>
 
-</table>
+						<!-- 날짜 -->
+						<td><input type="text" name="list[${s.index}].work_date_str"
+							value="${date}" readonly></td>
 
-<br>
+						<!-- 출근시간 -->
+						<td><input type="time" name="list[${s.index}].clock_in_str"
+							value="${a.clock_in}"></td>
 
-<a href="/hr/attendance">← 달력으로 돌아가기</a>
+						<!-- 근무시간 (자동 계산, 입력 불가) -->
+						<td><input type="text" name="list[${s.index}].work_hours_str"
+							value="${a.work_hours}" readonly></td>
 
-</div>
+						<!-- 퇴근시간 -->
+						<td><input type="time" name="list[${s.index}].clock_out_str"
+							value="${a.clock_out}"></td>
 
-</body>
-</html> --%>
+						<!-- 특이사항 -->
+						<td><input type="text" name="list[${s.index}].note"
+							value="${a.note}"></td>
 
-<%@ page contentType="text/html;charset=UTF-8" %>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+					</tr>
 
-<html>
+				</c:forEach>
 
-<head>
+			</table>
 
-<title>근태 상세</title>
+			<br>
 
-<link rel="stylesheet" href="/css/header.css"/>
-<link rel="stylesheet" href="/css/MainPage.css"/>
+			<button type="submit">저장</button>
 
-<style>
+		</form>
 
-table{
-    width:100%;
-    border-collapse:collapse;
-}
+		<br> <a href="/hr/attendance">← 달력으로 돌아가기</a>
 
-th,td{
-    border:1px solid #ddd;
-    padding:10px;
-    text-align:center;
-}
+	</div>
 
-th{
-    background:#f2f2f2;
-}
-
-input{
-    width:100%;
-    border:none;
-    text-align:center;
-}
-
-</style>
-
-</head>
-
-<body>
-
-<jsp:include page="/WEB-INF/views/header.jsp"/>
-
-<div class="content">
-
-<h2>${date} 근태 현황</h2>
-
-<form action="/hr/saveAttendance" method="post">
-
-<table>
-
-<tr>
-<th>직원ID</th>
-<th>직원이름</th>
-<th>근무날짜</th>
-<th>출근시간</th>
-<th>근무시간</th>
-<th>퇴근시간</th>
-<th>특이사항</th>
-</tr>
-
-<c:forEach var="a" items="${attendance}" varStatus="s">
-
-<tr>
-
-    <!-- 직원 ID -->
-    <td>
-        <input type="text" name="list[${s.index}].employee_id" value="${a.employee_id}" readonly>
-    </td>
-
-    <!-- 이름 -->
-    <td>
-        ${a.name}
-    </td>
-
-    <!-- 날짜 -->
-    <td>
-        <input type="text" name="list[${s.index}].work_date_str" value="${date}" readonly>
-    </td>
-
-    <!-- 출근시간 -->
-    <td>
-        <input type="time" name="list[${s.index}].clock_in_str" value="${a.clock_in}">
-    </td>
-
-    <!-- 근무시간 (자동 계산, 입력 불가) -->
-    <td>
-        <input type="text" name="list[${s.index}].work_hours_str" value="${a.work_hours}" readonly>
-    </td>
-
-    <!-- 퇴근시간 -->
-    <td>
-        <input type="time" name="list[${s.index}].clock_out_str" value="${a.clock_out}">
-    </td>
-
-    <!-- 특이사항 -->
-    <td>
-        <input type="text" name="list[${s.index}].note" value="${a.note}">
-    </td>
-
-</tr>
-
-</c:forEach>
-
-</table>
-
-<br>
-
-<button type="submit">저장</button>
-
-</form>
-
-<br>
-
-<a href="/hr/attendance">← 달력으로 돌아가기</a>
-
-</div>
-
-<!-- ===== JS: 근무시간 자동 계산, 점심시간 제외, 입력 방지 ===== -->
-<script>
+	<!-- ===== JS: 근무시간 자동 계산, 점심시간 제외, 입력 방지 ===== -->
+	<script>
 function calcWorkHours(row){
     let clockIn = row.querySelector("[name*='clock_in']").value;
     let clockOut = row.querySelector("[name*='clock_out']").value;

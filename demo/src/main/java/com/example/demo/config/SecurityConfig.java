@@ -13,30 +13,38 @@ import jakarta.servlet.DispatcherType;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
-   @Bean //Spring이 만든 객체
-   public SecurityFilterChain filterChain(HttpSecurity http) {
-      http
-      .csrf(csrf -> csrf.disable()) // 위조 요청 방지
-      
-      .authorizeHttpRequests(auth -> auth
-            .dispatcherTypeMatchers(DispatcherType.FORWARD).permitAll()
-            .requestMatchers("/login","/regist","/css/**","/images/**").permitAll()
-            .anyRequest().authenticated())
-      
-      .formLogin(login -> login
-            .loginPage("/login")
-            .loginProcessingUrl("/login")
-            .defaultSuccessUrl("/MainPage",true)
-            .permitAll()
-            //.defaultSuccessUrl("로그인 성공 시 보여주는 URL")
-            )
-      .logout(logout -> logout
-            .logoutUrl("/logout")
-            .logoutSuccessUrl("/"));
-      return http.build();
-   }
-   @Bean
-   public PasswordEncoder passwordEncoder() {
-      return new BCryptPasswordEncoder();
-   }
+	@Bean // Spring이 만든 객체
+	public SecurityFilterChain filterChain(HttpSecurity http) {
+		http.csrf(csrf -> csrf.disable()) // 위조 요청 방지
+
+				.authorizeHttpRequests(auth -> auth.dispatcherTypeMatchers(DispatcherType.FORWARD).permitAll()
+						.requestMatchers("/login", "/regist", "/css/**", "/images/**").permitAll().anyRequest()
+						.authenticated())
+
+				.formLogin(login -> login.loginPage("/login").loginProcessingUrl("/login")
+						.defaultSuccessUrl("/MainPage", true)
+
+						// 활성화 여부 표시
+						.failureHandler((request, response, exception) -> {
+
+							String errorMsg = "아이디 또는 비밀번호 오류";
+
+							if (exception instanceof org.springframework.security.authentication.DisabledException) {
+								errorMsg = "비활성화된 계정입니다.";
+							}
+
+							request.getSession().setAttribute("loginError", errorMsg);
+							response.sendRedirect("/login");
+						})
+
+						.permitAll()
+				// .defaultSuccessUrl("로그인 성공 시 보여주는 URL")
+				).logout(logout -> logout.logoutUrl("/logout").logoutSuccessUrl("/"));
+		return http.build();
+	}
+
+	@Bean
+	public PasswordEncoder passwordEncoder() {
+		return new BCryptPasswordEncoder();
+	}
 }

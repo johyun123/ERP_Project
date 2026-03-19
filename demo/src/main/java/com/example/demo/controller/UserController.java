@@ -1,50 +1,40 @@
 package com.example.demo.controller;
 
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
+import com.example.demo.Service.HRMService;
 import com.example.demo.Service.UserService;
+
+import jakarta.servlet.http.HttpSession;
 
 @Controller
 public class UserController {
 	private final UserService userService;
-	
-	UserController(UserService userService){
-		this.userService = userService;
-	}
-	
+	private final HRMService hrmService;
 
-	@GetMapping("/")
-	public String def() {
-		return "login";
+	UserController(UserService userService, HRMService hrmService) {
+		this.userService = userService;
+		this.hrmService = hrmService;
 	}
-	
-	@GetMapping("/login")
+
+	// 로그인 폼
+	@GetMapping({ "/", "/login" })
 	public String loginForm() {
-		return "login";
+		return "login"; // JSP 그대로 사용
 	}
-    
+
+	// 메인 페이지
 	@GetMapping("/MainPage")
 	public String Main() {
 		return "MainPage";
 	}
-	
-	// 회원가입 폼
-	@GetMapping("/register")
-	public String registerForm() {
-		return "register"; // register.jsp
-	}
 
-	// 회원가입 처리
-	@PostMapping("/register")
-	public String register(@RequestParam String user_id, @RequestParam String user_pw, @RequestParam String user_name,
-			Model model) {
-		userService.register(user_id, user_pw, user_name);
-		model.addAttribute("message", "회원가입 완료! 로그인 해주세요.");
-		return "login";
+	// 로그아웃 처리
+	@GetMapping("/logout")
+	public String logout(HttpSession session) {
+		session.invalidate(); // ✅ 세션 초기화
+		return "redirect:/login";
 	}
 
 }

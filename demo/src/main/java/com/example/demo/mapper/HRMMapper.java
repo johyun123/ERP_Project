@@ -16,6 +16,10 @@ import com.example.demo.Domain.Employees;
 @Mapper
 public interface HRMMapper {
 
+	// HRMMapper.java (npm_num 기준으로 직원 가져오기)
+	@Select("SELECT * FROM employees WHERE npm_num = #{npm_num}")
+	Employees selectEmployeeByNpmNum(@Param("npm_num") String npm_num);
+
 	// 전체 직원 조회
 	@Select("SELECT * FROM employees")
 	List<Employees> selectAllEmployees();
