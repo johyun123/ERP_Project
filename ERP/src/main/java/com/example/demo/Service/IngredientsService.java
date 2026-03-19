@@ -1,37 +1,45 @@
 package com.example.demo.Service;
 
 import com.example.demo.Domain.Ingredients;
+import com.example.demo.Domain.PageRequest;
+import com.example.demo.Domain.PageResult;
 import com.example.demo.mapper.IngredientsMapper;
 import org.springframework.stereotype.Service;
+
 import java.util.List;
 
 @Service
 public class IngredientsService {
 
-    private final IngredientsMapper ingredientsMapper;
+    private final IngredientsMapper mapper;
 
-    // 생성자 주입
-    public IngredientsService(IngredientsMapper ingredientsMapper) {
-        this.ingredientsMapper = ingredientsMapper;
+    public IngredientsService(IngredientsMapper mapper) {
+        this.mapper = mapper;
     }
 
     public List<Ingredients> getAll() {
-        return ingredientsMapper.findAll();
+        return mapper.findAll();
+    }
+
+    public PageResult<Ingredients> getByPage(PageRequest req) {
+        List<Ingredients> list = mapper.findByPage(req);
+        int total = mapper.countAll(req);
+        return new PageResult<>(list, total, req);
     }
 
     public Ingredients getById(long id) {
-        return ingredientsMapper.findById(id);
+        return mapper.findById(id);
     }
 
-    public void register(Ingredients ingredients) {
-        ingredientsMapper.insert(ingredients);
+    public void register(Ingredients i) {
+        mapper.insert(i);
     }
 
-    public void modify(Ingredients ingredients) {
-        ingredientsMapper.update(ingredients);
+    public void modify(Ingredients i) {
+        mapper.update(i);
     }
 
     public void remove(long id) {
-        ingredientsMapper.delete(id);
+        mapper.delete(id);
     }
 }
