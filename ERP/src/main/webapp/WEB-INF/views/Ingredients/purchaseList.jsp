@@ -54,7 +54,7 @@
                    value="${keyword}" onkeydown="if(event.key==='Enter') doSearch()">
             <button class="btn btn-edit" onclick="doSearch()">🔍 검색</button>
             <c:if test="${not empty keyword}">
-                <button class="btn btn-cancel" onclick="goPage(1, '')">✕ 초기화</button>
+                <button class="btn btn-cancel" onclick="location.href='/inventory/order/history?page=1&size=' + currentSize">✕ 초기화</button>
             </c:if>
         </div>
     </div>
@@ -110,9 +110,15 @@
                         <td onclick="event.stopPropagation()">
                             <c:if test="${p.status != 'cancelled'}">
                                 <button class="btn btn-edit"
-                                    onclick="openEditModal(${p.id},'${p.supplier}','${p.status}','${p.received_at}','${p.note}')">
-                                    수정
-                                </button>
+    								data-id="${p.id}"
+    								data-supplier="${p.supplier}"
+    								data-status="${p.status}"
+    								data-received="${p.received_at}"
+    								data-note="${p.note}"
+    								data-ordered="${p.ordered_at}"
+    								onclick="openEditModal(this)">
+    							수정
+								</button>
                                 <form action="/inventory/order/cancel/${p.id}" method="post" style="display:inline"
                                       onsubmit="return confirm('발주를 취하하시겠습니까?')">
                                     <input type="hidden" name="page" value="${result.page}">
@@ -181,29 +187,35 @@
     <div class="modal">
         <div class="modal-title">✏️ 발주 수정</div>
         <form action="/inventory/order/update" method="post">
-            <input type="hidden" name="id"   id="edit_id">
-            <input type="hidden" name="page" value="${result.page}">
+            <input type="hidden" name="id"     id="edit_id">
+            <input type="hidden" name="page"   value="${result.page}">
+            <input type="hidden" name="status" id="edit_status">
             <div class="form-row">
                 <div class="form-group">
                     <label>거래처명</label>
                     <input type="text" name="supplier" id="edit_supplier">
                 </div>
                 <div class="form-group">
-                    <label>상태</label>
-                    <select name="status" id="edit_status">
-                        <option value="ordered">발주완료</option>
-                        <option value="received">입고완료</option>
-                    </select>
+                    <label>
+                        입고일
+                        <span style="font-size:0.75rem; color:var(--text-muted); font-weight:400;">
+                            (입력 시 자동으로 입고완료 처리)
+                        </span>
+                    </label>
+                    <input type="date" name="received_at" id="edit_received_at"
+                           onchange="handleReceivedDate(this.value)">
                 </div>
             </div>
-            <div class="form-row">
-                <div class="form-group">
-                    <label>입고일</label>
-                    <input type="date" name="received_at" id="edit_received_at">
-                </div>
-                <div class="form-group">
-                    <label>비고</label>
-                    <input type="text" name="note" id="edit_note">
+            <div class="form-group">
+                <label>비고</label>
+                <input type="text" name="note" id="edit_note">
+            </div>
+            <%-- 현재 상태 표시 (읽기 전용) --%>
+            <div class="form-group">
+                <label>현재 상태</label>
+                <div id="edit_status_display"
+                     style="padding:8px 12px; border-radius:var(--radius-sm);
+                            font-size:0.88rem; font-weight:600; display:inline-block;">
                 </div>
             </div>
             <div class="modal-footer">
@@ -274,12 +286,36 @@ function openDetailModal(purchaseId, supplier, orderedAt) {
                 '<div style="text-align:center; padding:40px; color:var(--accent-red);">데이터를 불러오지 못했습니다.</div>';
         });
 }
-function openEditModal(id, supplier, status, received_at, note) {
+function handleReceivedDate(val) {
+    if (val) {
+        document.getElementById('edit_status').value = 'received';
+        document.getElementById('edit_status_display').innerText = '✅ 입고완료';
+        document.getElementById('edit_status_display').style.background = 'var(--accent-green-light)';
+        document.getElementById('edit_status_display').style.color = 'var(--accent-green)';
+    } else {
+        document.getElementById('edit_status').value = 'ordered';
+        document.getElementById('edit_status_display').innerText = '📋 발주완료';
+        document.getElementById('edit_status_display').style.background = 'var(--accent-orange-light)';
+        document.getElementById('edit_status_display').style.color = 'var(--accent-orange)';
+    }
+}
+
+function openEditModal(btn) {
+    const id          = btn.dataset.id;
+    const supplier    = btn.dataset.supplier;
+    const status      = btn.dataset.status;
+    const received_at = btn.dataset.received;
+    const note        = btn.dataset.note;
+    const ordered_at  = btn.dataset.ordered;
+
     document.getElementById('edit_id').value          = id;
     document.getElementById('edit_supplier').value    = supplier;
     document.getElementById('edit_status').value      = status;
     document.getElementById('edit_received_at').value = (received_at === 'null' ? '' : received_at);
     document.getElementById('edit_note').value        = (note === 'null' ? '' : note);
+    document.getElementById('edit_received_at').min   = ordered_at;
+
+    handleReceivedDate(document.getElementById('edit_received_at').value);
     openModal('editModal');
 }
 document.querySelectorAll('.modal-overlay').forEach(function(o) {
