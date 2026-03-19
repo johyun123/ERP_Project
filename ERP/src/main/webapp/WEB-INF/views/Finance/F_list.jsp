@@ -77,7 +77,7 @@
                             <td><span class="type-badge type-${exp.expenseType}">${exp.expenseType}</span></td>
                             <td class="td-amount"><fmt:formatNumber value="${exp.amount}" pattern="#,###"/>원</td>
                             <td class="td-desc">${empty exp.description ? '-' : exp.description}</td>
-                            <td>${empty exp.registeredBy ? '-' : exp.registeredBy}</td>
+                            <td>${empty exp.registeredByName ? '-' : exp.registeredByName}</td>
                             <td class="td-date">${exp.createdAt}</td>
                             <td>
                                 <button class="btn-icon btn-receipt" onclick="openReceiptPopup(${exp.id})">🧾 조회</button>

@@ -21,41 +21,50 @@
     </div>
 
     <%-- 상태별 요약 --%>
-    <c:set var="orderedCnt"  value="0"/>
-    <c:set var="receivedCnt" value="0"/>
-    <c:set var="cancelCnt"   value="0"/>
-    <c:forEach var="p" items="${list}">
-        <c:if test="${p.status == 'ordered'}">  <c:set var="orderedCnt"  value="${orderedCnt+1}"/></c:if>
-        <c:if test="${p.status == 'received'}"> <c:set var="receivedCnt" value="${receivedCnt+1}"/></c:if>
-        <c:if test="${p.status == 'cancelled'}"><c:set var="cancelCnt"   value="${cancelCnt+1}"/></c:if>
-    </c:forEach>
-
     <div class="stat-row">
         <div class="stat-card">
             <div class="stat-icon blue">📋</div>
             <div class="stat-info">
-                <div class="label">발주 완료</div>
-                <div class="value">${orderedCnt}건</div>
+                <div class="label">전체 발주</div>
+                <div class="value">${result.totalCount}건</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon blue">📄</div>
+            <div class="stat-info">
+                <div class="label">현재 페이지</div>
+                <div class="value">${result.page} / ${result.totalPages}</div>
             </div>
         </div>
         <div class="stat-card">
             <div class="stat-icon green">✅</div>
             <div class="stat-info">
-                <div class="label">입고 완료</div>
-                <div class="value green">${receivedCnt}건</div>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon red">❌</div>
-            <div class="stat-info">
-                <div class="label">취소</div>
-                <div class="value red">${cancelCnt}건</div>
+                <div class="label">페이지당 항목</div>
+                <div class="value">${result.size}개</div>
             </div>
         </div>
     </div>
 
+    <%-- 검색 --%>
+    <div class="filter-bar">
+        <div></div>
+        <div class="search-box">
+            <input type="text" id="keywordInput" placeholder="거래처명 검색..."
+                   value="${keyword}" onkeydown="if(event.key==='Enter') doSearch()">
+            <button class="btn btn-edit" onclick="doSearch()">🔍 검색</button>
+            <c:if test="${not empty keyword}">
+                <button class="btn btn-cancel" onclick="goPage(1, '')">✕ 초기화</button>
+            </c:if>
+        </div>
+    </div>
+
     <div class="table-card">
-        <div class="table-card-header"><h3>발주 목록</h3></div>
+        <div class="table-card-header">
+            <h3>발주 목록</h3>
+            <span style="font-size:0.82rem; color:var(--text-muted);">
+                총 ${result.totalCount}건 중 ${result.list.size()}건 표시
+            </span>
+        </div>
         <table class="data-table">
             <thead>
                 <tr>
@@ -71,12 +80,13 @@
             </thead>
             <tbody>
             <c:choose>
-                <c:when test="${empty list}">
+                <c:when test="${empty result.list}">
                     <tr class="empty-row"><td colspan="8">발주 내역이 없습니다.</td></tr>
                 </c:when>
                 <c:otherwise>
-                    <c:forEach var="p" items="${list}">
-                    <tr class="clickable-row" onclick="openDetailModal(${p.id}, '${p.supplier}', '${p.ordered_at}')">
+                    <c:forEach var="p" items="${result.list}">
+                    <tr class="clickable-row"
+                        onclick="openDetailModal(${p.id},'${p.supplier}','${p.ordered_at}')">
                         <td>${p.id}</td>
                         <td><strong>${p.supplier}</strong></td>
                         <td><fmt:formatNumber value="${p.total_cost}" pattern="#,###"/>원</td>
@@ -104,6 +114,7 @@
                                 </button>
                                 <form action="/inventory/order/cancel/${p.id}" method="post" style="display:inline"
                                       onsubmit="return confirm('발주를 취하하시겠습니까?')">
+                                    <input type="hidden" name="page" value="${result.page}">
                                     <button type="submit" class="btn btn-delete">취하</button>
                                 </form>
                             </c:if>
@@ -117,8 +128,36 @@
             </c:choose>
             </tbody>
         </table>
-    </div>
 
+        <%-- 페이지네이션 --%>
+        <div class="pagination">
+            <div class="page-size-select">
+                <select onchange="changeSize(this.value)">
+                    <option value="10" ${size == 10 ? 'selected' : ''}>10개씩</option>
+                    <option value="20" ${size == 20 ? 'selected' : ''}>20개씩</option>
+                    <option value="50" ${size == 50 ? 'selected' : ''}>50개씩</option>
+                </select>
+            </div>
+
+            <div class="page-nav">
+                <c:if test="${result.hasPrev()}">
+                    <button class="page-btn" onclick="goPage(${result.startPage - 1})">‹</button>
+                </c:if>
+                <c:forEach begin="${result.startPage}" end="${result.endPage}" var="p">
+                    <button class="page-btn ${p == result.page ? 'active' : ''}"
+                            onclick="goPage(${p})">${p}</button>
+                </c:forEach>
+                <c:if test="${result.hasNext()}">
+                    <button class="page-btn" onclick="goPage(${result.endPage + 1})">›</button>
+                </c:if>
+            </div>
+
+            <div style="font-size:0.8rem; color:var(--text-muted);">
+                총 ${result.totalCount}건
+            </div>
+        </div>
+
+    </div>
 </div>
 
 <%-- 발주 상세 모달 --%>
@@ -129,9 +168,7 @@
             <span id="detailInfo" style="font-size:0.82rem; font-weight:400;
                   color:var(--text-muted); margin-left:10px;"></span>
         </div>
-        <div id="detailContent" style="min-height:160px;">
-            <div style="text-align:center; padding:40px; color:var(--text-muted);">로딩 중...</div>
-        </div>
+        <div id="detailContent" style="min-height:160px;"></div>
         <div class="modal-footer">
             <button type="button" class="btn btn-cancel" onclick="closeModal('detailModal')">닫기</button>
         </div>
@@ -143,7 +180,8 @@
     <div class="modal">
         <div class="modal-title">✏️ 발주 수정</div>
         <form action="/inventory/order/update" method="post">
-            <input type="hidden" name="id" id="edit_id">
+            <input type="hidden" name="id"   id="edit_id">
+            <input type="hidden" name="page" value="${result.page}">
             <div class="form-row">
                 <div class="form-group">
                     <label>거래처명</label>
@@ -178,44 +216,41 @@
 <style>
 .clickable-row { cursor: pointer; }
 .clickable-row:hover td { background: var(--primary-light) !important; }
-
-.detail-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.88rem;
-}
+.detail-table { width:100%; border-collapse:collapse; font-size:0.88rem; }
 .detail-table th {
-    background: #fafafa;
-    padding: 10px 14px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    text-align: center;
-    border-bottom: 1.5px solid var(--border-light);
+    background:#fafafa; padding:10px 14px; font-size:0.75rem; font-weight:600;
+    color:var(--text-muted); text-transform:uppercase; text-align:center;
+    border-bottom:1.5px solid var(--border-light);
 }
-.detail-table td {
-    padding: 11px 14px;
-    text-align: center;
-    border-bottom: 1px solid var(--border-light);
-}
-.detail-table tr:last-child td { border-bottom: none; }
+.detail-table td { padding:11px 14px; text-align:center; border-bottom:1px solid var(--border-light); }
+.detail-table tr:last-child td { border-bottom:none; }
 .detail-total {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 14px;
-    margin-top: 8px;
-    background: var(--primary-light);
-    border-radius: var(--radius-sm);
-    font-weight: 700;
-    font-size: 0.95rem;
-    color: var(--primary);
+    display:flex; justify-content:space-between; align-items:center;
+    padding:12px 14px; margin:8px 0 0; background:var(--primary-light);
+    border-radius:var(--radius-sm); font-weight:700; color:var(--primary);
 }
 </style>
 
 <script>
+var currentKeyword = '${keyword}';
+var currentSize    = ${size};
+
+function goPage(p) {
+    var url = '/inventory/order/history?page=' + p + '&size=' + currentSize;
+    if (currentKeyword) url += '&keyword=' + encodeURIComponent(currentKeyword);
+    location.href = url;
+}
+function doSearch() {
+    var kw = document.getElementById('keywordInput').value.trim();
+    var url = '/inventory/order/history?page=1&size=' + currentSize;
+    if (kw) url += '&keyword=' + encodeURIComponent(kw);
+    location.href = url;
+}
+function changeSize(s) {
+    var url = '/inventory/order/history?page=1&size=' + s;
+    if (currentKeyword) url += '&keyword=' + encodeURIComponent(currentKeyword);
+    location.href = url;
+}
 function openModal(id)  { document.getElementById(id).classList.add('active'); }
 function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
@@ -224,7 +259,6 @@ function openDetailModal(purchaseId, supplier, orderedAt) {
     document.getElementById('detailContent').innerHTML =
         '<div style="text-align:center; padding:40px; color:var(--text-muted);">로딩 중...</div>';
     openModal('detailModal');
-
     fetch('/inventory/order/items/' + purchaseId)
         .then(function(res) { return res.json(); })
         .then(function(items) {
@@ -234,11 +268,9 @@ function openDetailModal(purchaseId, supplier, orderedAt) {
                 return;
             }
             var total = 0;
-            var html = '<table class="detail-table">'
-                + '<thead><tr>'
+            var html = '<table class="detail-table"><thead><tr>'
                 + '<th>원재료명</th><th>단위</th><th>수량</th><th>단가</th><th>소계</th>'
                 + '</tr></thead><tbody>';
-
             items.forEach(function(item) {
                 total += item.subtotal;
                 html += '<tr>'
@@ -249,13 +281,9 @@ function openDetailModal(purchaseId, supplier, orderedAt) {
                     + '<td><strong>' + Number(item.subtotal).toLocaleString() + '원</strong></td>'
                     + '</tr>';
             });
-
             html += '</tbody></table>';
-            html += '<div class="detail-total">'
-                + '<span>총 발주금액</span>'
-                + '<span>' + total.toLocaleString() + '원</span>'
-                + '</div>';
-
+            html += '<div class="detail-total"><span>총 발주금액</span><span>'
+                + total.toLocaleString() + '원</span></div>';
             document.getElementById('detailContent').innerHTML = html;
         })
         .catch(function() {
@@ -263,7 +291,6 @@ function openDetailModal(purchaseId, supplier, orderedAt) {
                 '<div style="text-align:center; padding:40px; color:var(--accent-red);">데이터를 불러오지 못했습니다.</div>';
         });
 }
-
 function openEditModal(id, supplier, status, received_at, note) {
     document.getElementById('edit_id').value          = id;
     document.getElementById('edit_supplier').value    = supplier;
@@ -272,11 +299,8 @@ function openEditModal(id, supplier, status, received_at, note) {
     document.getElementById('edit_note').value        = (note === 'null' ? '' : note);
     openModal('editModal');
 }
-
 document.querySelectorAll('.modal-overlay').forEach(function(o) {
-    o.addEventListener('click', function(e) {
-        if (e.target === o) o.classList.remove('active');
-    });
+    o.addEventListener('click', function(e) { if(e.target===o) o.classList.remove('active'); });
 });
 </script>
 

@@ -5,24 +5,29 @@ import com.example.demo.Service.UserService;
 import com.example.demo.Domain.FinanceExpense;
 import com.example.demo.Domain.Payrolls;
 
+import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.io.File;
+import java.util.UUID;
 
 @Controller
 public class FinanceController {
 
     private final FinanceService financeService;
-    private final UserService userService;
-    
-    public FinanceController(FinanceService financeService, 
-    							UserService userService) {
+    private final UserService    userService;
+
+    public FinanceController(FinanceService financeService,
+                             UserService userService) {
         this.financeService = financeService;
-        this.userService = userService;
+        this.userService    = userService;
     }
 
     @GetMapping("/f_register")
@@ -32,22 +37,53 @@ public class FinanceController {
 
     @PostMapping("/f_register")
     public String registerExpense(
-            @RequestParam String expenseType,
-            @RequestParam int    amount,
-            @RequestParam String expenseDate,
-            @RequestParam(required = false) String description) {
+            @RequestParam String    expenseType,
+            @RequestParam int       amount,
+            @RequestParam String    expenseDate,
+            @RequestParam(required = false) String        description,
+            @RequestParam(required = false) MultipartFile receiptFile,
+            HttpSession        session,
+            RedirectAttributes ra) {
 
+        // 세션에서 로그인 사용자 ID
+        Long userId = (Long) session.getAttribute("loginUserId");
+
+        // ── 영수증 파일 저장 ──────────────────────────────
+        String receiptPath = null;
+        if (receiptFile != null && !receiptFile.isEmpty()) {
+            try {
+                String uploadDir = System.getProperty("user.dir") + "/uploads/receipts/";
+                File dir = new File(uploadDir);
+                if (!dir.exists()) dir.mkdirs();
+
+                String originalName = receiptFile.getOriginalFilename();
+                String ext = (originalName != null && originalName.contains("."))
+                        ? originalName.substring(originalName.lastIndexOf('.'))
+                        : ".jpg";
+                String savedName = UUID.randomUUID().toString() + ext;
+
+                receiptFile.transferTo(new File(uploadDir + savedName));
+                receiptPath = "/uploads/receipts/" + savedName;
+            } catch (Exception e) {
+                e.printStackTrace();
+                // 파일 저장 실패해도 지출 등록은 계속 진행
+            }
+        }
+
+        // ── FinanceExpense 세팅 & 저장 ───────────────────
         FinanceExpense expense = new FinanceExpense();
         expense.setExpenseType(expenseType);
         expense.setAmount(amount);
         expense.setExpenseDate(expenseDate);
         expense.setDescription(description);
-        // expense.setRegisteredBy(세션에서 유저 id 꺼내서 넣기 — 추후 구현)
+        expense.setReceiptPath(receiptPath);
+        expense.setRegisteredBy(userId);
 
         financeService.registerExpense(expense);
+        ra.addFlashAttribute("msg", "지출이 등록되었습니다.");
         return "redirect:/f_register";
     }
-    
+
     @GetMapping("/f_list")
     public String financeList(Model model) {
         model.addAttribute("expenseList", financeService.getExpenseList());
@@ -78,18 +114,16 @@ public class FinanceController {
         financeService.deleteExpense(id);
         return "redirect:/f_list";
     }
-  
-    
+
     /* ===== 급여 내역 목록 ===== */
     @GetMapping("/f_payrolls")
     public String payrollList(Model model) {
-        model.addAttribute("payrollList", financeService.getPayrollList());
-        // 직원 도메인 생기면 활성화
-        //model.addAttribute("employeeList",  financeService.getActiveEmployeeList());
+        model.addAttribute("payrollList",  financeService.getPayrollList());
+//        model.addAttribute("employeeList", financeService.getActiveEmployeeList());
         return "Finance/F_payrolls";
     }
 
-    /* ===== 관리자 인증 (수정/삭제/수동처리 공통) ===== */
+    /* ===== 관리자 인증 ===== */
     @PostMapping("/payroll/auth")
     @ResponseBody
     public String adminAuth(@RequestParam String userId,
@@ -98,7 +132,7 @@ public class FinanceController {
         return valid ? "ok" : "fail";
     }
 
-    /* ===== 수정 ===== */
+    /* ===== 급여 수정 ===== */
     @PostMapping("/payroll/update")
     public String updatePayroll(@RequestParam Long   id,
                                 @RequestParam Long   employeeId,
@@ -127,10 +161,10 @@ public class FinanceController {
         return "redirect:/f_payrolls";
     }
 
-    /* ===== 삭제 ===== */
+    /* ===== 급여 삭제 ===== */
     @PostMapping("/payroll/delete")
     public String deletePayroll(@RequestParam Long id, RedirectAttributes ra) {
-    	financeService.deletePayroll(id);
+        financeService.deletePayroll(id);
         ra.addFlashAttribute("msg", "삭제되었습니다.");
         return "redirect:/f_payrolls";
     }
@@ -147,7 +181,7 @@ public class FinanceController {
                                 @RequestParam(required = false) String paidAt,
                                 @RequestParam(required = false) String note,
                                 RedirectAttributes ra) {
-    	Payrolls p = new Payrolls();
+        Payrolls p = new Payrolls();
         p.setEmployeeId(employeeId);
         p.setPayYear(payYear);
         p.setPayMonth(payMonth);
@@ -160,9 +194,5 @@ public class FinanceController {
         financeService.registerPayroll(p);
         ra.addFlashAttribute("msg", "급여가 수동 처리되었습니다.");
         return "redirect:/f_payrolls";
-    
-    
-}
-
-    
+    }
 }

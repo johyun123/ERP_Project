@@ -1,29 +1,22 @@
 package com.example.demo.controller;
 
+import com.example.demo.Domain.*;
+import com.example.demo.Service.IngredientsService;
+import com.example.demo.Service.PurchasesService;
+import com.example.demo.Service.SuppliersService;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
-import java.util.*;
-
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.multipart.MultipartFile;
-
-import com.example.demo.Domain.Ingredients;
-import com.example.demo.Domain.PurchaseItems;
-import com.example.demo.Domain.Purchases;
-import com.example.demo.Domain.Suppliers;
-import com.example.demo.Service.IngredientsService;
-import com.example.demo.Service.PurchasesService;
-import com.example.demo.Service.SuppliersService;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 @Controller
 public class IngredientsController {
@@ -38,12 +31,26 @@ public class IngredientsController {
         this.purchasesService   = ps;
     }
 
-    // ===========================================================
-    // 재고 현황
-    // ===========================================================
+    // ============================================================
+    // 재고 현황 - 페이지네이션
+    // ============================================================
     @GetMapping("/inventory")
-    public String stock(Model model) {
-        model.addAttribute("list", ingredientsService.getAll());
+    public String stock(
+            @RequestParam(defaultValue = "1")  int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false)    String category,
+            @RequestParam(required = false)    String keyword,
+            Model model) {
+
+        PageRequest req = new PageRequest(page, size);
+        req.setCategory(category);
+        req.setKeyword(keyword);
+
+        PageResult<Ingredients> result = ingredientsService.getByPage(req);
+        model.addAttribute("result", result);
+        model.addAttribute("category", category);
+        model.addAttribute("keyword",  keyword);
+        model.addAttribute("size",     size);
         return "Ingredients/ingredient";
     }
 
@@ -60,15 +67,21 @@ public class IngredientsController {
     }
 
     @PostMapping("/inventory/update")
-    public String stockUpdate(@ModelAttribute Ingredients i) {
+    public String stockUpdate(@ModelAttribute Ingredients i,
+                              @RequestParam(defaultValue = "1") int page,
+                              @RequestParam(required = false)   String category,
+                              @RequestParam(required = false)   String keyword) {
         ingredientsService.modify(i);
-        return "redirect:/inventory";
+        return "redirect:/inventory?page=" + page
+                + (category != null ? "&category=" + category : "")
+                + (keyword  != null ? "&keyword="  + keyword  : "");
     }
 
     @PostMapping("/inventory/delete/{id}")
-    public String stockDelete(@PathVariable long id) {
+    public String stockDelete(@PathVariable long id,
+                              @RequestParam(defaultValue = "1") int page) {
         ingredientsService.remove(id);
-        return "redirect:/inventory";
+        return "redirect:/inventory?page=" + page;
     }
 
     // ============================================================
@@ -88,7 +101,6 @@ public class IngredientsController {
             @RequestParam(required = false) String note,
             @RequestParam(value = "contract_file", required = false) MultipartFile file
     ) throws IOException {
-
         Suppliers s = new Suppliers();
         s.setSupplier_name(supplier_name);
         s.setSupplier_type(supplier_type);
@@ -97,7 +109,7 @@ public class IngredientsController {
         s.setNote(note);
 
         if (file != null && !file.isEmpty()) {
-            String filename = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+            String filename  = System.currentTimeMillis() + "_" + file.getOriginalFilename();
             String uploadDir = System.getProperty("user.dir")
                              + "/src/main/resources/static/uploads/contracts/";
             Path path = Paths.get(uploadDir + filename);
@@ -105,7 +117,6 @@ public class IngredientsController {
             Files.write(path, file.getBytes());
             s.setContract_file("/uploads/contracts/" + filename);
         }
-
         suppliersService.register(s);
         return "redirect:/inventory/vendor";
     }
@@ -132,15 +143,25 @@ public class IngredientsController {
     }
 
     // ============================================================
-    // 발주 내역
+    // 발주 내역 - 페이지네이션
     // ============================================================
     @GetMapping("/inventory/order/history")
-    public String purchaseList(Model model) {
-        model.addAttribute("list", purchasesService.getAll());
+    public String purchaseList(
+            @RequestParam(defaultValue = "1")  int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false)    String keyword,
+            Model model) {
+
+        PageRequest req = new PageRequest(page, size);
+        req.setKeyword(keyword);
+
+        PageResult<Purchases> result = purchasesService.getByPage(req);
+        model.addAttribute("result",  result);
+        model.addAttribute("keyword", keyword);
+        model.addAttribute("size",    size);
         return "Ingredients/purchaseList";
     }
 
-    /** 발주 상세 아이템 목록 - JSON 반환 */
     @GetMapping("/inventory/order/items/{purchaseId}")
     @ResponseBody
     public List<Map<String, Object>> purchaseItems(@PathVariable long purchaseId) {
@@ -148,15 +169,17 @@ public class IngredientsController {
     }
 
     @PostMapping("/inventory/order/update")
-    public String purchaseUpdate(@ModelAttribute Purchases p) {
+    public String purchaseUpdate(@ModelAttribute Purchases p,
+                                 @RequestParam(defaultValue = "1") int page) {
         purchasesService.modify(p);
-        return "redirect:/inventory/order/history";
+        return "redirect:/inventory/order/history?page=" + page;
     }
 
     @PostMapping("/inventory/order/cancel/{id}")
-    public String purchaseCancel(@PathVariable long id) {
+    public String purchaseCancel(@PathVariable long id,
+                                 @RequestParam(defaultValue = "1") int page) {
         purchasesService.cancel(id);
-        return "redirect:/inventory/order/history";
+        return "redirect:/inventory/order/history?page=" + page;
     }
 
     // ============================================================
@@ -184,11 +207,11 @@ public class IngredientsController {
 
 
         List<PurchaseItems> items = new ArrayList<>();
-        String cleaned = itemsJson.trim().replaceAll("^\\[|\\]$", ""); 
-        String[] objects = cleaned.split("\\},\\{");                   
+        String cleaned = itemsJson.trim().replaceAll("^\\[|\\]$", "");
+        String[] objects = cleaned.split("\\},\\{");
 
         for (String obj : objects) {
-            obj = obj.replaceAll("[\\[\\]\\{\\}]", "").trim();         
+            obj = obj.replaceAll("[\\[\\]\\{\\}]", "").trim();
             PurchaseItems item = new PurchaseItems();
             for (String kv : obj.split(",")) {
                 String[] pair = kv.split(":");
@@ -196,9 +219,9 @@ public class IngredientsController {
                 String key = pair[0].replaceAll("\"", "").trim();
                 String val = pair[1].replaceAll("\"", "").trim();
                 switch (key) {
-                    case "id":        item.setIngredient_id(Long.parseLong(val));    break;
-                    case "qty":       item.setQty(Double.parseDouble(val));          break;
-                    case "unit_cost": item.setUnit_cost(Integer.parseInt(val));      break;
+                    case "id":        item.setIngredient_id(Long.parseLong(val));   break;
+                    case "qty":       item.setQty(Double.parseDouble(val));         break;
+                    case "unit_cost": item.setUnit_cost(Integer.parseInt(val));     break;
                 }
             }
             item.setSubtotal((int)(item.getQty() * item.getUnit_cost()));

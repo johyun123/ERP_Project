@@ -30,7 +30,6 @@ String userRank = "시스템관리자";
         <li class="has-submenu" onclick="toggleSubmenu(this)">📦 제품관리
             <ul class="submenu">
                 <li onclick="event.stopPropagation(); location.href='/product/menu'">메뉴 관리</li>
-                <li onclick="event.stopPropagation(); location.href='/product/recipe'">레시피 관리</li>
             </ul>
         </li>
 

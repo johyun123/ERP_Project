@@ -2,6 +2,8 @@ package com.example.demo.Service;
 
 import com.example.demo.Domain.Purchases;
 import com.example.demo.Domain.PurchaseItems;
+import com.example.demo.Domain.PageRequest;
+import com.example.demo.Domain.PageResult;
 import com.example.demo.mapper.PurchasesMapper;
 import com.example.demo.mapper.PurchaseItemsMapper;
 import org.springframework.stereotype.Service;
@@ -25,11 +27,16 @@ public class PurchasesService {
         return purchasesMapper.findAll();
     }
 
+    public PageResult<Purchases> getByPage(PageRequest req) {
+        List<Purchases> list = purchasesMapper.findByPage(req);
+        int total = purchasesMapper.countAll(req);
+        return new PageResult<>(list, total, req);
+    }
+
     public Purchases getById(long id) {
         return purchasesMapper.findById(id);
     }
 
-    /** 발주 id로 아이템 목록 조회 (원재료명 포함) */
     public List<Map<String, Object>> getItems(long purchaseId) {
         return purchaseItemsMapper.findByPurchaseId(purchaseId);
     }

@@ -1,24 +1,17 @@
 package com.example.demo.mapper;
 
 import com.example.demo.Domain.Ingredients;
+import com.example.demo.Domain.PageRequest;
 import org.apache.ibatis.annotations.Mapper;
 import java.util.List;
 
 @Mapper
 public interface IngredientsMapper {
-
-    // 전체 목록 조회
     List<Ingredients> findAll();
-
-    // 단건 조회
+    List<Ingredients> findByPage(PageRequest req);  // 페이지네이션
+    int countAll(PageRequest req);                  // 전체 건수
     Ingredients findById(long id);
-
-    // 등록
-    int insert(Ingredients ingredients);
-
-    // 수정
-    int update(Ingredients ingredients);
-
-    // 삭제
-    int delete(long id);
+    void insert(Ingredients i);
+    void update(Ingredients i);
+    void delete(long id);
 }
