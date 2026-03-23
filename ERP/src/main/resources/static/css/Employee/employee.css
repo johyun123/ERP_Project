@@ -1,0 +1,221 @@
+@charset "UTF-8";
+/* 공통 스타일: common.css 참조 */
+
+/* ===========================
+   FILTER BAR — 직원 전용
+=========================== */
+.status-tabs { display: flex; gap: 4px; }
+
+.tab-btn {
+  padding: 8px 18px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-family: 'Noto Sans KR', sans-serif;
+  color: var(--text-secondary);
+  background: var(--bg-card);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.tab-btn:hover  { background: var(--primary-light); border-color: var(--primary); color: var(--primary); }
+.tab-btn.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+
+.search-form {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-left: auto;
+}
+
+.search-wrap  { position: relative; display: flex; align-items: center; }
+.search-icon  { position: absolute; left: 10px; font-size: 0.82rem; color: var(--text-muted); pointer-events: none; }
+
+.search-input {
+  padding: 8px 12px 8px 30px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.88rem;
+  font-family: 'Noto Sans KR', sans-serif;
+  color: var(--text-primary);
+  background: #fff;
+  outline: none;
+  transition: var(--transition);
+  width: 160px;
+}
+
+.search-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(91,110,245,0.1); }
+
+.btn-search {
+  padding: 8px 16px;
+  background: var(--primary-gradient);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-family: 'Noto Sans KR', sans-serif;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.btn-search:hover { opacity: 0.88; }
+
+.btn-register {
+  padding: 9px 20px;
+  background: var(--primary-gradient);
+  color: var(--text-white);
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 0.88rem;
+  font-weight: 600;
+  font-family: 'Noto Sans KR', sans-serif;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(91,110,245,0.3);
+  transition: var(--transition);
+}
+
+.btn-register:hover { opacity: 0.88; transform: translateY(-1px); }
+
+/* ===========================
+   직원 테이블
+=========================== */
+.emp-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  min-width: 1000px;
+}
+
+.emp-table thead tr { background: var(--primary-light); }
+
+.emp-table th {
+  padding: 13px 12px;
+  text-align: center;
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--primary);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  white-space: nowrap;
+}
+
+.emp-table td {
+  padding: 13px 12px;
+  border-top: 1px solid var(--border-light);
+  text-align: center;
+  vertical-align: middle;
+  color: var(--text-secondary);
+}
+
+.emp-table tbody tr:hover { background: #fafbff; }
+
+.td-name    { font-weight: 600; color: var(--text-primary); }
+.td-phone   { font-family: 'Outfit', monospace; font-size: 0.85rem; }
+.td-money   { font-family: 'Outfit', monospace; font-size: 0.85rem; color: var(--text-primary); }
+.td-account { font-family: 'Outfit', monospace; font-size: 0.82rem; color: var(--text-muted); }
+
+/* ===========================
+   배지
+=========================== */
+.position-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.position-badge.점장   { background: #ede9fe; color: #7c3aed; }
+.position-badge.매니저 { background: #dbeafe; color: #1d4ed8; }
+.position-badge.스탭   { background: #f0fdf4; color: #15803d; }
+
+.contract-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.contract-badge.full { background: #fef3c7; color: #b45309; }
+.contract-badge.part { background: #e0f2fe; color: #0369a1; }
+
+.active-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.active-badge.active   { background: #dcfce7; color: #16a34a; }
+.active-badge.leave    { background: #fef9c3; color: #ca8a04; }
+.active-badge.resigned { background: #fee2e2; color: #dc2626; }
+
+/* ===========================
+   사원번호 자동생성 / 급여 입력
+=========================== */
+.input-with-btn { display: flex; gap: 8px; align-items: center; }
+.input-with-btn .form-input { flex: 1; }
+
+.btn-gen {
+  padding: 10px 14px;
+  background: var(--primary-light);
+  color: var(--primary);
+  border: 1.5px solid var(--primary);
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-family: 'Noto Sans KR', sans-serif;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: var(--transition);
+}
+
+.btn-gen:hover { background: var(--primary); color: #fff; }
+
+.salary-disabled { opacity: 0.35; pointer-events: none; }
+
+.salary-type-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  border-radius: 4px;
+  padding: 1px 7px;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+
+.salary-type-badge.part { background: #e0f2fe; color: #0369a1; }
+.salary-type-badge.full { background: #fef3c7; color: #b45309; }
+
+/* ===========================
+   반응형
+=========================== */
+@media (max-width: 900px) {
+  .search-form { margin-left: 0; width: 100%; }
+}
+
+@media (max-width: 600px) {
+  .status-tabs { width: 100%; }
+  .tab-btn     { flex: 1; text-align: center; }
+}
+
+/* ===========================
+   보호된 계정 버튼
+=========================== */
+.btn-locked {
+  display: inline-block;
+  padding: 5px 10px;
+  background: #f1f5f9;
+  color: #94a3b8;
+  border: 1.5px solid #e2e8f0;
+  border-radius: var(--radius-sm);
+  font-size: 0.78rem;
+  font-weight: 600;
+  font-family: 'Noto Sans KR', sans-serif;
+  cursor: not-allowed;
+  margin-right: 4px;
+}

@@ -4,7 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <title>거래처 등록 | ERP CAFE</title>
-    <link rel="stylesheet" href="/css/header.css"/>
+    <link rel="stylesheet" href="/css/header.css" />
+    <link rel="stylesheet" href="/css/Common.css" />
     <link rel="stylesheet" href="/css/Ingredients/stock.css"/>
 </head>
 <body>

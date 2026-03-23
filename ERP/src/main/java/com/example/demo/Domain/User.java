@@ -2,17 +2,27 @@ package com.example.demo.Domain;
 
 public class User {
 
-	private String user_id;
+	private Long id;
+	private String emp_num;
 	private String user_pw;
-	private String user_name;
+	private int is_active; // 활성화 여부 (1: 활성, 0: 비활성)
 
 	// getter / setter
-	public String getUser_id() {
-		return user_id;
+
+	public Long getId() {
+		return id;
 	}
 
-	public void setUser_id(String user_id) {
-		this.user_id = user_id;
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public String getEmp_num() {
+		return emp_num;
+	}
+
+	public void setEmp_num(String emp_num) {
+		this.emp_num = emp_num;
 	}
 
 	public String getUser_pw() {
@@ -23,12 +33,12 @@ public class User {
 		this.user_pw = user_pw;
 	}
 
-	public String getUser_name() {
-		return user_name;
+	public int getIs_active() {
+		return is_active;
 	}
 
-	public void setUser_name(String user_name) {
-		this.user_name = user_name;
+	public void setIs_active(int is_active) {
+		this.is_active = is_active;
 	}
 
 }

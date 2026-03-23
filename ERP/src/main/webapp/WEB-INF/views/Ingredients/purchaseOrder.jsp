@@ -6,7 +6,8 @@
 <head>
     <meta charset="UTF-8">
     <title>발주 등록 | ERP CAFE</title>
-    <link rel="stylesheet" href="/css/header.css"/>
+    <link rel="stylesheet" href="/css/header.css" />
+    <link rel="stylesheet" href="/css/Common.css" />
     <link rel="stylesheet" href="/css/Ingredients/stock.css"/>
 </head>
 <body>
@@ -203,82 +204,6 @@ request.setAttribute("emojiMap", emojiMap);
     <input type="hidden" name="total_cost" id="form_total_cost">
     <input type="hidden" name="itemsJson"  id="form_items">
 </form>
-
-<style>
-.order-layout {
-    display: grid;
-    grid-template-columns: 1fr 420px;
-    gap: 20px;
-    align-items: start;
-}
-.supplier-banner {
-    background: var(--primary-light);
-    border: 1.5px solid rgba(91,110,245,0.2);
-    border-radius: var(--radius-md);
-    padding: 12px 18px;
-    font-size: 0.85rem;
-    color: var(--primary);
-    font-weight: 500;
-    margin-bottom: 16px;
-}
-.supplier-tag {
-    display: inline-block;
-    background: var(--accent-green-light);
-    color: var(--accent-green);
-    font-size: 0.78rem;
-    font-weight: 600;
-    padding: 3px 10px;
-    border-radius: 20px;
-    white-space: nowrap;
-}
-.cart-total {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 14px 20px;
-    border-top: 1.5px solid var(--border-light);
-    font-size: 0.95rem;
-    font-weight: 600;
-}
-.cart-total strong {
-    font-family: 'Outfit', sans-serif;
-    font-size: 1.2rem;
-    color: var(--primary);
-}
-/* 비활성화된 원재료 행 */
-.ingredient-row.disabled {
-    opacity: 0.35;
-    pointer-events: none;
-}
-.ingredient-row.disabled .btn {
-    background: var(--border-light);
-    color: var(--text-muted);
-    cursor: not-allowed;
-}
-.tab-btn {
-    padding: 6px 14px;
-    border: 1.5px solid var(--border);
-    border-radius: 20px;
-    background: var(--bg-card);
-    color: var(--text-secondary);
-    font-size: 0.82rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: var(--transition);
-    font-family: 'Noto Sans KR', sans-serif;
-    margin-bottom: 10px;
-}
-.tab-btn:hover  { border-color: var(--primary); color: var(--primary); }
-.tab-btn.active {
-    background: var(--primary-gradient);
-    color: #fff;
-    border-color: transparent;
-    box-shadow: 0 2px 8px rgba(91,110,245,0.3);
-}
-@media (max-width: 1100px) {
-    .order-layout { grid-template-columns: 1fr; }
-}
-</style>
 
 <script>
 let cart = [];

@@ -1,5 +1,98 @@
 package com.example.demo.Service;
 
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.stereotype.Service;
+
+import com.example.demo.Domain.Attendances;
+import com.example.demo.Domain.Employees;
+import com.example.demo.mapper.HRMMapper;
+
+@Service
 public class HRMService {
 
+    private final HRMMapper hrmMapper;
+
+    public HRMService(HRMMapper hrmMapper) {
+        this.hrmMapper = hrmMapper;
+    }
+
+    // ── 직원 조회 ──────────────────────────────────────
+
+    // emp_num 기준 직원 조회 (메서드명 오타 수정: NpmNum → EmpNum)
+    public Employees getEmployeeByEmpNum(String empNum) {
+        return hrmMapper.selectEmployeeByEmpNum(empNum);
+    }
+
+    // 전체 직원 조회
+    public List<Employees> getAllEmployees() {
+        return hrmMapper.selectAllEmployees();
+    }
+
+    // 단일 직원 조회
+    public Employees getEmployeeById(String emp_num) {
+        return hrmMapper.selectEmployeeById(emp_num);
+    }
+
+    // 직원 검색
+    public List<Employees> searchEmployees(String name, String position, Integer isActive) {
+        return hrmMapper.searchEmployees(name, position, isActive);
+    }
+
+    // ── 직원 CUD ──────────────────────────────────────
+
+    // 직원 등록
+    public void addEmployee(Employees employee) {
+        hrmMapper.insertEmployee(employee);
+    }
+
+    // 직원 정보 수정
+    public void updateEmployee(Employees employee) {
+        hrmMapper.updateEmployee(employee);
+    }
+
+    /**
+     * 직원 삭제 (FK 순서 고려)
+     * 삭제 순서:
+     * 1. employees.id 조회
+     * 2. users 삭제       (employees 참조 FK)
+     * 3. attendances 삭제 (employees 참조 FK)
+     * 4. employees 삭제
+     */
+    public void deleteEmployee(String emp_num) {
+        Long employeeId = hrmMapper.selectEmployeeIdByEmpNum(emp_num);
+        if (employeeId != null) {
+            hrmMapper.deleteUserByEmployeeId(employeeId);
+            hrmMapper.deleteAttendancesByEmployeeId(employeeId);
+        }
+        hrmMapper.deleteEmployee(emp_num);
+    }
+
+    // ── 근태 ──────────────────────────────────────────
+
+    // 달력 근태 조회
+    public List<Attendances> getAttendanceByDate(String date) {
+        return hrmMapper.getAttendanceByDate(date);
+    }
+
+    // 달력 월별 출근 집계
+    public List<Map<String, Object>> getAttendanceCountByMonth(int year, int month) {
+        return hrmMapper.getAttendanceCountByMonth(year, month);
+    }
+
+    // 근태 상세 페이지 데이터
+    public List<Map<String, Object>> getAttendanceWithEmployees(String date) {
+        return hrmMapper.getAttendanceWithEmployees(date);
+    }
+
+    // 근태 저장 (insert or update)
+    public void saveOrUpdate(Attendances a) {
+        int count = hrmMapper.existsAttendance(a.getEmployee_id(), a.getWork_date());
+        if (count == 0) {
+            hrmMapper.insertAttendance(a);
+        } else {
+            hrmMapper.updateAttendance(a);
+        }
+    }
 }

@@ -1,26 +1,31 @@
 package com.example.demo.Service;
 
 import java.util.List;
-
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import com.example.demo.mapper.OrderMapper;
 import com.example.demo.Domain.Menu;
 import com.example.demo.Domain.Order;
 import com.example.demo.Domain.OrderItem;
+import com.example.demo.Domain.PageRequest;
+import com.example.demo.Domain.PageResult;
 
 @Service
 public class OrderService {
 
     private final OrderMapper orderMapper;
 
-    OrderService(OrderMapper orderMapper) {
+    public OrderService(OrderMapper orderMapper) {
         this.orderMapper = orderMapper;
     }
 
     public List<Order> getOrderList() {
         return orderMapper.selectOrderList();
+    }
+
+    public PageResult<Order> getOrderByPage(PageRequest req) {
+        return new PageResult<>(orderMapper.selectOrderByPage(req),
+                                orderMapper.countOrder(req), req);
     }
 
     public List<Menu> getMenuList() {
@@ -38,7 +43,6 @@ public class OrderService {
         }
     }
 
-    // 상태 변경
     public void updateOrderStatus(Long id, String status) {
         Order order = new Order();
         order.setId(id);

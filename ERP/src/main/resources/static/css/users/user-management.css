@@ -1,0 +1,215 @@
+@charset "UTF-8";
+/* 공통 스타일: common.css 참조 */
+
+/* ===========================
+   ALERTS
+=========================== */
+.alert-success {
+  background: var(--accent-green-light);
+  color: #15803d;
+  border: 1.5px solid var(--accent-green);
+  border-radius: var(--radius-sm);
+  padding: 10px 16px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+
+.alert-error-bar {
+  background: var(--accent-red-light);
+  color: var(--accent-red);
+  border: 1.5px solid var(--accent-red);
+  border-radius: var(--radius-sm);
+  padding: 10px 16px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+
+.alert-error {
+  background: var(--accent-red-light);
+  color: var(--accent-red);
+  border: 1.5px solid var(--accent-red);
+  border-radius: var(--radius-sm);
+  padding: 10px 16px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+
+/* ===========================
+   SECTION HEADER
+=========================== */
+.section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.section-title  { font-size: 1rem; font-weight: 700; color: var(--text-primary); }
+
+/* ===========================
+   사용자 테이블
+=========================== */
+.user-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+.user-table thead tr { background: var(--primary-light); }
+.user-table th {
+  padding: 12px;
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--primary);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  white-space: nowrap;
+}
+.user-table td {
+  padding: 12px;
+  border-top: 1px solid var(--border-light);
+  text-align: center;
+  vertical-align: middle;
+  color: var(--text-secondary);
+}
+.user-table tbody tr:hover { background: #fafbff; }
+
+.td-empnum  { font-family: 'Outfit', monospace; font-size: 0.82rem; color: var(--text-muted); }
+.td-name    { font-weight: 600; color: var(--text-primary); }
+.td-phone   { font-family: 'Outfit', monospace; font-size: 0.83rem; }
+.td-money   { font-family: 'Outfit', monospace; font-size: 0.83rem; color: var(--text-primary); }
+.td-account { font-family: 'Outfit', monospace; font-size: 0.8rem; color: var(--text-muted); }
+.empty-row  { padding: 48px !important; color: var(--text-muted); }
+
+/* ===========================
+   배지
+=========================== */
+.pos-badge      { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; }
+.pos-a          { background: #ede9fe; color: #7c3aed; }
+.pos-b          { background: #dbeafe; color: #1d4ed8; }
+.pos-c          { background: #f0fdf4; color: #15803d; }
+
+.contract-badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; }
+.contract-badge.full { background: #fef3c7; color: #b45309; }
+.contract-badge.part { background: #e0f2fe; color: #0369a1; }
+
+.active-badge   { display: inline-block; padding: 3px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; }
+.active-badge.on  { background: #dcfce7; color: #16a34a; }
+.active-badge.off { background: #fee2e2; color: #dc2626; }
+
+.status-badge   { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; }
+.status-badge.active   { background: #dcfce7; color: #16a34a; }
+.status-badge.leave    { background: #fef9c3; color: #ca8a04; }
+.status-badge.resigned { background: #fee2e2; color: #dc2626; }
+
+.acct-badge     { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; }
+.acct-badge.has  { background: #f0fdf4; color: #15803d; }
+.acct-badge.none { background: #f1f5f9; color: #94a3b8; }
+
+/* ===========================
+   관리 버튼
+=========================== */
+.action-cell { display: flex; gap: 6px; justify-content: center; align-items: center; flex-wrap: nowrap; }
+
+.btn-activate {
+  padding: 5px 12px; background: #dcfce7; color: #16a34a;
+  border: 1.5px solid #22c55e; border-radius: var(--radius-sm);
+  font-size: 0.78rem; font-weight: 600; font-family: 'Noto Sans KR', sans-serif;
+  cursor: pointer; transition: var(--transition); white-space: nowrap;
+}
+.btn-activate:hover { background: #22c55e; color: #fff; }
+
+.btn-deactivate {
+  padding: 5px 12px; background: var(--accent-red-light); color: var(--accent-red);
+  border: 1.5px solid var(--accent-red); border-radius: var(--radius-sm);
+  font-size: 0.78rem; font-weight: 600; font-family: 'Noto Sans KR', sans-serif;
+  cursor: pointer; transition: var(--transition); white-space: nowrap;
+}
+.btn-deactivate:hover { background: var(--accent-red); color: #fff; }
+
+.btn-pw {
+  padding: 5px 12px; background: #e0f2fe; color: #0369a1;
+  border: 1.5px solid #0ea5e9; border-radius: var(--radius-sm);
+  font-size: 0.78rem; font-weight: 600; font-family: 'Noto Sans KR', sans-serif;
+  cursor: pointer; transition: var(--transition); white-space: nowrap;
+}
+.btn-pw:hover { background: #0ea5e9; color: #fff; }
+
+/* ===========================
+   관리자 인증 모달 전용
+=========================== */
+.auth-desc {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
+
+/* ===========================
+   계정 등록 폼 카드
+=========================== */
+.reg-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  border: 1.5px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  padding: 36px 40px 32px;
+  max-width: 700px;
+}
+
+/* 직원 정보 박스 */
+.emp-info-box {
+  background: var(--primary-light);
+  border: 1.5px solid rgba(91, 110, 245, 0.2);
+  border-radius: var(--radius-sm);
+  padding: 16px 20px;
+  margin-bottom: 24px;
+}
+
+.info-box-title { font-size: 0.85rem; font-weight: 700; color: var(--primary); margin: 0 0 14px; }
+.info-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px 20px; }
+.info-item { display: flex; flex-direction: column; gap: 3px; }
+.info-label { font-size: 0.72rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.3px; }
+.info-value { font-size: 0.88rem; font-weight: 600; color: var(--text-primary); }
+
+/* 비밀번호 섹션 */
+.pw-section { display: flex; flex-direction: column; gap: 16px; margin-bottom: 8px; }
+.pw-group   { max-width: 400px; }
+.pw-hint    { font-size: 0.78rem; font-weight: 600; margin-top: 2px; }
+
+/* ===========================
+   반응형
+=========================== */
+@media (max-width: 900px) {
+  .reg-card  { padding: 24px 20px; }
+  .info-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 600px) {
+  .info-grid { grid-template-columns: 1fr; }
+  .pw-group  { max-width: 100%; }
+}
+
+/* ===========================
+   보호된 계정 / 계정 삭제 버튼
+=========================== */
+.btn-locked {
+  display: inline-block;
+  padding: 5px 12px;
+  background: #f1f5f9;
+  color: #94a3b8;
+  border: 1.5px solid #e2e8f0;
+  border-radius: var(--radius-sm);
+  font-size: 0.78rem;
+  font-weight: 600;
+  font-family: 'Noto Sans KR', sans-serif;
+  cursor: not-allowed;
+  white-space: nowrap;
+}
+
+.btn-del-user {
+  padding: 5px 12px;
+  background: var(--accent-red-light);
+  color: var(--accent-red);
+  border: 1.5px solid var(--accent-red);
+  border-radius: var(--radius-sm);
+  font-size: 0.78rem;
+  font-weight: 600;
+  font-family: 'Noto Sans KR', sans-serif;
+  cursor: pointer;
+  transition: var(--transition);
+  white-space: nowrap;
+}
+.btn-del-user:hover { background: var(--accent-red); color: #fff; }

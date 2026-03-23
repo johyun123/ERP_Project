@@ -4,67 +4,73 @@
 
 <mapper namespace="com.example.demo.mapper.RecipeMapper">
 
+    <!-- 메뉴 단건 조회 -->
+    <select id="getMenuById" parameterType="Long" resultType="MenuDomain">
+        SELECT id, name FROM menus WHERE id = #{menuId}
+    </select>
 
-<select id="getMenuById" parameterType="Long" resultType="com.example.demo.Domain.MenuDomain">
-    SELECT id, name FROM menus WHERE id = #{menuId}
-</select>
+    <!-- 메뉴별 레시피 조회 -->
+    <select id="getRecipeByMenuId" parameterType="Long" resultType="RecipeDomain">
+        SELECT
+            r.id,
+            r.menu_id       AS menuId,
+            r.ingredient_id AS ingredientId,
+            r.quantity,
+            r.recipe,
+            m.name          AS menuName,
+            i.name          AS ingredientName,
+            i.stock_qty     AS currentStock,
+            CASE WHEN i.stock_qty &lt; i.min_stock THEN '부족' ELSE '정상' END AS stockStatus
+        FROM recipes r
+        LEFT JOIN menus m       ON r.menu_id       = m.id
+        LEFT JOIN ingredients i ON r.ingredient_id = i.id
+        WHERE r.menu_id = #{menuId}
+        ORDER BY r.id
+    </select>
 
-<select id="getRecipeByMenuId" parameterType="Long" resultType="com.example.demo.Domain.RecipeDomain">
-    SELECT
-        r.id,
-        r.menu_id       AS menuId,
-        r.ingredient_id AS ingredientId,
-        r.quantity,
-        r.recipe,
-        m.name          AS menuName,
-        i.name          AS ingredientName,
-        i.stock_qty     AS currentStock,
-        CASE WHEN i.stock_qty &lt; i.min_stock THEN '부족' ELSE '정상' END AS stockStatus
-    FROM recipes r
-    LEFT JOIN menus m       ON r.menu_id       = m.id
-    LEFT JOIN ingredients i ON r.ingredient_id = i.id
-    WHERE r.menu_id = #{menuId}
-    ORDER BY r.id
-</select>
-
-    <!-- 레시피 목록 조회 (메뉴명, 원재료명, 재고수, 재고부족여부 JOIN) -->
-    <select id="getRecipeList" resultType="com.example.demo.Domain.RecipeDomain">
-    SELECT
-        r.id,
-        r.menu_id        AS menuId,
-        r.ingredient_id  AS ingredientId,
-        r.quantity,
-        r.recipe,
-        m.name           AS menuName,
-        i.name           AS ingredientName,
-        i.stock_qty      AS currentStock,
-        CASE WHEN i.stock_qty &lt; i.min_stock THEN '부족' ELSE '정상' END AS stockStatus
-    FROM recipes r
-    LEFT JOIN menus m        ON r.menu_id       = m.id
-    LEFT JOIN ingredients i  ON r.ingredient_id = i.id
-    ORDER BY m.name, r.id
-</select>
+    <!-- 레시피 전체 목록 (메뉴명, 원재료명, 재고 JOIN) -->
+    <select id="getRecipeList" resultType="RecipeDomain">
+        SELECT
+            r.id,
+            r.menu_id       AS menuId,
+            r.ingredient_id AS ingredientId,
+            r.quantity,
+            r.recipe,
+            m.name          AS menuName,
+            i.name          AS ingredientName,
+            i.stock_qty     AS currentStock,
+            CASE WHEN i.stock_qty &lt; i.min_stock THEN '부족' ELSE '정상' END AS stockStatus
+        FROM recipes r
+        LEFT JOIN menus m       ON r.menu_id       = m.id
+        LEFT JOIN ingredients i ON r.ingredient_id = i.id
+        ORDER BY m.name, r.id
+    </select>
 
     <!-- 메뉴 목록 (콤보박스용) -->
-    <select id="getMenuList" resultType="com.example.demo.Domain.MenuDomain">
+    <select id="getMenuList" resultType="MenuDomain">
         SELECT id, name FROM menus ORDER BY name
     </select>
 
-    <!-- 원재료 목록 (콤보박스용) -->
-<select id="getIngredientList" resultType="com.example.demo.Domain.RecipeDomain">
-    SELECT id, name AS ingredientName, stock_qty AS currentStock
-    FROM ingredients
-    ORDER BY name
-</select>
+    <!-- 원재료 목록 (콤보박스용)
+         ※ RecipeDomain을 재사용 중 — ingredientName, currentStock만 채워짐
+            추후 Ingredients resultType으로 교체 권장 -->
+    <select id="getIngredientList" resultType="RecipeDomain">
+        SELECT
+            id,
+            name      AS ingredientName,
+            stock_qty AS currentStock
+        FROM ingredients
+        ORDER BY name
+    </select>
 
     <!-- 레시피 등록 -->
-    <insert id="insertRecipe" parameterType="com.example.demo.Domain.RecipeDomain">
+    <insert id="insertRecipe" parameterType="RecipeDomain">
         INSERT INTO recipes (menu_id, ingredient_id, quantity, recipe)
         VALUES (#{menuId}, #{ingredientId}, #{quantity}, #{recipe})
     </insert>
 
     <!-- 레시피 수정 -->
-    <update id="updateRecipe" parameterType="com.example.demo.Domain.RecipeDomain">
+    <update id="updateRecipe" parameterType="RecipeDomain">
         UPDATE recipes
         SET menu_id       = #{menuId},
             ingredient_id = #{ingredientId},

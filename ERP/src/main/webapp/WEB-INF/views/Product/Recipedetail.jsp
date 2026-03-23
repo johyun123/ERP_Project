@@ -7,7 +7,9 @@
     <meta charset="UTF-8">
     <title>레시피 상세</title>
     <link rel="stylesheet" href="/css/header.css" />
-    <link rel="stylesheet" href="/css/Product/recipeDetail.css" />
+    <link rel="stylesheet" href="/css/Common.css" />
+    <link rel="stylesheet" href="/css/Product-common.css" />
+    <link rel="stylesheet" href="/css/Product/Recipedetail.css" />
 </head>
 
 <body>

@@ -1,10 +1,28 @@
 package com.example.demo.Domain;
 
 public class PageRequest {
-    private int page;       // 현재 페이지 (1부터 시작)
+	private String dateFrom;
+	private String dateTo;
+	private int page;       // 현재 페이지 (1부터 시작)
     private int size;       // 페이지당 항목 수
     private String category; // 카테고리 필터 (null이면 전체)
     private String keyword;  // 검색어 (null이면 전체)
+	
+    public String getDateFrom() {
+		return dateFrom;
+	}
+
+	public void setDateFrom(String dateFrom) {
+		this.dateFrom = dateFrom;
+	}
+
+	public String getDateTo() {
+		return dateTo;
+	}
+
+	public void setDateTo(String dateTo) {
+		this.dateTo = dateTo;
+	}
 
     public PageRequest() {
         this.page = 1;

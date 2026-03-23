@@ -8,7 +8,6 @@
         ORDER BY FIELD(category,'원두','유제품','시럽/소스','파우더','차류','소모품','기타'), name
     </select>
 
-    <!-- 페이지네이션 + 카테고리/키워드 필터 -->
     <select id="findByPage" parameterType="PageRequest" resultType="Ingredients">
         SELECT * FROM ingredients
         <where>
@@ -23,7 +22,6 @@
         LIMIT #{size} OFFSET #{offset}
     </select>
 
-    <!-- 전체 건수 (필터 포함) -->
     <select id="countAll" parameterType="PageRequest" resultType="int">
         SELECT COUNT(*) FROM ingredients
         <where>
@@ -60,5 +58,10 @@
     <delete id="delete" parameterType="long">
         DELETE FROM ingredients WHERE id = #{id}
     </delete>
+
+    <!-- [버그수정 2] 발주 이력 체크 -->
+    <select id="countPurchaseItemsByIngredientId" parameterType="long" resultType="int">
+        SELECT COUNT(*) FROM purchase_items WHERE ingredient_id = #{id}
+    </select>
 
 </mapper>

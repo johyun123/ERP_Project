@@ -6,54 +6,31 @@
 <head>
     <meta charset="UTF-8">
     <title>발주 내역 | ERP CAFE</title>
-    <link rel="stylesheet" href="/css/header.css"/>
+    <link rel="stylesheet" href="/css/header.css" />
+    <link rel="stylesheet" href="/css/Common.css" />
     <link rel="stylesheet" href="/css/Ingredients/stock.css"/>
 </head>
 <body>
-
 <jsp:include page="/WEB-INF/views/header.jsp"/>
-
 <div class="content">
-
     <div class="page-header">
         <div class="page-title">발주 내역 <span>발주 현황을 관리합니다</span></div>
         <button class="btn btn-primary" onclick="location.href='/inventory/order'">+ 발주 등록</button>
     </div>
 
-    <%-- 상태별 요약 --%>
     <div class="stat-row">
-        <div class="stat-card">
-            <div class="stat-icon blue">📋</div>
-            <div class="stat-info">
-                <div class="label">전체 발주</div>
-                <div class="value">${result.totalCount}건</div>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon blue">📄</div>
-            <div class="stat-info">
-                <div class="label">현재 페이지</div>
-                <div class="value">${result.page} / ${result.totalPages}</div>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon green">✅</div>
-            <div class="stat-info">
-                <div class="label">페이지당 항목</div>
-                <div class="value">${result.size}개</div>
-            </div>
-        </div>
+        <div class="stat-card"><div class="stat-icon blue">📋</div><div class="stat-info"><div class="label">전체 발주</div><div class="value">${result.totalCount}건</div></div></div>
+        <div class="stat-card"><div class="stat-icon blue">📄</div><div class="stat-info"><div class="label">현재 페이지</div><div class="value">${result.page} / ${result.totalPages}</div></div></div>
+        <div class="stat-card"><div class="stat-icon green">✅</div><div class="stat-info"><div class="label">페이지당 항목</div><div class="value">${result.size}개</div></div></div>
     </div>
 
-    <%-- 검색 --%>
     <div class="filter-bar">
         <div></div>
         <div class="search-box">
-            <input type="text" id="keywordInput" placeholder="거래처명 검색..."
-                   value="${keyword}" onkeydown="if(event.key==='Enter') doSearch()">
+            <input type="text" id="keywordInput" placeholder="거래처명 검색..." value="${keyword}" onkeydown="if(event.key==='Enter') doSearch()">
             <button class="btn btn-edit" onclick="doSearch()">🔍 검색</button>
             <c:if test="${not empty keyword}">
-                <button class="btn btn-cancel" onclick="goPage(1, '')">✕ 초기화</button>
+                <button class="btn btn-cancel" onclick="goPage(1,'')">✕ 초기화</button>
             </c:if>
         </div>
     </div>
@@ -61,32 +38,16 @@
     <div class="table-card">
         <div class="table-card-header">
             <h3>발주 목록</h3>
-            <span style="font-size:0.82rem; color:var(--text-muted);">
-                총 ${result.totalCount}건 중 ${result.list.size()}건 표시
-            </span>
+            <span style="font-size:0.82rem;color:var(--text-muted);">총 ${result.totalCount}건 중 ${result.list.size()}건 표시</span>
         </div>
         <table class="data-table">
-            <thead>
-                <tr>
-                    <th>번호</th>
-                    <th>거래처명</th>
-                    <th>총 금액</th>
-                    <th>발주일</th>
-                    <th>입고일</th>
-                    <th>상태</th>
-                    <th>비고</th>
-                    <th>관리</th>
-                </tr>
-            </thead>
+            <thead><tr><th>번호</th><th>거래처명</th><th>총 금액</th><th>발주일</th><th>입고일</th><th>상태</th><th>비고</th><th>관리</th></tr></thead>
             <tbody>
             <c:choose>
-                <c:when test="${empty result.list}">
-                    <tr class="empty-row"><td colspan="8">발주 내역이 없습니다.</td></tr>
-                </c:when>
+                <c:when test="${empty result.list}"><tr class="empty-row"><td colspan="8">발주 내역이 없습니다.</td></tr></c:when>
                 <c:otherwise>
                     <c:forEach var="p" items="${result.list}">
-                    <tr class="clickable-row"
-                        onclick="openDetailModal(${p.id},'${p.supplier}','${p.ordered_at}')">
+                    <tr class="clickable-row" onclick="openDetailModal(${p.id},'${p.supplier}','${p.ordered_at}')">
                         <td>${p.id}</td>
                         <td><strong>${p.supplier}</strong></td>
                         <td><fmt:formatNumber value="${p.total_cost}" pattern="#,###"/>원</td>
@@ -94,33 +55,33 @@
                         <td>${empty p.received_at ? '-' : p.received_at}</td>
                         <td>
                             <c:choose>
-                                <c:when test="${p.status == 'ordered'}">
-                                    <span class="badge badge-warning">발주완료</span>
-                                </c:when>
-                                <c:when test="${p.status == 'received'}">
-                                    <span class="badge badge-normal">입고완료</span>
-                                </c:when>
-                                <c:otherwise>
-                                    <span class="badge badge-low">취소</span>
-                                </c:otherwise>
+                                <c:when test="${p.status=='ordered'}"><span class="badge badge-warning">발주완료</span></c:when>
+                                <c:when test="${p.status=='received'}"><span class="badge badge-normal">입고완료</span></c:when>
+                                <c:otherwise><span class="badge badge-low">취소</span></c:otherwise>
                             </c:choose>
                         </td>
                         <td>${empty p.note ? '-' : p.note}</td>
                         <td onclick="event.stopPropagation()">
-                            <c:if test="${p.status != 'cancelled'}">
-                                <button class="btn btn-edit"
-                                    onclick="openEditModal(${p.id},'${p.supplier}','${p.status}','${p.received_at}','${p.note}')">
-                                    수정
-                                </button>
-                                <form action="/inventory/order/cancel/${p.id}" method="post" style="display:inline"
-                                      onsubmit="return confirm('발주를 취하하시겠습니까?')">
-                                    <input type="hidden" name="page" value="${result.page}">
-                                    <button type="submit" class="btn btn-delete">취하</button>
-                                </form>
-                            </c:if>
-                            <c:if test="${p.status == 'cancelled'}">
-                                <span style="color:var(--text-muted); font-size:0.82rem;">처리완료</span>
-                            </c:if>
+                            <%-- [버그수정 3/4] 입고완료는 수정/취하 불가 → '입고완료' 표시 --%>
+                            <c:choose>
+                                <c:when test="${p.status=='received'}">
+                                    <span style="color:var(--accent-green);font-size:0.82rem;font-weight:600;">입고완료</span>
+                                </c:when>
+                                <c:when test="${p.status=='cancelled'}">
+                                    <span style="color:var(--text-muted);font-size:0.82rem;">처리완료</span>
+                                </c:when>
+                                <c:otherwise>
+                                    <button class="btn btn-edit"
+                                        onclick="openEditModal(${p.id},'${p.supplier}','${p.status}','${p.received_at}','${p.note}','${p.ordered_at}')">
+                                        수정
+                                    </button>
+                                    <form action="/inventory/order/cancel/${p.id}" method="post" style="display:inline"
+                                          onsubmit="return confirm('발주를 취하하시겠습니까?')">
+                                        <input type="hidden" name="page" value="${result.page}">
+                                        <button type="submit" class="btn btn-delete">취하</button>
+                                    </form>
+                                </c:otherwise>
+                            </c:choose>
                         </td>
                     </tr>
                     </c:forEach>
@@ -128,45 +89,31 @@
             </c:choose>
             </tbody>
         </table>
-
-        <%-- 페이지네이션 --%>
         <div class="pagination">
             <div class="page-size-select">
                 <select onchange="changeSize(this.value)">
-                    <option value="10" ${size == 10 ? 'selected' : ''}>10개씩</option>
-                    <option value="20" ${size == 20 ? 'selected' : ''}>20개씩</option>
-                    <option value="50" ${size == 50 ? 'selected' : ''}>50개씩</option>
+                    <option value="10" ${size==10?'selected':''}>10개씩</option>
+                    <option value="20" ${size==20?'selected':''}>20개씩</option>
+                    <option value="50" ${size==50?'selected':''}>50개씩</option>
                 </select>
             </div>
-
             <div class="page-nav">
-                <c:if test="${result.hasPrev()}">
-                    <button class="page-btn" onclick="goPage(${result.startPage - 1})">‹</button>
-                </c:if>
+                <c:if test="${result.hasPrev()}"><button class="page-btn" onclick="goPage(${result.startPage-1})">‹</button></c:if>
                 <c:forEach begin="${result.startPage}" end="${result.endPage}" var="p">
-                    <button class="page-btn ${p == result.page ? 'active' : ''}"
-                            onclick="goPage(${p})">${p}</button>
+                    <button class="page-btn ${p==result.page?'active':''}" onclick="goPage(${p})">${p}</button>
                 </c:forEach>
-                <c:if test="${result.hasNext()}">
-                    <button class="page-btn" onclick="goPage(${result.endPage + 1})">›</button>
-                </c:if>
+                <c:if test="${result.hasNext()}"><button class="page-btn" onclick="goPage(${result.endPage+1})">›</button></c:if>
             </div>
-
-            <div style="font-size:0.8rem; color:var(--text-muted);">
-                총 ${result.totalCount}건
-            </div>
+            <div style="font-size:0.8rem;color:var(--text-muted);">총 ${result.totalCount}건</div>
         </div>
-
     </div>
 </div>
 
 <%-- 발주 상세 모달 --%>
 <div class="modal-overlay" id="detailModal">
-    <div class="modal" style="width:620px; max-width:95vw;">
-        <div class="modal-title">
-            📦 발주 상세
-            <span id="detailInfo" style="font-size:0.82rem; font-weight:400;
-                  color:var(--text-muted); margin-left:10px;"></span>
+    <div class="modal" style="width:620px;max-width:95vw;">
+        <div class="modal-title">📦 발주 상세
+            <span id="detailInfo" style="font-size:0.82rem;font-weight:400;color:var(--text-muted);margin-left:10px;"></span>
         </div>
         <div id="detailContent" style="min-height:160px;"></div>
         <div class="modal-footer">
@@ -179,16 +126,14 @@
 <div class="modal-overlay" id="editModal">
     <div class="modal">
         <div class="modal-title">✏️ 발주 수정</div>
-        <form action="/inventory/order/update" method="post">
+        <form action="/inventory/order/update" method="post" onsubmit="return validateEdit()">
             <input type="hidden" name="id"   id="edit_id">
             <input type="hidden" name="page" value="${result.page}">
+            <%-- [버그수정 3] 입고일 검증용 발주일 hidden --%>
+            <input type="hidden" id="edit_ordered_at_val">
             <div class="form-row">
-                <div class="form-group">
-                    <label>거래처명</label>
-                    <input type="text" name="supplier" id="edit_supplier">
-                </div>
-                <div class="form-group">
-                    <label>상태</label>
+                <div class="form-group"><label>거래처명</label><input type="text" name="supplier" id="edit_supplier"></div>
+                <div class="form-group"><label>상태</label>
                     <select name="status" id="edit_status">
                         <option value="ordered">발주완료</option>
                         <option value="received">입고완료</option>
@@ -199,11 +144,11 @@
                 <div class="form-group">
                     <label>입고일</label>
                     <input type="date" name="received_at" id="edit_received_at">
+                    <small id="edit_date_hint" style="color:var(--accent-red);font-size:0.78rem;display:none;">
+                        ⚠ 입고일은 발주일 이후여야 합니다.
+                    </small>
                 </div>
-                <div class="form-group">
-                    <label>비고</label>
-                    <input type="text" name="note" id="edit_note">
-                </div>
+                <div class="form-group"><label>비고</label><input type="text" name="note" id="edit_note"></div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-cancel" onclick="closeModal('editModal')">취소</button>
@@ -213,96 +158,88 @@
     </div>
 </div>
 
-<style>
-.clickable-row { cursor: pointer; }
-.clickable-row:hover td { background: var(--primary-light) !important; }
-.detail-table { width:100%; border-collapse:collapse; font-size:0.88rem; }
-.detail-table th {
-    background:#fafafa; padding:10px 14px; font-size:0.75rem; font-weight:600;
-    color:var(--text-muted); text-transform:uppercase; text-align:center;
-    border-bottom:1.5px solid var(--border-light);
-}
-.detail-table td { padding:11px 14px; text-align:center; border-bottom:1px solid var(--border-light); }
-.detail-table tr:last-child td { border-bottom:none; }
-.detail-total {
-    display:flex; justify-content:space-between; align-items:center;
-    padding:12px 14px; margin:8px 0 0; background:var(--primary-light);
-    border-radius:var(--radius-sm); font-weight:700; color:var(--primary);
-}
-</style>
-
 <script>
 var currentKeyword = '${keyword}';
 var currentSize    = ${size};
 
-function goPage(p) {
-    var url = '/inventory/order/history?page=' + p + '&size=' + currentSize;
-    if (currentKeyword) url += '&keyword=' + encodeURIComponent(currentKeyword);
+function goPage(p, kw) {
+    var url = '/inventory/order/history?page='+p+'&size='+currentSize;
+    var k = (kw !== undefined ? kw : currentKeyword);
+    if (k) url += '&keyword='+encodeURIComponent(k);
     location.href = url;
 }
 function doSearch() {
     var kw = document.getElementById('keywordInput').value.trim();
-    var url = '/inventory/order/history?page=1&size=' + currentSize;
-    if (kw) url += '&keyword=' + encodeURIComponent(kw);
+    var url = '/inventory/order/history?page=1&size='+currentSize;
+    if (kw) url += '&keyword='+encodeURIComponent(kw);
     location.href = url;
 }
 function changeSize(s) {
-    var url = '/inventory/order/history?page=1&size=' + s;
-    if (currentKeyword) url += '&keyword=' + encodeURIComponent(currentKeyword);
+    var url = '/inventory/order/history?page=1&size='+s;
+    if (currentKeyword) url += '&keyword='+encodeURIComponent(currentKeyword);
     location.href = url;
 }
 function openModal(id)  { document.getElementById(id).classList.add('active'); }
 function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
 function openDetailModal(purchaseId, supplier, orderedAt) {
-    document.getElementById('detailInfo').innerText = supplier + ' · ' + orderedAt;
-    document.getElementById('detailContent').innerHTML =
-        '<div style="text-align:center; padding:40px; color:var(--text-muted);">로딩 중...</div>';
+    document.getElementById('detailInfo').innerText = supplier+' · '+orderedAt;
+    document.getElementById('detailContent').innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted);">로딩 중...</div>';
     openModal('detailModal');
-    fetch('/inventory/order/items/' + purchaseId)
+    fetch('/inventory/order/items/'+purchaseId)
         .then(function(res) { return res.json(); })
         .then(function(items) {
-            if (!items || items.length === 0) {
-                document.getElementById('detailContent').innerHTML =
-                    '<div style="text-align:center; padding:40px; color:var(--text-muted);">등록된 원재료가 없습니다.</div>';
+            if (!items||items.length===0) {
+                document.getElementById('detailContent').innerHTML='<div style="text-align:center;padding:40px;color:var(--text-muted);">등록된 원재료가 없습니다.</div>';
                 return;
             }
-            var total = 0;
-            var html = '<table class="detail-table"><thead><tr>'
-                + '<th>원재료명</th><th>단위</th><th>수량</th><th>단가</th><th>소계</th>'
-                + '</tr></thead><tbody>';
+            var total=0;
+            var html='<table class="detail-table"><thead><tr><th>원재료명</th><th>단위</th><th>수량</th><th>단가</th><th>소계</th></tr></thead><tbody>';
             items.forEach(function(item) {
-                total += item.subtotal;
-                html += '<tr>'
-                    + '<td><strong>' + item.ingredient_name + '</strong></td>'
-                    + '<td>' + item.ingredient_unit + '</td>'
-                    + '<td>' + item.qty + '</td>'
-                    + '<td>' + Number(item.unit_cost).toLocaleString() + '원</td>'
-                    + '<td><strong>' + Number(item.subtotal).toLocaleString() + '원</strong></td>'
-                    + '</tr>';
+                total+=item.subtotal;
+                html+='<tr><td><strong>'+item.ingredient_name+'</strong></td><td>'+item.ingredient_unit+'</td><td>'+item.qty+'</td><td>'+Number(item.unit_cost).toLocaleString()+'원</td><td><strong>'+Number(item.subtotal).toLocaleString()+'원</strong></td></tr>';
             });
-            html += '</tbody></table>';
-            html += '<div class="detail-total"><span>총 발주금액</span><span>'
-                + total.toLocaleString() + '원</span></div>';
-            document.getElementById('detailContent').innerHTML = html;
+            html+='</tbody></table><div class="detail-total"><span>총 발주금액</span><span>'+total.toLocaleString()+'원</span></div>';
+            document.getElementById('detailContent').innerHTML=html;
         })
         .catch(function() {
-            document.getElementById('detailContent').innerHTML =
-                '<div style="text-align:center; padding:40px; color:var(--accent-red);">데이터를 불러오지 못했습니다.</div>';
+            document.getElementById('detailContent').innerHTML='<div style="text-align:center;padding:40px;color:var(--accent-red);">데이터를 불러오지 못했습니다.</div>';
         });
 }
-function openEditModal(id, supplier, status, received_at, note) {
-    document.getElementById('edit_id').value          = id;
-    document.getElementById('edit_supplier').value    = supplier;
-    document.getElementById('edit_status').value      = status;
-    document.getElementById('edit_received_at').value = (received_at === 'null' ? '' : received_at);
-    document.getElementById('edit_note').value        = (note === 'null' ? '' : note);
+
+// [버그수정 3] ordered_at 포함 — 입고일 검증용
+function openEditModal(id, supplier, status, received_at, note, ordered_at) {
+    document.getElementById('edit_id').value             = id;
+    document.getElementById('edit_supplier').value       = supplier;
+    document.getElementById('edit_status').value         = status;
+    document.getElementById('edit_received_at').value    = (received_at==='null'?'':received_at);
+    document.getElementById('edit_note').value           = (note==='null'?'':note);
+    document.getElementById('edit_ordered_at_val').value = ordered_at;
+    document.getElementById('edit_date_hint').style.display = 'none';
     openModal('editModal');
 }
+
+// [버그수정 3] 입고일 >= 발주일 검증
+function validateEdit() {
+    var receivedAt = document.getElementById('edit_received_at').value;
+    var orderedAt  = document.getElementById('edit_ordered_at_val').value;
+    if (receivedAt && orderedAt && receivedAt < orderedAt) {
+        document.getElementById('edit_date_hint').style.display = 'block';
+        return false;
+    }
+    return true;
+}
+document.getElementById('edit_received_at').addEventListener('change', function() {
+    var orderedAt = document.getElementById('edit_ordered_at_val').value;
+    var hint      = document.getElementById('edit_date_hint');
+    hint.style.display = (this.value && orderedAt && this.value < orderedAt) ? 'block' : 'none';
+});
+
+// [모달 외부클릭 버그 수정]
 document.querySelectorAll('.modal-overlay').forEach(function(o) {
-    o.addEventListener('click', function(e) { if(e.target===o) o.classList.remove('active'); });
+    o.addEventListener('mousedown', function(e) { o._closeReady = (e.target===o); });
+    o.addEventListener('mouseup',   function(e) { if(e.target===o&&o._closeReady) o.classList.remove('active'); o._closeReady=false; });
 });
 </script>
-
 </body>
 </html>

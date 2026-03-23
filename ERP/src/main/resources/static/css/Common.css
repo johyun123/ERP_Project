@@ -1,0 +1,424 @@
+@charset "UTF-8";
+
+/* =====================================================
+   common.css
+   모든 페이지에서 공통으로 사용하는 스타일
+   각 페이지 CSS에서 이 파일을 먼저 로드하세요:
+   <link rel="stylesheet" href="/css/common.css">
+   <link rel="stylesheet" href="/css/[페이지].css">
+===================================================== */
+
+/* ===========================
+   CONTENT AREA
+=========================== */
+.content {
+  margin-left: var(--sidebar-width);
+  margin-top: var(--header-height);
+  padding: 32px 36px 60px;
+  min-height: calc(100vh - var(--header-height));
+  background: var(--bg-content);
+  animation: fadeInUp 0.35s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ===========================
+   PAGE HEADER
+=========================== */
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.page-title-wrap { display: flex; align-items: center; gap: 14px; }
+.page-icon       { font-size: 2rem; line-height: 1; }
+
+.page-title {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.5px;
+  margin: 0;
+}
+
+.page-sub { font-size: 0.82rem; color: var(--text-muted); margin: 3px 0 0; }
+
+/* ===========================
+   FILTER BAR
+=========================== */
+.filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.filter-input {
+  padding: 9px 13px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.88rem;
+  font-family: 'Noto Sans KR', sans-serif;
+  color: var(--text-primary);
+  background: #fff;
+  outline: none;
+  transition: var(--transition);
+}
+
+.filter-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(91, 110, 245, 0.1);
+}
+
+.filter-count {
+  font-size: 0.82rem;
+  color: var(--primary);
+  font-weight: 600;
+  background: var(--primary-light);
+  padding: 4px 10px;
+  border-radius: 20px;
+  display: none;
+}
+
+/* ===========================
+   TABLE CARD
+=========================== */
+.table-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  border: 1.5px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  overflow-x: auto;
+}
+
+/* ===========================
+   FORM COMMON
+=========================== */
+.form-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  border: 1.5px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  padding: 36px 40px 32px;
+  max-width: 860px;
+}
+
+.form-section-title {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 24px;
+  padding-bottom: 12px;
+  border-bottom: 1.5px solid var(--border-light);
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px 28px;
+  margin-bottom: 32px;
+}
+
+.form-group      { display: flex; flex-direction: column; gap: 7px; }
+.form-group-full { grid-column: 1 / -1; }
+
+.form-label { font-size: 0.85rem; font-weight: 600; color: var(--text-primary); }
+.form-label.required::after { content: ' *'; color: var(--accent-red); }
+
+.form-input {
+  width: 100%;
+  padding: 11px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  font-family: 'Noto Sans KR', sans-serif;
+  color: var(--text-primary);
+  background: #fafbff;
+  outline: none;
+  transition: var(--transition);
+  box-sizing: border-box;
+}
+
+.form-input:focus {
+  border-color: var(--primary);
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(91, 110, 245, 0.1);
+}
+
+.form-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239ca3af' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  cursor: pointer;
+}
+
+.form-textarea { resize: vertical; min-height: 72px; line-height: 1.6; }
+
+.input-wrap          { position: relative; }
+.input-with-unit     { padding-right: 36px; text-align: right; font-family: 'Outfit', monospace; font-weight: 600; }
+.input-unit {
+  position: absolute;
+  right: 13px; top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.field-locked {
+  background: var(--border-light) !important;
+  color: var(--text-muted) !important;
+  cursor: not-allowed;
+}
+
+.field-hint { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
+
+/* 라디오 그룹 */
+.radio-group { display: flex; gap: 10px; flex-wrap: wrap; }
+
+.radio-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  padding: 8px 16px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  transition: var(--transition);
+}
+
+.radio-item:has(input:checked) {
+  border-color: var(--primary);
+  background: var(--primary-light);
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.radio-item input { accent-color: var(--primary); }
+
+/* 폼 액션 버튼 영역 */
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding-top: 24px;
+  border-top: 1.5px solid var(--border-light);
+}
+
+/* ===========================
+   BUTTONS
+=========================== */
+.btn {
+  padding: 9px 20px;
+  border-radius: var(--radius-sm);
+  font-size: 0.88rem;
+  font-weight: 600;
+  font-family: 'Noto Sans KR', sans-serif;
+  cursor: pointer;
+  border: none;
+  transition: var(--transition);
+}
+
+.btn-primary {
+  background: var(--primary-gradient);
+  color: var(--text-white);
+  box-shadow: 0 2px 8px rgba(91, 110, 245, 0.3);
+}
+
+.btn-primary:hover {
+  opacity: 0.88;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(91, 110, 245, 0.4);
+}
+
+.btn-submit {
+  padding: 10px 28px;
+  background: var(--primary-gradient);
+  color: var(--text-white);
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  font-weight: 600;
+  font-family: 'Noto Sans KR', sans-serif;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(91, 110, 245, 0.3);
+  transition: var(--transition);
+}
+
+.btn-submit:hover { opacity: 0.88; transform: translateY(-1px); }
+
+.btn-cancel {
+  padding: 9px 20px;
+  background: var(--border-light);
+  color: var(--text-secondary);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.88rem;
+  font-weight: 600;
+  font-family: 'Noto Sans KR', sans-serif;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.btn-cancel:hover { background: var(--border); color: var(--text-primary); }
+
+.btn-reset {
+  padding: 8px 14px;
+  background: transparent;
+  color: var(--text-muted);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  font-family: 'Noto Sans KR', sans-serif;
+  cursor: pointer;
+  transition: var(--transition);
+  text-decoration: none;
+}
+
+.btn-reset:hover { background: var(--border-light); color: var(--text-primary); }
+
+.btn-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-decoration: none;
+  background: var(--bg-card);
+  transition: var(--transition);
+}
+
+.btn-back:hover { background: var(--primary-light); border-color: var(--primary); color: var(--primary); }
+
+.btn-icon {
+  background: none;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 5px 10px;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: var(--transition);
+  color: var(--text-secondary);
+}
+
+.btn-edit   { padding: 5px 12px; background: #fef3c7; color: #b45309; border: 1.5px solid #f59e0b; border-radius: var(--radius-sm); font-size: 0.8rem; font-weight: 600; font-family: 'Noto Sans KR', sans-serif; cursor: pointer; transition: var(--transition); }
+.btn-edit:hover   { background: #f59e0b; color: #fff; }
+
+.btn-delete { padding: 5px 12px; background: #fee2e2; color: #dc2626; border: 1.5px solid #ef4444; border-radius: var(--radius-sm); font-size: 0.8rem; font-weight: 600; font-family: 'Noto Sans KR', sans-serif; cursor: pointer; transition: var(--transition); }
+.btn-delete:hover { background: #ef4444; color: #fff; }
+
+/* ===========================
+   MODAL
+=========================== */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(30, 27, 75, 0.35);
+  z-index: 200;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(2px);
+}
+
+.modal-overlay.active { display: flex; }
+
+.modal {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  border: 1.5px solid var(--border);
+  box-shadow: var(--shadow-lg);
+  width: 100%;
+  max-width: 480px;
+  animation: fadeInUp 0.25s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px 16px;
+  border-bottom: 1.5px solid var(--border-light);
+}
+
+.modal-title { font-size: 1rem; font-weight: 700; color: var(--text-primary); }
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 1rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  transition: var(--transition);
+}
+
+.modal-close:hover { background: var(--border-light); color: var(--text-primary); }
+
+.modal-body {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 8px;
+}
+
+/* ===========================
+   공통 테이블 스타일
+=========================== */
+.empty-row { text-align: center; padding: 60px !important; color: var(--text-muted); font-size: 0.92rem; }
+.td-actions { white-space: nowrap; }
+.td-date    { font-size: 0.82rem; color: var(--text-muted); white-space: nowrap; }
+
+/* ===========================
+   ALERT BOX
+=========================== */
+.alert-box {
+  background: var(--accent-green-light);
+  color: #15803d;
+  border: 1.5px solid #86efac;
+  border-radius: var(--radius-sm);
+  padding: 10px 16px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+
+/* ===========================
+   RESPONSIVE (공통)
+=========================== */
+@media (max-width: 900px) {
+  .content   { margin-left: 68px; }
+  .form-card { padding: 24px 20px; }
+  .form-grid { grid-template-columns: 1fr; }
+  .form-group-full { grid-column: 1; }
+}
+
+@media (max-width: 600px) {
+  .content    { padding: 16px; }
+  .filter-bar { flex-direction: column; align-items: flex-start; }
+  .modal      { max-width: 95vw; }
+}
