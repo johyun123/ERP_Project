@@ -42,9 +42,4 @@ public class IngredientsService {
     public void remove(long id) {
         mapper.delete(id);
     }
-
-    // [버그수정 2] 발주 이력 체크 — purchase_items에 참조 레코드 있으면 true
-    public boolean hasPurchaseHistory(long id) {
-        return mapper.countPurchaseItemsByIngredientId(id) > 0;
-    }
 }

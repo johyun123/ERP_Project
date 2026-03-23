@@ -5,7 +5,6 @@
     <meta charset="UTF-8">
     <title>근태 관리 | ERP CAFE SYSTEM</title>
     <link rel="stylesheet" href="/css/header.css" />
-    <link rel="stylesheet" href="/css/Common.css" />
     <link rel="stylesheet" href="/css/attendance/attendance.css" />
 </head>
 <body>

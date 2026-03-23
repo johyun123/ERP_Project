@@ -7,9 +7,8 @@
 <head>
 	<meta charset="UTF-8">
 	<title>ERP CAFE SYSTEM</title>
-    <link rel="stylesheet" href="/css/header.css" />
-    <link rel="stylesheet" href="/css/Common.css" />
-    <link rel="stylesheet" href="/css/MainPage.css" />
+	<link rel="stylesheet" href="/css/header.css" />
+	<link rel="stylesheet" href="/css/MainPage.css" />
 </head>
 
 <body>

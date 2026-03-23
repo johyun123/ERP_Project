@@ -5,7 +5,6 @@
     <meta charset="UTF-8">
     <title>직원 수정 | ERP CAFE SYSTEM</title>
     <link rel="stylesheet" href="/css/header.css" />
-    <link rel="stylesheet" href="/css/Common.css" />
     <link rel="stylesheet" href="/css/Employee/employee.css" />
 </head>
 <body>

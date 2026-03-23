@@ -8,13 +8,10 @@ import java.util.List;
 @Mapper
 public interface IngredientsMapper {
     List<Ingredients> findAll();
-    List<Ingredients> findByPage(PageRequest req);
-    int countAll(PageRequest req);
+    List<Ingredients> findByPage(PageRequest req);  // 페이지네이션
+    int countAll(PageRequest req);                  // 전체 건수
     Ingredients findById(long id);
     void insert(Ingredients i);
     void update(Ingredients i);
     void delete(long id);
-
-    // [버그수정 2] 발주 이력 체크 — purchase_items 참조 건수 조회
-    int countPurchaseItemsByIngredientId(long id);
 }

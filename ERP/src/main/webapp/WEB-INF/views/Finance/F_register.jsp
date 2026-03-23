@@ -5,7 +5,6 @@
     <meta charset="UTF-8">
     <title>지출 등록 | ERP CAFE SYSTEM</title>
     <link rel="stylesheet" href="/css/header.css" />
-    <link rel="stylesheet" href="/css/Common.css" />
     <link rel="stylesheet" href="/css/Finance/F_register.css" />
 </head>
 <body>

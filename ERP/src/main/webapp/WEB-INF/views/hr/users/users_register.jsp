@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <title>ERP 계정 등록 | ERP CAFE SYSTEM</title>
     <link rel="stylesheet" href="/css/header.css" />
-    <link rel="stylesheet" href="/css/Common.css" />
+    <link rel="stylesheet" href="/css/common.css" />
     <link rel="stylesheet" href="/css/users/user-management.css" />
     <link rel="stylesheet" href="/css/users/user-register.css" />
 </head>

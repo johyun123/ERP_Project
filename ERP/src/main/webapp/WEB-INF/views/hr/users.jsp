@@ -8,7 +8,6 @@
     <meta charset="UTF-8">
     <title>ERP 사용자 관리 | ERP CAFE SYSTEM</title>
     <link rel="stylesheet" href="/css/header.css" />
-    <link rel="stylesheet" href="/css/Common.css" />
     <link rel="stylesheet" href="/css/users/user-management.css" />
 </head>
 <body>
@@ -344,6 +343,29 @@ function openPwChangePrompt(empNum, name) {
     document.getElementById('pwChangeForm').submit();
 }
 </script>
+
+<style>
+.btn-del-user {
+  padding: 5px 12px; background: #fee2e2; color: #dc2626;
+  border: 1.5px solid #ef4444; border-radius: var(--radius-sm);
+  font-size: 0.78rem; font-weight: 600; font-family: 'Noto Sans KR', sans-serif;
+  cursor: pointer; transition: var(--transition); white-space: nowrap;
+}
+.btn-del-user:hover { background: #ef4444; color: #fff; }
+.btn-locked {
+  display: inline-block;
+  padding: 5px 12px;
+  background: #f1f5f9;
+  color: #94a3b8;
+  border: 1.5px solid #e2e8f0;
+  border-radius: var(--radius-sm);
+  font-size: 0.78rem;
+  font-weight: 600;
+  font-family: 'Noto Sans KR', sans-serif;
+  cursor: not-allowed;
+  white-space: nowrap;
+}
+</style>
 
 </body>
 </html>

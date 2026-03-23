@@ -7,6 +7,7 @@
 
     <!-- ===================== EXPENSE ===================== -->
 
+    <!-- 등록 -->
     <insert id="insertExpense" parameterType="FinanceExpense">
         INSERT INTO expenses (
             expense_type, amount, expense_date,
@@ -17,7 +18,7 @@
         )
     </insert>
 
-    <!-- 전체 목록 (기존 유지) -->
+    <!-- 목록 조회 -->
     <select id="selectExpenseList" resultType="FinanceExpense">
         SELECT
             e.id,
@@ -35,46 +36,7 @@
         ORDER BY e.created_at DESC
     </select>
 
-    <!-- 페이징 목록 -->
-    <select id="selectExpenseByPage" parameterType="PageRequest" resultType="FinanceExpense">
-        SELECT
-            e.id,
-            e.expense_type  AS expenseType,
-            e.amount,
-            e.expense_date  AS expenseDate,
-            e.description,
-            e.receipt_path  AS receiptPath,
-            e.registered_by AS registeredBy,
-            emp.name        AS registeredByName,
-            e.created_at    AS createdAt
-        FROM expenses e
-        LEFT JOIN users     u   ON e.registered_by = u.id
-        LEFT JOIN employees emp ON u.id = emp.id
-        <where>
-            <if test="keyword != null and keyword != ''">
-                AND e.description LIKE CONCAT('%', #{keyword}, '%')
-            </if>
-            <if test="category != null and category != ''">
-                AND e.expense_type = #{category}
-            </if>
-        </where>
-        ORDER BY e.created_at DESC
-        LIMIT #{size} OFFSET #{offset}
-    </select>
-
-    <!-- 페이징 카운트 -->
-    <select id="countExpense" parameterType="PageRequest" resultType="int">
-        SELECT COUNT(*) FROM expenses e
-        <where>
-            <if test="keyword != null and keyword != ''">
-                AND e.description LIKE CONCAT('%', #{keyword}, '%')
-            </if>
-            <if test="category != null and category != ''">
-                AND e.expense_type = #{category}
-            </if>
-        </where>
-    </select>
-
+    <!-- 수정 -->
     <update id="updateExpense" parameterType="FinanceExpense">
         UPDATE expenses
         SET
@@ -86,13 +48,14 @@
         WHERE id = #{id}
     </update>
 
+    <!-- 삭제 -->
     <delete id="deleteExpense" parameterType="long">
         DELETE FROM expenses WHERE id = #{id}
     </delete>
 
     <!-- ===================== PAYROLL ===================== -->
 
-    <!-- 전체 목록 (기존 유지) -->
+    <!-- 급여 목록 조회 -->
     <select id="selectPayrollList" resultType="Payrolls">
         SELECT
             p.id,
@@ -112,43 +75,7 @@
         ORDER BY p.pay_year DESC, p.pay_month DESC, p.id DESC
     </select>
 
-    <!-- 페이징 목록 -->
-    <select id="selectPayrollByPage" parameterType="PageRequest" resultType="Payrolls">
-        SELECT
-            p.id,
-            p.employee_id  AS employeeId,
-            p.pay_year     AS payYear,
-            p.pay_month    AS payMonth,
-            p.work_hours   AS workHours,
-            p.base_pay     AS basePay,
-            p.deduction,
-            p.net_pay      AS netPay,
-            p.paid_at      AS paidAt,
-            p.note,
-            p.created_at   AS createdAt,
-            e.name         AS employeeName
-        FROM payrolls p
-        LEFT JOIN employees e ON p.employee_id = e.id
-        <where>
-            <if test="keyword != null and keyword != ''">
-                AND e.name LIKE CONCAT('%', #{keyword}, '%')
-            </if>
-        </where>
-        ORDER BY p.pay_year DESC, p.pay_month DESC, p.id DESC
-        LIMIT #{size} OFFSET #{offset}
-    </select>
-
-    <!-- 페이징 카운트 -->
-    <select id="countPayroll" parameterType="PageRequest" resultType="int">
-        SELECT COUNT(*) FROM payrolls p
-        LEFT JOIN employees e ON p.employee_id = e.id
-        <where>
-            <if test="keyword != null and keyword != ''">
-                AND e.name LIKE CONCAT('%', #{keyword}, '%')
-            </if>
-        </where>
-    </select>
-
+    <!-- 급여 등록 -->
     <insert id="insertPayroll" parameterType="Payrolls">
         INSERT INTO payrolls (
             employee_id, pay_year, pay_month,
@@ -161,6 +88,7 @@
         )
     </insert>
 
+    <!-- 급여 수정 -->
     <update id="updatePayroll" parameterType="Payrolls">
         UPDATE payrolls
         SET
@@ -176,6 +104,7 @@
         WHERE id = #{id}
     </update>
 
+    <!-- 급여 삭제 -->
     <delete id="deletePayroll" parameterType="long">
         DELETE FROM payrolls WHERE id = #{id}
     </delete>

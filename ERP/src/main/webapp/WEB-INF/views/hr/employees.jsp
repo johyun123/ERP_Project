@@ -7,7 +7,6 @@
     <meta charset="UTF-8">
     <title>직원 관리 | ERP CAFE SYSTEM</title>
     <link rel="stylesheet" href="/css/header.css" />
-    <link rel="stylesheet" href="/css/Common.css" />
     <link rel="stylesheet" href="/css/Employee/employee.css" />
 </head>
 <body>
@@ -253,5 +252,21 @@ function resetFilter() {
     applyFilter();
 }
 </script>
+
+<style>
+.btn-locked {
+  display: inline-block;
+  padding: 5px 10px;
+  background: #f1f5f9;
+  color: #94a3b8;
+  border: 1.5px solid #e2e8f0;
+  border-radius: var(--radius-sm, 6px);
+  font-size: 0.78rem;
+  font-weight: 600;
+  font-family: 'Noto Sans KR', sans-serif;
+  cursor: not-allowed;
+  margin-right: 4px;
+}
+</style>
 </body>
 </html>

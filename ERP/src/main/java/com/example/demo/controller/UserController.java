@@ -3,29 +3,38 @@ package com.example.demo.controller;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 
+import com.example.demo.Service.HRMService;
 import com.example.demo.Service.UserService;
+
+import jakarta.servlet.http.HttpSession;
 
 @Controller
 public class UserController {
+	private final UserService userService;
+	private final HRMService hrmService;
 
-    private final UserService userService;
+	UserController(UserService userService, HRMService hrmService) {
+		this.userService = userService;
+		this.hrmService = hrmService;
+	}
 
-    public UserController(UserService userService) {
-        this.userService = userService;
-    }
+	// 로그인 폼
+	@GetMapping({ "/", "/login" })
+	public String loginForm() {
+		return "login"; // JSP 그대로 사용
+	}
 
-    /* ===== 로그인 폼 ===== */
-    @GetMapping({"/", "/login"})
-    public String loginForm() {
-        return "login";
-    }
+	// 메인 페이지
+	@GetMapping("/MainPage")
+	public String Main() {
+		return "MainPage";
+	}
 
-    /* ===== 메인 페이지 ===== */
-    @GetMapping("/MainPage")
-    public String mainPage() {
-        return "MainPage";
-    }
+	// 로그아웃 처리
+	@GetMapping("/logout")
+	public String logout(HttpSession session) {
+		session.invalidate(); // ✅ 세션 초기화
+		return "redirect:/login";
+	}
 
-    // ※ /logout 은 SecurityConfig 에서 Spring Security가 처리
-    //   (GET /logout → 수동 session.invalidate() 방식 제거)
 }

@@ -2,7 +2,6 @@ package com.example.demo.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -21,8 +20,9 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
                 .dispatcherTypeMatchers(DispatcherType.FORWARD).permitAll()
-                // ※ /ocr/** 는 영수증 분석 API — 인증 필요 시 이 줄 제거
                 .requestMatchers("/login", "/regist", "/css/**", "/images/**", "/ocr/**").permitAll()
+                // ERP 사용자 관리 — 점장(MANAGER), 스탭(STAFF)만 접근
+                // UserDetailsServiceImpl에서 roles("MANAGER") / roles("STAFF") 로 세팅 필요
                 .requestMatchers("/hr/users/**").hasAnyRole("MANAGER", "STAFF")
                 .anyRequest().authenticated()
             )
@@ -31,9 +31,10 @@ public class SecurityConfig {
                 .loginProcessingUrl("/login")
                 .defaultSuccessUrl("/MainPage", true)
                 .failureHandler((request, response, exception) -> {
-                    String errorMsg = exception instanceof DisabledException
-                            ? "비활성화된 계정입니다."
-                            : "아이디 또는 비밀번호 오류";
+                    String errorMsg = "아이디 또는 비밀번호 오류";
+                    if (exception instanceof org.springframework.security.authentication.DisabledException) {
+                        errorMsg = "비활성화된 계정입니다.";
+                    }
                     request.getSession().setAttribute("loginError", errorMsg);
                     response.sendRedirect("/login");
                 })

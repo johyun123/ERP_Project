@@ -4,7 +4,6 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.http.ResponseEntity;
@@ -42,11 +41,10 @@ public class HRMController {
             @RequestParam(required = false) String name,
             @RequestParam(required = false) String position,
             Model model) {
-
-        // status → isActive 변환
-        Map<String, Integer> statusMap = Map.of("active", 1, "leave", 2, "resigned", 0);
-        Integer isActive = statusMap.get(status); // "all"이면 null → 전체 조회
-
+        Integer isActive = null;
+        if ("active".equals(status))   isActive = 1;
+        if ("leave".equals(status))    isActive = 2;
+        if ("resigned".equals(status)) isActive = 0;
         model.addAttribute("employees", hrmService.searchEmployees(name, position, isActive));
         return "hr/employees";
     }
@@ -116,16 +114,13 @@ public class HRMController {
         while (param.containsKey("list[" + i + "].employee_id")) {
             Attendances a = new Attendances();
             a.setEmployee_id(Integer.parseInt(param.get("list[" + i + "].employee_id")));
-
-            String dateStr     = param.get("list[" + i + "].work_date_str");
-            String clockInStr  = param.get("list[" + i + "].clock_in_str");
+            String dateStr = param.get("list[" + i + "].work_date_str");
+            if (dateStr != null && !dateStr.isEmpty()) a.setWork_date(LocalDate.parse(dateStr));
+            String clockInStr = param.get("list[" + i + "].clock_in_str");
+            if (clockInStr != null && !clockInStr.isEmpty()) a.setClock_in(LocalTime.parse(clockInStr));
             String clockOutStr = param.get("list[" + i + "].clock_out_str");
-
-            if (dateStr     != null && !dateStr.isEmpty())     a.setWork_date(LocalDate.parse(dateStr));
-            if (clockInStr  != null && !clockInStr.isEmpty())  a.setClock_in(LocalTime.parse(clockInStr));
             if (clockOutStr != null && !clockOutStr.isEmpty()) a.setClock_out(LocalTime.parse(clockOutStr));
             a.setNote(param.get("list[" + i + "].note"));
-
             if (a.getClock_in() != null) hrmService.saveOrUpdate(a);
             i++;
         }
@@ -156,12 +151,17 @@ public class HRMController {
     /* ===== ERP 계정 등록 폼 ===== */
     @GetMapping("/users/register")
     public String registerForm(Model model) {
+        // 전체 직원 목록 — JSP에서 이미 계정 있는 직원 필터링
         List<Employees> employees = hrmService.getAllEmployees();
-        Set<Long> registeredIds = userService.getAllUsers().stream()
+        List<User>      users     = userService.getAllUsers();
+
+        // 계정 등록된 id Set → JSP에서 비교용
+        java.util.Set<Long> registeredIds = users.stream()
                 .map(User::getId)
-                .collect(Collectors.toSet());
-        model.addAttribute("employees",     employees);
-        model.addAttribute("registeredIds", registeredIds);
+                .collect(java.util.stream.Collectors.toSet());
+
+        model.addAttribute("employees",      employees);
+        model.addAttribute("registeredIds",  registeredIds);
         return "hr/users/users_register";
     }
 
@@ -170,17 +170,21 @@ public class HRMController {
     public String registerUser(@RequestParam String emp_num,
                                @RequestParam String user_pw,
                                Model model) {
-        // 직원 조회는 한 번만
         Employees emp = hrmService.getEmployeeById(emp_num);
-
         if (emp == null) {
-            return registerFormWithError(model, "존재하지 않는 직원입니다.");
+            model.addAttribute("error", "존재하지 않는 직원입니다.");
+            model.addAttribute("employees", hrmService.getAllEmployees());
+            return "hr/users/register";
         }
         if (emp.getIs_active() == 0) {
-            return registerFormWithError(model, "퇴사자는 계정 생성 불가합니다.");
+            model.addAttribute("error", "퇴사자는 계정 생성 불가합니다.");
+            model.addAttribute("employees", hrmService.getAllEmployees());
+            return "hr/users/register";
         }
         if (userService.existsByUserId(emp_num)) {
-            return registerFormWithError(model, "이미 계정이 존재하는 직원입니다.");
+            model.addAttribute("error", "이미 계정이 존재하는 직원입니다.");
+            model.addAttribute("employees", hrmService.getAllEmployees());
+            return "hr/users/register";
         }
         userService.registerByEmployee(emp_num, user_pw);
         return "redirect:/hr/users?msg=registered";
@@ -192,10 +196,10 @@ public class HRMController {
                            @RequestParam String new_pw) {
         try {
             userService.changePassword(emp_num, new_pw);
-            return "redirect:/hr/users?msg=pw_changed";
         } catch (Exception e) {
             return "redirect:/hr/users?msg=pw_error";
         }
+        return "redirect:/hr/users?msg=pw_changed";
     }
 
     /* ===== ERP 계정 삭제 처리 ===== */
@@ -203,10 +207,10 @@ public class HRMController {
     public String deleteUser(@RequestParam String emp_num) {
         try {
             userService.deleteUserAccount(emp_num);
-            return "redirect:/hr/users?msg=del_done";
         } catch (Exception e) {
             return "redirect:/hr/users?msg=del_error";
         }
+        return "redirect:/hr/users?msg=del_done";
     }
 
     /* ===== 관리자 인증 (users 전용 AJAX) ===== */
@@ -214,15 +218,19 @@ public class HRMController {
     @ResponseBody
     public ResponseEntity<String> usersAuth(@RequestParam String userId,
                                             @RequestParam String userPw) {
-        return ResponseEntity.ok(userService.authenticate(userId, userPw) ? "ok" : "fail");
+        boolean ok = userService.authenticate(userId, userPw);
+        return ResponseEntity.ok(ok ? "ok" : "fail");
     }
 
-    // ── private 헬퍼 ──────────────────────────────────────────
+    /* ===== ERP 사용자 관리 ===== */
+    @GetMapping("/users/register-form")
+    public String registerFormDirect(Model model) {
+        return "redirect:/hr/users/register";
+    }
 
-    /** 등록 폼에 에러 메시지 담아 반환 */
-    private String registerFormWithError(Model model, String errorMsg) {
-        model.addAttribute("error",     errorMsg);
-        model.addAttribute("employees", hrmService.getAllEmployees());
-        return "hr/users/users_register";
+    /* ===== ERP 계정 등록 폼 (구형 호환) ===== */
+    @GetMapping("/users/registerPage")
+    public String registerFormPage(Model model) {
+        return "redirect:/hr/users/user_register";
     }
 }

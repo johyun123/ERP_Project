@@ -6,9 +6,7 @@
     <meta charset="UTF-8">
     <title>레시피 관리</title>
     <link rel="stylesheet" href="/css/header.css" />
-    <link rel="stylesheet" href="/css/Common.css" />
-    <link rel="stylesheet" href="/css/Product-common.css" />
-    <link rel="stylesheet" href="/css/Product/Recipe.css" />
+    <link rel="stylesheet" href="/css/Product/recipe.css" />
 </head>
 
 <body>
