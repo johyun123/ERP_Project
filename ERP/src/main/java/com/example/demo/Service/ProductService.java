@@ -45,4 +45,28 @@ public class ProductService {
     public void insertCategory(CategoryDomain category) {
         productMapper.insertCategory(category);
     }
+    
+    
+    public List<MenuDomain> getMenuList(int offset, int size) { return productMapper.getMenuList(offset, size); }
+    public int getMenuCount() { return productMapper.getMenuCount(); }
+
+
+//=========================
+// ✅ 카테고리별 페이징 (추가)
+// =========================
+public List<MenuDomain> getMenuListByCategory(Long categoryId, int offset, int size) {
+    return productMapper.getMenuListByCategory(categoryId, offset, size);
+}
+
+public int getMenuCountByCategory(Long categoryId) {
+    return productMapper.getMenuCountByCategory(categoryId);
+}
+//검색
+public List<MenuDomain> getMenuListByKeyword(String keyword, int offset, int size) {
+ return productMapper.getMenuListByKeyword(keyword, offset, size);
+}
+
+public int getMenuCountByKeyword(String keyword) {
+ return productMapper.getMenuCountByKeyword(keyword);
+}
 }
