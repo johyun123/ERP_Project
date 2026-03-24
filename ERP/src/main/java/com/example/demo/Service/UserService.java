@@ -107,6 +107,16 @@ public class UserService {
         userMapper.deleteById(emp.getId());
     }
 
+    /* ===== 페이징 사용자 조회 ===== */
+    public List<User> getUsersWithPaging(int offset, int size) {
+        return userMapper.findWithPaging(offset, size);
+    }
+
+    /* ===== 전체 사용자 수 ===== */
+    public int countUsers() {
+        return userMapper.count();
+    }
+
     // 중복 체크
     public boolean existsByUserId(String emp_num) {
         Employees emp = hrmService.getEmployeeById(emp_num);

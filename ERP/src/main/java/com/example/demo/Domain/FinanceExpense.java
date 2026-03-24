@@ -10,7 +10,8 @@ public class FinanceExpense {
     private String receiptPath;      // 영수증 파일 저장 경로 (신규)
     private Long   registeredBy;
     private String registeredByName; // 조인용 (users.user_name)
-    private String createdAt;
+    private int    status;
+	private String createdAt;
 
     public Long   getId()                        { return id; }
     public void   setId(Long id)                 { this.id = id; }
@@ -30,4 +31,6 @@ public class FinanceExpense {
     public void   setRegisteredByName(String v)  { this.registeredByName = v; }
     public String getCreatedAt()                 { return createdAt; }
     public void   setCreatedAt(String v)         { this.createdAt = v; }
+    public int 	  getStatus()                    { return status; }
+	public void   setStatus(int status)          { this.status = status; }
 }
