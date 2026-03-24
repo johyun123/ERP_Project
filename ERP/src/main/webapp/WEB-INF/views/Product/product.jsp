@@ -16,66 +16,7 @@
 
     <div class="page-header">
         <div class="page-title">제품 관리 <span>메뉴를 관리합니다</span></div>
-        <div style="margin-right: 5px;">
-            <button class="register-btn" onclick="openProductModal()">+ 제품등록</button>
-        </div>
     </div>
-    
-   <div class="summary-box">
-
-    <div class="summary-card">
-        <div class="summary-title">전체 품목</div>
-        <div class="summary-value">📦 ${totalCount}개</div>
-    </div>
-
-    <div class="summary-card">
-        <div class="summary-title">현재 페이지</div>
-        <div class="summary-value">📄 ${currentPage} / ${totalPages}</div>
-    </div>
-
-    <div class="summary-card">
-        <div class="summary-title">페이지당 항목</div>
-        <div class="summary-value">📊 ${size}개</div>
-    </div>
-
-</div>
-
-<!-- 카테고리 필터 -->
-<div class="filter-wrapper">
-    <div class="category-filter">
-    <button class="cat-btn ${selectedCategory == null ? 'active' : ''}"
-            onclick="location.href='/product/menu?page=1&size=${size}'">
-        📦 전체
-    </button>
-
-    <c:forEach var="cat" items="${categoryList}">
-        <button class="cat-btn ${selectedCategory == cat.id ? 'active' : ''}"
-                onclick="location.href='/product/menu?page=1&size=${size}&categoryId=${cat.id}'">
-            
-            <c:choose>
-            <c:when test="${cat.name == '커피'}">&#129380; ${cat.name}</c:when>
-            <c:when test="${cat.name == '논커피'}">&#129380; ${cat.name}</c:when>
-            <c:when test="${cat.name == '디저트'}">&#127856; ${cat.name}</c:when>
-            <c:when test="${cat.name == '스무디/프라푸치노'}">&#127861; ${cat.name}</c:when>
-            <c:when test="${cat.name == '티/한방'}">&#127845; ${cat.name}</c:when>
-            <c:when test="${cat.name == '에이드'}">&#127865; ${cat.name}</c:when>
-            <c:when test="${cat.name == '베이커리'}">&#129360; ${cat.name}</c:when>
-            <c:when test="${cat.name == '샌드위치/브런치'}">&#129386; ${cat.name}</c:when>
-            <c:when test="${cat.name == '티'}">&#129750; ${cat.name}</c:when>
-            <c:when test="${cat.name == '사람'}">&#128100; ${cat.name}</c:when>
-            <c:otherwise>&#10024; ${cat.name}</c:otherwise> 
-        </c:choose>
-            
-        </button>
-    </c:forEach>
-</div>
-
-    <div class="search-box">
-        <input type="text" id="searchInput" placeholder="제품 검색..." 
-               value="${keyword}" onkeyup="handleEnter(event)">
-        <button onclick="searchProduct()">🔍 검색</button>
-    </div>
-</div>
 
     <div class="table-box">
         <table>
@@ -92,6 +33,7 @@
             </thead>
             <tbody>
                 <c:forEach var="menu" items="${menuList}">
+                <!-- 한 줄 클릭 시 레시피 상세페이지로 이동 -->
                 <tr onclick="location.href='/product/recipe/${menu.id}'" style="cursor:pointer;">
                     <td>${menu.id}</td>
                     <td>${menu.categoryName}</td>
@@ -104,6 +46,7 @@
                         </span>
                     </td>
                     <td>
+                        <!-- 수정/삭제 버튼 클릭 시 tr onclick 이벤트 전파 막기 -->
                         <button class="btn update"
                             onclick="event.stopPropagation(); openUpdateModal(${menu.id}, ${menu.categoryId}, '${menu.name}', '${menu.description}', ${menu.price}, ${menu.cost}, ${menu.isAvailable})">수정</button>
                         <button class="btn delete"
@@ -113,48 +56,10 @@
                 </c:forEach>
             </tbody>
         </table>
-
-        <!-- 테이블 하단: 좌측 size 선택 + 우측 총 개수 -->
-        <div style="display:flex; align-items:center; justify-content:space-between; padding: 10px 4px;">
-            <select onchange="changeSize(this.value)"
-                    style="padding:6px 12px; border-radius:8px; border:1px solid #ddd;
-                           font-size:14px; cursor:pointer; background:#fff;">
-                <option value="10" ${size == 10 ? 'selected' : ''}>10개씩</option>
-                <option value="20" ${size == 20 ? 'selected' : ''}>20개씩</option>
-                <option value="50" ${size == 50 ? 'selected' : ''}>50개씩</option>
-            </select>
-            <div class="total-count">총 ${totalCount}개</div>
-        </div>
-
     </div>
 
-
-    <div class="paging-box">
-        <div class="page-btns">
-
-            <c:if test="${currentPage > 1}">
-                <button class="page-btn"
-                    onclick="location.href='/product/menu?page=${currentPage-1}&size=${size}&categoryId=${selectedCategory}&keyword=${keyword}'">
-                    ◀
-                </button>
-            </c:if>
-
-            <c:forEach begin="1" end="${totalPages}" var="i">
-                <button 
-                    class="page-btn ${i == currentPage ? 'active' : ''}"
-                    onclick="location.href='/product/menu?page=${i}&size=${size}&categoryId=${selectedCategory}&keyword=${keyword}'">
-                    ${i}
-                </button>
-            </c:forEach>
-
-            <c:if test="${currentPage < totalPages}">
-                <button class="page-btn"
-                    onclick="location.href='/product/menu?page=${currentPage+1}&size=${size}&categoryId=${selectedCategory}&keyword=${keyword}'">
-                    ▶
-                </button>
-            </c:if>
-
-        </div>
+    <div class="bottom-box">
+        <button class="register-btn" onclick="openProductModal()">+ 제품등록</button>
     </div>
 
 </div>
@@ -333,14 +238,6 @@ function closeUpdateModal() {
     document.getElementById('updateModal').classList.remove('active');
 }
 
-/* ===== size 변경 ===== */
-function changeSize(size) {
-    const params = new URLSearchParams(window.location.search);
-    params.set('size', size);
-    params.set('page', 1);
-    location.href = '/product/menu?' + params.toString();
-}
-
 /* ===== 카테고리 모달 ===== */
 function switchToCategoryModal() {
     document.getElementById('categoryModal').classList.add('active');
@@ -349,7 +246,7 @@ function closeCategoryModal() {
     document.getElementById('categoryModal').classList.remove('active');
 }
 
-/* 카테고리 AJAX 등록 */
+/* 카테고리 AJAX 등록 후 "등록되었습니다" 토스트 표시 */
 function submitCategory() {
     const name = document.getElementById('categoryNameInput').value.trim();
     if (!name) { alert('카테고리명을 입력해주세요.'); return; }
@@ -382,21 +279,6 @@ function showToast(msg) {
     toast.innerText = msg;
     toast.classList.add('show');
     setTimeout(() => toast.classList.remove('show'), 2500);
-}
-
-/* ===== 검색 ===== */
-function searchProduct() {
-    const keyword = document.getElementById("searchInput").value;
-    const params = new URLSearchParams(window.location.search);
-    params.set('keyword', keyword);
-    params.set('page', 1);
-    location.href = '/product/menu?' + params.toString();
-}
-
-function handleEnter(event) {
-    if (event.key === "Enter") {
-        searchProduct();
-    }
 }
 
 /* ===== 삭제 모달 ===== */

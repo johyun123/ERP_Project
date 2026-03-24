@@ -6,7 +6,8 @@
 <head>
     <meta charset="UTF-8">
     <title>재고 현황 | ERP CAFE</title>
-    <link rel="stylesheet" href="/css/header.css"/>
+    <link rel="stylesheet" href="/css/header.css" />
+    <link rel="stylesheet" href="/css/Common.css" />
     <link rel="stylesheet" href="/css/Ingredients/stock.css"/>
 </head>
 <body>
@@ -139,33 +140,11 @@ request.setAttribute("emojiMap", emojiMap);
                                 </c:otherwise>
                             </c:choose>
                         </td>
-                        <%-- 거래처명 클릭 시 거래처 관리로 이동 --%>
-                        <td>
-                            <c:choose>
-                                <c:when test="${not empty item.supplier}">
-                                    <a href="/inventory/vendor"
-                                       style="color:var(--primary); font-weight:600;
-                                              text-decoration:none; font-size:0.82rem;">
-                                        ${item.supplier}
-                                    </a>
-                                </c:when>
-                                <c:otherwise>
-                                    <span style="color:var(--text-muted);">-</span>
-                                </c:otherwise>
-                            </c:choose>
-                        </td>
+                        <td>${empty item.supplier ? '-' : item.supplier}</td>
                         <td><fmt:formatNumber value="${item.unit_cost}" pattern="#,###"/>원</td>
                         <td>
                             <button class="btn btn-edit"
-                                data-id="${item.id}"
-                                data-name="${item.name}"
-                                data-category="${item.category}"
-                                data-unit="${item.unit}"
-                                data-stock="${item.stock_qty}"
-                                data-minstock="${item.min_stock}"
-                                data-cost="${item.unit_cost}"
-                                data-supplierid="${item.supplier_id}"
-                                onclick="openEditModal(this)">
+                                onclick="openEditModal(${item.id},'${item.name}','${item.category}','${item.unit}',${item.stock_qty},${item.min_stock},${item.unit_cost},'${item.supplier}')">
                                 수정
                             </button>
                             <form action="/inventory/delete/${item.id}" method="post" style="display:inline"
@@ -183,6 +162,7 @@ request.setAttribute("emojiMap", emojiMap);
 
         <%-- 페이지네이션 --%>
         <div class="pagination">
+            <%-- 페이지당 항목 수 선택 --%>
             <div class="page-size-select">
                 <select onchange="changeSize(this.value)">
                     <option value="10"  ${size == 10  ? 'selected' : ''}>10개씩</option>
@@ -190,24 +170,34 @@ request.setAttribute("emojiMap", emojiMap);
                     <option value="50"  ${size == 50  ? 'selected' : ''}>50개씩</option>
                 </select>
             </div>
+
             <div class="page-nav">
+                <%-- 이전 블록 --%>
                 <c:if test="${result.hasPrev()}">
                     <button class="page-btn" onclick="goPage(${result.startPage - 1})">‹</button>
                 </c:if>
+
+                <%-- 페이지 번호 --%>
                 <c:forEach begin="${result.startPage}" end="${result.endPage}" var="p">
                     <button class="page-btn ${p == result.page ? 'active' : ''}"
                             onclick="goPage(${p})">${p}</button>
                 </c:forEach>
+
+                <%-- 다음 블록 --%>
                 <c:if test="${result.hasNext()}">
                     <button class="page-btn" onclick="goPage(${result.endPage + 1})">›</button>
                 </c:if>
             </div>
-            <div style="font-size:0.8rem; color:var(--text-muted);">총 ${result.totalCount}개</div>
+
+            <div style="font-size:0.8rem; color:var(--text-muted);">
+                총 ${result.totalCount}개
+            </div>
         </div>
+
     </div>
 </div>
 
-<%-- ===== 등록 모달 ===== --%>
+<%-- 등록 모달 --%>
 <div class="modal-overlay" id="registerModal">
     <div class="modal">
         <div class="modal-title">➕ 원재료 등록</div>
@@ -238,15 +228,7 @@ request.setAttribute("emojiMap", emojiMap);
                 </div>
                 <div class="form-group">
                     <label>거래처</label>
-                    <%-- 텍스트 입력 → 드롭다운으로 변경 --%>
-                    <select name="supplier_id">
-                        <option value="">선택하세요</option>
-                        <c:forEach var="s" items="${supplierList}">
-                            <option value="${s.id}">${s.supplier_name}
-                                <c:if test="${not empty s.supplier_type}"> (${s.supplier_type})</c:if>
-                            </option>
-                        </c:forEach>
-                    </select>
+                    <input type="text" name="supplier" placeholder="공급업체명">
                 </div>
             </div>
             <div class="form-row">
@@ -271,7 +253,7 @@ request.setAttribute("emojiMap", emojiMap);
     </div>
 </div>
 
-<%-- ===== 수정 모달 ===== --%>
+<%-- 수정 모달 --%>
 <div class="modal-overlay" id="editModal">
     <div class="modal">
         <div class="modal-title">✏️ 원재료 수정</div>
@@ -279,7 +261,7 @@ request.setAttribute("emojiMap", emojiMap);
             <input type="hidden" name="id"   id="edit_id">
             <input type="hidden" name="page" value="${result.page}">
             <c:if test="${not empty category}">
-                <input type="hidden" name="cat" value="${category}">
+                <input type="hidden" name="category_param" value="${category}">
             </c:if>
             <div class="form-row">
                 <div class="form-group">
@@ -306,14 +288,7 @@ request.setAttribute("emojiMap", emojiMap);
                 </div>
                 <div class="form-group">
                     <label>거래처</label>
-                    <select name="supplier_id" id="edit_supplier_id">
-                        <option value="">선택하세요</option>
-                        <c:forEach var="s" items="${supplierList}">
-                            <option value="${s.id}">${s.supplier_name}
-                                <c:if test="${not empty s.supplier_type}"> (${s.supplier_type})</c:if>
-                            </option>
-                        </c:forEach>
-                    </select>
+                    <input type="text" name="supplier" id="edit_supplier">
                 </div>
             </div>
             <div class="form-row">
@@ -366,21 +341,17 @@ function changeSize(s) {
 }
 function openModal(id)  { document.getElementById(id).classList.add('active'); }
 function closeModal(id) { document.getElementById(id).classList.remove('active'); }
-
-/* data-* 방식으로 수정 모달 열기 */
-function openEditModal(btn) {
-    document.getElementById('edit_id').value          = btn.dataset.id;
-    document.getElementById('edit_name').value        = btn.dataset.name;
-    document.getElementById('edit_category').value    = btn.dataset.category;
-    document.getElementById('edit_unit').value        = btn.dataset.unit;
-    document.getElementById('edit_stock_qty').value   = btn.dataset.stock;
-    document.getElementById('edit_min_stock').value   = btn.dataset.minstock;
-    document.getElementById('edit_unit_cost').value   = btn.dataset.cost;
-    var supplierId = btn.dataset.supplierid;
-    document.getElementById('edit_supplier_id').value = (supplierId && supplierId !== 'null') ? supplierId : '';
+function openEditModal(id, name, category, unit, stock_qty, min_stock, unit_cost, supplier) {
+    document.getElementById('edit_id').value        = id;
+    document.getElementById('edit_name').value      = name;
+    document.getElementById('edit_category').value  = category;
+    document.getElementById('edit_unit').value      = unit;
+    document.getElementById('edit_stock_qty').value = stock_qty;
+    document.getElementById('edit_min_stock').value = min_stock;
+    document.getElementById('edit_unit_cost').value = unit_cost;
+    document.getElementById('edit_supplier').value  = (supplier === 'null' ? '' : supplier);
     openModal('editModal');
 }
-
 document.querySelectorAll('.modal-overlay').forEach(function(o) {
     o.addEventListener('click', function(e) { if(e.target===o) o.classList.remove('active'); });
 });

@@ -56,7 +56,7 @@
         <span class="section-title">&#128101; 등록된 계정 목록</span>
     </div>
 
-    <div class="table-card" style="margin-bottom:0; overflow-x:auto;">
+    <div class="table-card" style="margin-bottom:36px; overflow-x:auto;">
         <table class="user-table" style="min-width:820px;">
             <thead>
                 <tr>
@@ -111,7 +111,7 @@
                             <td>
                                 <div class="action-cell">
                                     <c:choose>
-                                        <c:when test="${emp.emp_num eq '222'}">
+                                        <c:when test="${emp.name == '하하하'}">
                                             <span class="btn-locked">보호된 계정</span>
                                         </c:when>
                                         <c:otherwise>
@@ -143,28 +143,7 @@
                 </c:choose>
             </tbody>
         </table>
-
-        <!-- 등록된 계정 페이징 -->
-        <div class="pagination">
-            <div class="page-nav">
-                <c:if test="${userPage > 1}">
-                    <button class="page-btn" onclick="goUserPage(${userPage - 1})">&#8249;</button>
-                </c:if>
-                <c:forEach var="i" begin="1" end="${userTotalPages}">
-                    <button class="page-btn ${i == userPage ? 'active' : ''}"
-                            onclick="goUserPage(${i})">${i}</button>
-                </c:forEach>
-                <c:if test="${userPage < userTotalPages}">
-                    <button class="page-btn" onclick="goUserPage(${userPage + 1})">&#8250;</button>
-                </c:if>
-            </div>
-            <div class="page-total">총 ${userTotalCount}개 계정</div>
-        </div>
     </div>
-    <div style="margin-bottom:36px;"></div>
-    
-
-
 
     <!-- 전체 직원 목록 -->
     <div class="section-header">
@@ -236,33 +215,9 @@
                 </c:forEach>
             </tbody>
         </table>
-
-        <!-- 전체 직원 페이징 -->
-        <div class="pagination">
-            <div class="page-nav">
-                <c:if test="${empPage > 1}">
-                    <button class="page-btn" onclick="goEmpPage(${empPage - 1})">&#8249;</button>
-                </c:if>
-                <c:forEach var="i" begin="1" end="${empTotalPages}">
-                    <button class="page-btn ${i == empPage ? 'active' : ''}"
-                            onclick="goEmpPage(${i})">${i}</button>
-                </c:forEach>
-                <c:if test="${empPage < empTotalPages}">
-                    <button class="page-btn" onclick="goEmpPage(${empPage + 1})">&#8250;</button>
-                </c:if>
-            </div>
-            <div class="page-total">총 ${empTotalCount}명</div>
-        </div>
     </div>
 
-</div><!-- /content -->
-
-
-
-
-
-
-
+</div>
 
 <!-- ===== 관리자 인증 모달 ===== -->
 <div class="modal-overlay" id="authModal">
@@ -303,22 +258,6 @@
 </form>
 
 <script>
-/* ================================================================
-   페이지 이동 — userPage / empPage 파라미터 분리
-================================================================ */
-var _userPage = ${empty userPage ? 1 : userPage};
-var _empPage  = ${empty empPage  ? 1 : empPage};
-
-function goUserPage(p) {
-    var url = '/hr/users?userPage=' + p + '&empPage=' + _empPage;
-    location.href = url;
-}
-
-function goEmpPage(p) {
-    var url = '/hr/users?userPage=' + _userPage + '&empPage=' + p;
-    location.href = url;
-}
-
 /* ===== 모달 상태 ===== */
 var _pendingAction = null;   // 'register' | 'pwchange'
 var _pendingEmpNum = null;
@@ -406,51 +345,6 @@ function openPwChangePrompt(empNum, name) {
 </script>
 
 <style>
-/* ===== 페이지네이션 ===== */
-.pagination {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 20px;
-  border-top: 1.5px solid var(--border-light, #e8eaf6);
-  flex-wrap: wrap;
-  gap: 8px;
-}
-.page-nav {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-.page-btn {
-  min-width: 32px;
-  height: 32px;
-  padding: 0 8px;
-  border: 1.5px solid var(--border, #dde1f8);
-  border-radius: 6px;
-  background: #fff;
-  color: var(--text-secondary, #555);
-  font-size: 0.85rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.18s;
-  font-family: 'Outfit', sans-serif;
-}
-.page-btn:hover {
-  border-color: var(--primary, #5b6ef5);
-  color: var(--primary, #5b6ef5);
-  background: var(--primary-light, #eef0fe);
-}
-.page-btn.active {
-  background: var(--primary-gradient, linear-gradient(135deg,#5b6ef5,#7c8ff7));
-  color: #fff;
-  border-color: transparent;
-  box-shadow: 0 2px 8px rgba(91,110,245,0.3);
-}
-.page-total {
-  font-size: 0.8rem;
-  color: var(--text-muted, #9ca3af);
-}
-
 .btn-del-user {
   padding: 5px 12px; background: #fee2e2; color: #dc2626;
   border: 1.5px solid #ef4444; border-radius: var(--radius-sm);

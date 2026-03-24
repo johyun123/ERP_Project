@@ -83,12 +83,6 @@
   font-size: 0.9rem;
 }
 
-.search-box {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
 /* ===========================
    BUTTONS
 =========================== */
@@ -140,7 +134,7 @@
 }
 
 /* ===========================
-   TABLE CARD
+   TABLE
 =========================== */
 .table-card {
   background: var(--bg-card);
@@ -150,24 +144,6 @@
   overflow: hidden;
 }
 
-.table-card-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px 20px;
-  border-bottom: 1.5px solid var(--border-light);
-}
-
-.table-card-header h3 {
-  font-family: 'Outfit', sans-serif;
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: var(--text-primary);
-}
-
-/* ===========================
-   TABLE
-=========================== */
 .expense-table {
   width: 100%;
   border-collapse: collapse;
@@ -254,65 +230,6 @@
 .btn-delete:hover  { background: var(--accent-red-light); border-color: var(--accent-red); color: var(--accent-red); }
 
 /* ===========================
-   PAGINATION
-=========================== */
-.pagination {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px 20px;
-  border-top: 1.5px solid var(--border-light);
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-.page-size-select select {
-  padding: 6px 10px;
-  border: 1.5px solid var(--border);
-  border-radius: var(--radius-sm);
-  font-size: 0.82rem;
-  color: var(--text-secondary);
-  font-family: 'Noto Sans KR', sans-serif;
-  outline: none;
-  cursor: pointer;
-  background: #fff;
-}
-
-.page-nav {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.page-btn {
-  min-width: 34px;
-  height: 34px;
-  padding: 0 8px;
-  border: 1.5px solid var(--border);
-  border-radius: var(--radius-sm);
-  background: var(--bg-card);
-  color: var(--text-secondary);
-  font-size: 0.85rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: var(--transition);
-  font-family: 'Outfit', sans-serif;
-}
-
-.page-btn:hover {
-  border-color: var(--primary);
-  color: var(--primary);
-  background: var(--primary-light);
-}
-
-.page-btn.active {
-  background: var(--primary-gradient);
-  color: #fff;
-  border-color: transparent;
-  box-shadow: 0 2px 8px rgba(91, 110, 245, 0.3);
-}
-
-/* ===========================
    MODAL
 =========================== */
 .modal-overlay {
@@ -338,8 +255,7 @@
   animation: fadeInUp 0.25s cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 
-.modal-receipt  { max-width: 560px; }
-.modal-register { max-width: 560px; }
+.modal-receipt { max-width: 560px; }
 
 .modal-header {
   display: flex;
@@ -373,8 +289,6 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
-  max-height: 80vh;
-  overflow-y: auto;
 }
 
 .modal-actions {
@@ -408,7 +322,6 @@
   background: #fafbff;
   outline: none;
   transition: var(--transition);
-  box-sizing: border-box;
 }
 
 .form-input:focus {
@@ -439,95 +352,6 @@
 }
 
 /* ===========================
-   OCR 배지 / 상태
-=========================== */
-.ocr-badge {
-  font-size: 0.72rem;
-  font-weight: 700;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
-  color: #fff;
-  border-radius: 20px;
-  padding: 2px 9px;
-  letter-spacing: 0.2px;
-  vertical-align: middle;
-}
-
-.ocr-status {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 14px;
-  border-radius: var(--radius-sm);
-  font-size: 0.85rem;
-  font-weight: 600;
-}
-
-.ocr-loading {
-  background: var(--primary-light);
-  color: var(--primary);
-  border: 1.5px solid rgba(91,110,245,0.2);
-}
-
-.ocr-success {
-  background: var(--accent-green-light);
-  color: #15803d;
-  border: 1.5px solid #86efac;
-}
-
-.ocr-fail {
-  background: var(--accent-red-light);
-  color: var(--accent-red);
-  border: 1.5px solid rgba(239,68,68,0.25);
-}
-
-.ocr-spinner {
-  width: 14px;
-  height: 14px;
-  border: 2px solid rgba(91,110,245,0.25);
-  border-top-color: var(--primary);
-  border-radius: 50%;
-  animation: spin 0.7s linear infinite;
-  flex-shrink: 0;
-}
-
-@keyframes spin { to { transform: rotate(360deg); } }
-
-/* ===========================
-   FILE DROP AREA
-=========================== */
-.file-drop-area {
-  border: 2px dashed var(--border);
-  border-radius: var(--radius-md);
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  cursor: pointer;
-  transition: var(--transition);
-  background: #fafbff;
-  text-align: center;
-}
-
-.file-drop-area:hover,
-.file-drop-area.drag-over { border-color: var(--primary); background: var(--primary-light); }
-.file-drop-area.has-file  { border-color: var(--accent-green); background: var(--accent-green-light); }
-
-.file-drop-icon { font-size: 1.4rem; }
-.file-drop-text { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6; }
-.file-drop-hint { font-size: 0.76rem; color: var(--text-muted); }
-
-.file-preview { margin-top: 8px; }
-
-.receipt-preview-img {
-  max-width: 100%;
-  max-height: 180px;
-  border-radius: var(--radius-sm);
-  border: 1.5px solid var(--border);
-  object-fit: contain;
-}
-
-/* ===========================
    RECEIPT MODAL
 =========================== */
 .receipt-preview-wrap {
@@ -551,6 +375,28 @@
 
 .receipt-upload-section { display: flex; flex-direction: column; gap: 8px; }
 
+.file-drop-area {
+  border: 2px dashed var(--border);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: var(--transition);
+  background: #fafbff;
+  text-align: center;
+}
+
+.file-drop-area:hover,
+.file-drop-area.drag-over { border-color: var(--primary); background: var(--primary-light); }
+.file-drop-area.has-file  { border-color: var(--accent-green); background: var(--accent-green-light); }
+
+.file-drop-icon { font-size: 1.4rem; }
+.file-drop-text { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6; }
+.file-drop-hint { font-size: 0.76rem; color: var(--text-muted); }
+
 /* ===========================
    RESPONSIVE
 =========================== */
@@ -565,5 +411,5 @@
 @media (max-width: 600px) {
   .content { padding: 16px; }
   .filter-bar { flex-direction: column; align-items: stretch; }
-  .modal, .modal-register, .modal-receipt { max-width: 95vw; }
+  .modal { max-width: 95vw; }
 }

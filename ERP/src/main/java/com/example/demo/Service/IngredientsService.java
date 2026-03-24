@@ -5,6 +5,7 @@ import com.example.demo.Domain.PageRequest;
 import com.example.demo.Domain.PageResult;
 import com.example.demo.mapper.IngredientsMapper;
 import org.springframework.stereotype.Service;
+
 import java.util.List;
 
 @Service
@@ -21,17 +22,13 @@ public class IngredientsService {
     }
 
     public PageResult<Ingredients> getByPage(PageRequest req) {
-        List<Ingredients> list  = mapper.findByPage(req);
-        int               total = mapper.countAll(req);
+        List<Ingredients> list = mapper.findByPage(req);
+        int total = mapper.countAll(req);
         return new PageResult<>(list, total, req);
     }
 
     public Ingredients getById(long id) {
         return mapper.findById(id);
-    }
-
-    public List<Ingredients> getBySupplierId(Long supplierId) {
-        return mapper.findBySupplierId(supplierId);
     }
 
     public void register(Ingredients i) {

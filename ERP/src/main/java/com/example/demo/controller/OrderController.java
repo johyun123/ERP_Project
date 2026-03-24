@@ -12,8 +12,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import com.example.demo.Service.OrderService;
 import com.example.demo.Domain.Order;
 import com.example.demo.Domain.OrderItem;
-import com.example.demo.Domain.OrderPageRequest;
-import com.example.demo.Domain.PageResult;
 
 @Controller
 public class OrderController {
@@ -24,32 +22,11 @@ public class OrderController {
         this.orderService = orderService;
     }
 
-    // 주문 목록 페이지 - 페이지네이션 + 필터
+    // 주문 목록 페이지
     @GetMapping("/order")
-    public String orderPage(
-            @RequestParam(defaultValue = "1")   int    page,
-            @RequestParam(defaultValue = "10")  int    size,
-            @RequestParam(required = false)     String keyword,
-            @RequestParam(required = false)     String status,
-            @RequestParam(required = false)     String dateFrom,
-            @RequestParam(required = false)     String dateTo,
-            Model model) {
-
-        OrderPageRequest req = new OrderPageRequest(page, size);
-        req.setKeyword(keyword);
-        req.setStatus(status);
-        req.setDateFrom(dateFrom);
-        req.setDateTo(dateTo);
-
-        PageResult<Order> result = orderService.getByPage(req);
-
-        model.addAttribute("result",   result);
-        model.addAttribute("menuList", orderService.getMenuList());
-        model.addAttribute("keyword",  keyword);
-        model.addAttribute("status",   status);
-        model.addAttribute("dateFrom", dateFrom);
-        model.addAttribute("dateTo",   dateTo);
-        model.addAttribute("size",     size);
+    public String orderPage(Model model) {
+        model.addAttribute("orderList", orderService.getOrderList());
+        model.addAttribute("menuList",  orderService.getMenuList());
         return "Order/OrderDetail";
     }
 
@@ -87,6 +64,7 @@ public class OrderController {
             }
         }
         order.setItems(items);
+
         orderService.insertOrder(order);
         return "redirect:/order";
     }
@@ -95,18 +73,16 @@ public class OrderController {
     @PostMapping("/orderStatus")
     public String updateStatus(
             @RequestParam Long   id,
-            @RequestParam String status,
-            @RequestParam(defaultValue = "1") int page) {
+            @RequestParam String status) {
         orderService.updateOrderStatus(id, status);
-        return "redirect:/order?page=" + page;
+        return "redirect:/order";
     }
 
     // 주문 취소
     @PostMapping("/orderDelete")
-    public String deleteOrder(
-            @RequestParam Long id,
-            @RequestParam(defaultValue = "1") int page) {
+    public String deleteOrder(@RequestParam Long id) {
         orderService.deleteOrder(id);
-        return "redirect:/order?page=" + page;
+        return "redirect:/order";
     }
+    
 }
