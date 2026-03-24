@@ -4,43 +4,52 @@
 <mapper namespace="com.example.demo.mapper.PurchasesMapper">
 
     <select id="findAll" resultType="Purchases">
-        SELECT * FROM purchases ORDER BY ordered_at DESC, id DESC
+        SELECT p.*, s.supplier_name AS supplier
+        FROM purchases p
+        LEFT JOIN suppliers s ON p.supplier_id = s.id
+        ORDER BY p.ordered_at DESC, p.id DESC
     </select>
 
-    <!-- 페이지네이션 + 키워드(거래처명) 필터 -->
     <select id="findByPage" parameterType="PageRequest" resultType="Purchases">
-        SELECT * FROM purchases
+        SELECT p.*, s.supplier_name AS supplier
+        FROM purchases p
+        LEFT JOIN suppliers s ON p.supplier_id = s.id
         <where>
             <if test="keyword != null and keyword != ''">
-                AND supplier LIKE CONCAT('%', #{keyword}, '%')
+                AND s.supplier_name LIKE CONCAT('%', #{keyword}, '%')
             </if>
         </where>
-        ORDER BY ordered_at DESC, id DESC
+        ORDER BY p.ordered_at DESC, p.id DESC
         LIMIT #{size} OFFSET #{offset}
     </select>
 
     <select id="countAll" parameterType="PageRequest" resultType="int">
-        SELECT COUNT(*) FROM purchases
+        SELECT COUNT(*)
+        FROM purchases p
+        LEFT JOIN suppliers s ON p.supplier_id = s.id
         <where>
             <if test="keyword != null and keyword != ''">
-                AND supplier LIKE CONCAT('%', #{keyword}, '%')
+                AND s.supplier_name LIKE CONCAT('%', #{keyword}, '%')
             </if>
         </where>
     </select>
 
     <select id="findById" parameterType="long" resultType="Purchases">
-        SELECT * FROM purchases WHERE id = #{id}
+        SELECT p.*, s.supplier_name AS supplier
+        FROM purchases p
+        LEFT JOIN suppliers s ON p.supplier_id = s.id
+        WHERE p.id = #{id}
     </select>
 
     <insert id="insert" parameterType="Purchases"
             useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO purchases (supplier, total_cost, status, ordered_at, note)
-        VALUES (#{supplier}, #{total_cost}, 'ordered', #{ordered_at}, #{note})
+        INSERT INTO purchases (supplier_id, total_cost, status, ordered_at, note)
+        VALUES (#{supplier_id}, #{total_cost}, 'ordered', #{ordered_at}, #{note})
     </insert>
 
     <update id="update" parameterType="Purchases">
         UPDATE purchases
-        SET supplier    = #{supplier},
+        SET supplier_id = #{supplier_id},
             status      = #{status},
             received_at = #{received_at},
             note        = #{note}

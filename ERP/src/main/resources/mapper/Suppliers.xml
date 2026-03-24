@@ -1,42 +1,42 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.example.demo.mapper.SuppliersMapper">
 
-    <select id="findAll" resultType="com.example.demo.Domain.Suppliers">
-        SELECT id, supplier_name, supplier_type, ceo_name,
-               address, contract_file, note, created_at
-        FROM suppliers
-        ORDER BY id DESC
+    <select id="findAll" resultType="Suppliers">
+        SELECT * FROM suppliers ORDER BY created_at DESC
     </select>
 
-    <select id="findById" parameterType="long"
-            resultType="com.example.demo.Domain.Suppliers">
-        SELECT id, supplier_name, supplier_type, ceo_name,
-               address, contract_file, note, created_at
-        FROM suppliers WHERE id = #{id}
+    <select id="findById" resultType="Suppliers">
+        SELECT * FROM suppliers WHERE id = #{id}
     </select>
 
-    <insert id="insert" parameterType="com.example.demo.Domain.Suppliers"
+    <!-- 거래처별 담당 원재료 목록 -->
+    <select id="findIngredientsBySupplierId" resultType="Ingredients">
+        SELECT * FROM ingredients
+        WHERE supplier_id = #{supplierId}
+        ORDER BY FIELD(category,'원두','유제품','시럽/소스','파우더','차류','소모품','기타'), name
+    </select>
+
+    <insert id="insert" parameterType="Suppliers"
             useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO suppliers
-            (supplier_name, supplier_type, ceo_name, address, contract_file, note)
-        VALUES
-            (#{supplier_name}, #{supplier_type}, #{ceo_name},
-             #{address}, #{contract_file}, #{note})
+        INSERT INTO suppliers (supplier_name, supplier_type, ceo_name, address, contract_file, note)
+        VALUES (#{supplier_name}, #{supplier_type}, #{ceo_name}, #{address}, #{contract_file}, #{note})
     </insert>
 
-    <update id="update" parameterType="com.example.demo.Domain.Suppliers">
+    <update id="update" parameterType="Suppliers">
         UPDATE suppliers
-        SET supplier_name = #{supplier_name},
-            supplier_type = #{supplier_type},
-            ceo_name      = #{ceo_name},
-            address       = #{address},
-            note          = #{note}
+        SET supplier_name  = #{supplier_name},
+            supplier_type  = #{supplier_type},
+            ceo_name       = #{ceo_name},
+            address        = #{address},
+            contract_file  = #{contract_file},
+            note           = #{note}
         WHERE id = #{id}
     </update>
 
-    <delete id="delete" parameterType="long">
-        DELETE FROM suppliers WHERE id = #{id}
-    </delete>
+    <update id="delete">
+        UPDATE suppliers SET is_active = 0 WHERE id = #{id}
+    </update>
+
 </mapper>

@@ -14,6 +14,12 @@ import jakarta.servlet.DispatcherType;
 @EnableWebSecurity
 public class SecurityConfig {
 
+    private final LoginSuccessHandler loginSuccessHandler;
+
+    public SecurityConfig(LoginSuccessHandler loginSuccessHandler) {
+        this.loginSuccessHandler = loginSuccessHandler;
+    }
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
@@ -21,15 +27,19 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .dispatcherTypeMatchers(DispatcherType.FORWARD).permitAll()
                 .requestMatchers("/login", "/regist", "/css/**", "/images/**", "/ocr/**").permitAll()
-                // ERP 사용자 관리 — 점장(MANAGER), 스탭(STAFF)만 접근
-                // UserDetailsServiceImpl에서 roles("MANAGER") / roles("STAFF") 로 세팅 필요
+                // 공지 등록/수정/삭제 → 점장/스탭만
+                .requestMatchers("/notice/register", "/notice/update", "/notice/delete/**")
+                    .hasAnyRole("MANAGER", "STAFF")
+                // 공지 조회 → 전체 인증 사용자
+                .requestMatchers("/notice", "/notice/**").authenticated()
+                // ERP 사용자 관리
                 .requestMatchers("/hr/users/**").hasAnyRole("MANAGER", "STAFF")
                 .anyRequest().authenticated()
             )
             .formLogin(login -> login
                 .loginPage("/login")
                 .loginProcessingUrl("/login")
-                .defaultSuccessUrl("/MainPage", true)
+                .successHandler(loginSuccessHandler)
                 .failureHandler((request, response, exception) -> {
                     String errorMsg = "아이디 또는 비밀번호 오류";
                     if (exception instanceof org.springframework.security.authentication.DisabledException) {
