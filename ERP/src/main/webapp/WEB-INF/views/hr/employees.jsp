@@ -90,7 +90,7 @@
                             <td>${emp.age}</td>
                             <td>
                                 <c:choose>
-                                    <c:when test="${emp.position == '점장'}">
+                                    <c:when test="${emp.emp_num == '222'}">
                                         <span class="position-badge pos-a">점장</span>
                                     </c:when>
                                     <c:when test="${emp.position == '매니저'}">
@@ -151,7 +151,7 @@
                             </td>
                             <td class="td-actions">
                                 <c:choose>
-                                    <c:when test="${emp.name == '하하하'}">
+                                    <c:when test="${emp.position == '점장'}">
                                         <span class="btn-locked" title="보호된 계정입니다">수정 불가</span>
                                         <span class="btn-locked" title="보호된 계정입니다">삭제 불가</span>
                                     </c:when>
@@ -176,6 +176,36 @@
     </div>
 
 </div>
+
+
+
+<!-- ===== [추가] 페이징 UI ===== -->
+<div class="pagination">
+
+    <!-- 이전 -->
+    <c:if test="${currentPage > 1}">
+        <a href="?page=${currentPage - 1}&size=${size}&status=${param.status}">이전</a>
+    </c:if>
+
+    <!-- 페이지 번호 -->
+    <c:forEach var="i" begin="1" end="${totalPages}">
+        <c:choose>
+            <c:when test="${i == currentPage}">
+                <span class="active-page">${i}</span>
+            </c:when>
+            <c:otherwise>
+                <a href="?page=${i}&size=${size}&status=${param.status}">${i}</a>
+            </c:otherwise>
+        </c:choose>
+    </c:forEach>
+
+    <!-- 다음 -->
+    <c:if test="${currentPage < totalPages}">
+        <a href="?page=${currentPage + 1}&size=${size}&status=${param.status}">다음</a>
+    </c:if>
+
+</div>
+
 
 <form id="deleteForm" action="/hr/employees/delete" method="post" style="display:none;">
     <input type="hidden" id="deleteEmpNum" name="emp_num" />
@@ -202,6 +232,7 @@ function applyFilter() {
     var position = document.getElementById('searchPosition').value.trim().toLowerCase();
     var rows     = document.querySelectorAll('.emp-row');
     var visible  = 0;
+    
 
     rows.forEach(function(row) {
         var rName     = (row.getAttribute('data-name')     || '').toLowerCase();

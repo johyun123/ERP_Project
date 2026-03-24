@@ -111,7 +111,7 @@
                             <td>
                                 <div class="action-cell">
                                     <c:choose>
-                                        <c:when test="${emp.name == '하하하'}">
+                                        <c:when test="${emp.emp_num eq '222'}">
                                             <span class="btn-locked">보호된 계정</span>
                                         </c:when>
                                         <c:otherwise>
@@ -144,6 +144,35 @@
             </tbody>
         </table>
     </div>
+  
+  
+    
+    <!-- ===== [추가] users 페이징 ===== -->
+<div class="pagination">
+
+    <c:if test="${currentPage > 1}">
+        <a href="?page=${currentPage - 1}&size=${size}">이전</a>
+    </c:if>
+
+    <c:forEach var="i" begin="1" end="${totalPages}">
+        <c:choose>
+            <c:when test="${i == currentPage}">
+                <span class="active-page">${i}</span>
+            </c:when>
+            <c:otherwise>
+                <a href="?page=${i}&size=${size}">${i}</a>
+            </c:otherwise>
+        </c:choose>
+    </c:forEach>
+
+    <c:if test="${currentPage < totalPages}">
+        <a href="?page=${currentPage + 1}&size=${size}">다음</a>
+    </c:if>
+
+</div>
+    
+
+
 
     <!-- 전체 직원 목록 -->
     <div class="section-header">
@@ -218,6 +247,13 @@
     </div>
 
 </div>
+
+
+
+
+
+
+
 
 <!-- ===== 관리자 인증 모달 ===== -->
 <div class="modal-overlay" id="authModal">
