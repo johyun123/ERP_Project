@@ -6,6 +6,15 @@ public class PageRequest {
     private String category; // 카테고리 필터 (null이면 전체)
     private String keyword;  // 검색어 (null이면 전체)
 
+    // ── Finance (Expense) 전용 ──────────────────────
+    private String expenseType;
+    private String dateFrom;
+    private String dateTo;
+
+    // ── Finance (Payroll) 전용 ──────────────────────
+    private String payYear;
+    private String payMonth;
+
     public PageRequest() {
         this.page = 1;
         this.size = 10;
@@ -32,4 +41,19 @@ public class PageRequest {
 
     public String getKeyword()             { return keyword; }
     public void setKeyword(String keyword) { this.keyword = keyword; }
+
+    public String getExpenseType()               { return expenseType; }
+    public void   setExpenseType(String v)       { this.expenseType = v; }
+
+    public String getDateFrom()                  { return dateFrom; }
+    public void   setDateFrom(String v)          { this.dateFrom = v; }
+
+    public String getDateTo()                    { return dateTo; }
+    public void   setDateTo(String v)            { this.dateTo = v; }
+
+    public String getPayYear()                   { return payYear; }
+    public void   setPayYear(String v)           { this.payYear = v; }
+
+    public String getPayMonth()                  { return payMonth; }
+    public void   setPayMonth(String v)          { this.payMonth = v; }
 }

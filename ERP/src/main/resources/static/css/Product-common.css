@@ -65,6 +65,8 @@
     box-shadow: 0 4px 14px rgba(91, 110, 245, 0.4);
 }
 
+
+
 /* ===========================
    테이블 공통
 =========================== */
@@ -319,3 +321,4 @@ tr:hover td      { background: #f8f9ff; }
     .content   { padding: 16px; }
     .table-box { padding: 16px; overflow-x: auto; }
 }
+
