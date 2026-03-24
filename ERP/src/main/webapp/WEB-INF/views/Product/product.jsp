@@ -56,7 +56,7 @@
             <c:when test="${cat.name == '커피'}">&#129380; ${cat.name}</c:when>
             <c:when test="${cat.name == '논커피'}">&#129380; ${cat.name}</c:when>
             <c:when test="${cat.name == '디저트'}">&#127856; ${cat.name}</c:when>
-            <c:when test="${cat.name == '스무디/프라푸치노'}">&#129483; ${cat.name}</c:when>
+            <c:when test="${cat.name == '스무디/프라푸치노'}">&#127861; ${cat.name}</c:when>
             <c:when test="${cat.name == '티/한방'}">&#127845; ${cat.name}</c:when>
             <c:when test="${cat.name == '에이드'}">&#127865; ${cat.name}</c:when>
             <c:when test="${cat.name == '베이커리'}">&#129360; ${cat.name}</c:when>
