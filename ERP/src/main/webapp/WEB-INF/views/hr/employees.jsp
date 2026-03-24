@@ -31,31 +31,23 @@
     <!-- 필터 + 검색 바 -->
     <div class="filter-bar">
         <div class="status-tabs">
-            <button class="tab-btn ${empty param.status || param.status == 'all'      ? 'active' : ''}"
-                    onclick="goFilter('all')">전체</button>
-            <button class="tab-btn ${param.status == 'active'   ? 'active' : ''}"
-                    onclick="goFilter('active')">재직</button>
-            <button class="tab-btn ${param.status == 'leave'    ? 'active' : ''}"
-                    onclick="goFilter('leave')">휴직</button>
-            <button class="tab-btn ${param.status == 'resigned' ? 'active' : ''}"
-                    onclick="goFilter('resigned')">퇴사</button>
+            <button class="tab-btn active" id="tab-all"      onclick="setTab('all')">전체</button>
+            <button class="tab-btn"        id="tab-active"   onclick="setTab('active')">재직</button>
+            <button class="tab-btn"        id="tab-leave"    onclick="setTab('leave')">휴직</button>
+            <button class="tab-btn"        id="tab-resigned" onclick="setTab('resigned')">퇴사</button>
         </div>
         <div class="search-form">
             <div class="search-wrap">
                 <span class="search-icon">&#128269;</span>
                 <input type="text" class="search-input" id="searchName"
-                       placeholder="이름 검색..."
-                       value="${param.name}"
-                       onkeydown="if(event.key==='Enter') doSearch()" />
+                       placeholder="이름 검색..." oninput="applyFilter()" />
             </div>
             <div class="search-wrap">
                 <input type="text" class="search-input" id="searchPosition"
-                       placeholder="직책 검색..."
-                       value="${param.position}"
-                       onkeydown="if(event.key==='Enter') doSearch()" />
+                       placeholder="직책 검색..." oninput="applyFilter()" />
             </div>
-            <button type="button" class="btn-search" onclick="doSearch()">&#128269; 검색</button>
-            <button type="button" class="btn-reset"  onclick="resetFilter()">초기화</button>
+            <button type="button" class="btn-reset" onclick="resetFilter()">초기화</button>
+            <span class="filter-count" id="filterCount"></span>
         </div>
     </div>
 
@@ -98,7 +90,7 @@
                             <td>${emp.age}</td>
                             <td>
                                 <c:choose>
-                                    <c:when test="${emp.emp_num == '222'}">
+                                    <c:when test="${emp.position == '점장'}">
                                         <span class="position-badge pos-a">점장</span>
                                     </c:when>
                                     <c:when test="${emp.position == '매니저'}">
@@ -159,7 +151,7 @@
                             </td>
                             <td class="td-actions">
                                 <c:choose>
-                                    <c:when test="${emp.position == '점장'}">
+                                    <c:when test="${emp.name == '하하하'}">
                                         <span class="btn-locked" title="보호된 계정입니다">수정 불가</span>
                                         <span class="btn-locked" title="보호된 계정입니다">삭제 불가</span>
                                     </c:when>
@@ -183,95 +175,81 @@
         </table>
     </div>
 
-
-        <!-- ===== 페이지네이션 ===== -->
-        <div class="pagination">
-
-            <div class="page-size-select">
-                <select onchange="changeSize(this.value)">
-                    <option value="10"  ${size == 10  ? 'selected' : ''}>10개씩</option>
-                    <option value="20"  ${size == 20  ? 'selected' : ''}>20개씩</option>
-                    <option value="50"  ${size == 50  ? 'selected' : ''}>50개씩</option>
-                </select>
-            </div>
-
-            <div class="page-nav">
-                <c:if test="${currentPage > 1}">
-                    <button class="page-btn" onclick="goPage(${currentPage - 1})">&#8249;</button>
-                </c:if>
-
-                <c:forEach var="i" begin="1" end="${totalPages}">
-                    <button class="page-btn ${i == currentPage ? 'active' : ''}"
-                            onclick="goPage(${i})">${i}</button>
-                </c:forEach>
-
-                <c:if test="${currentPage < totalPages}">
-                    <button class="page-btn" onclick="goPage(${currentPage + 1})">&#8250;</button>
-                </c:if>
-            </div>
-
-            <div class="page-total">총 ${totalCount}명</div>
-        </div>
-
-    </div><!-- /content -->
-
+</div>
 
 <form id="deleteForm" action="/hr/employees/delete" method="post" style="display:none;">
     <input type="hidden" id="deleteEmpNum" name="emp_num" />
 </form>
 
 <script>
-/* ================================================================
-   서버사이드 페이징 + 필터 네비게이션
-================================================================ */
-var _currentStatus = '${empty param.status ? "all" : param.status}';
-var _currentSize   = ${empty size ? 10 : size};
-
-function buildUrl(page, status, name, position, size) {
-    var s   = status   || _currentStatus;
-    var n   = name     !== undefined ? name     : document.getElementById('searchName').value.trim();
-    var pos = position !== undefined ? position : document.getElementById('searchPosition').value.trim();
-    var sz  = size     || _currentSize;
-    var url = '/hr/employees?page=' + page + '&size=' + sz + '&status=' + encodeURIComponent(s);
-    if (n)   url += '&name='     + encodeURIComponent(n);
-    if (pos) url += '&position=' + encodeURIComponent(pos);
-    return url;
-}
-
-/* 탭 클릭 → 서버 요청 (page=1 리셋) */
-function goFilter(status) {
-    location.href = buildUrl(1, status);
-}
-
-/* 검색 버튼 / Enter */
-function doSearch() {
-    location.href = buildUrl(1, _currentStatus);
-}
-
-/* 페이지 번호 클릭 */
-function goPage(p) {
-    location.href = buildUrl(p);
-}
-
-/* 페이지당 개수 변경 */
-function changeSize(s) {
-    _currentSize = s;
-    location.href = buildUrl(1, _currentStatus,
-        document.getElementById('searchName').value.trim(),
-        document.getElementById('searchPosition').value.trim(),
-        s);
-}
-
-/* 필터 초기화 */
-function resetFilter() {
-    location.href = '/hr/employees?page=1&size=' + _currentSize + '&status=all';
-}
-
-/* 직원 삭제 확인 */
 function confirmDelete(empNum, name) {
     if (!confirm(name + ' 직원을 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.')) return;
     document.getElementById('deleteEmpNum').value = empNum;
     document.getElementById('deleteForm').submit();
+}
+
+var currentTab = 'all';
+
+function setTab(tab) {
+    currentTab = tab;
+    document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+    document.getElementById('tab-' + tab).classList.add('active');
+    applyFilter();
+}
+
+function applyFilter() {
+    var name     = document.getElementById('searchName').value.trim().toLowerCase();
+    var position = document.getElementById('searchPosition').value.trim().toLowerCase();
+    var rows     = document.querySelectorAll('.emp-row');
+    var visible  = 0;
+
+    rows.forEach(function(row) {
+        var rName     = (row.getAttribute('data-name')     || '').toLowerCase();
+        var rPosition = (row.getAttribute('data-position') || '').toLowerCase();
+        var rStatus   = row.getAttribute('data-status');
+
+        var nameMatch     = name === ''     || rName.includes(name);
+        var positionMatch = position === '' || rPosition.includes(position);
+        var tabMatch      = false;
+
+        if      (currentTab === 'all')      tabMatch = true;
+        else if (currentTab === 'active')   tabMatch = rStatus === '1';
+        else if (currentTab === 'leave')    tabMatch = rStatus === '2';
+        else if (currentTab === 'resigned') tabMatch = rStatus === '0';
+
+        var show = nameMatch && positionMatch && tabMatch;
+        row.style.display = show ? '' : 'none';
+        if (show) visible++;
+    });
+
+    var countEl = document.getElementById('filterCount');
+    if (name || position || currentTab !== 'all') {
+        countEl.textContent   = visible + ' / ' + rows.length + '명';
+        countEl.style.display = 'inline';
+    } else {
+        countEl.style.display = 'none';
+    }
+
+    var noResult = document.getElementById('noEmpResult');
+    if (visible === 0 && rows.length > 0) {
+        if (!noResult) {
+            var tr = document.createElement('tr');
+            tr.id  = 'noEmpResult';
+            tr.innerHTML = '<td colspan="14" class="empty-row">조건에 맞는 직원이 없습니다.</td>';
+            document.getElementById('empTableBody').appendChild(tr);
+        }
+    } else {
+        if (noResult) noResult.remove();
+    }
+}
+
+function resetFilter() {
+    document.getElementById('searchName').value     = '';
+    document.getElementById('searchPosition').value = '';
+    currentTab = 'all';
+    document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+    document.getElementById('tab-all').classList.add('active');
+    applyFilter();
 }
 </script>
 
@@ -289,85 +267,6 @@ function confirmDelete(empNum, name) {
   cursor: not-allowed;
   margin-right: 4px;
 }
-
-/* ===== 페이지네이션 ===== */
-.pagination {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px 20px;
-  border-top: 1.5px solid var(--border-light, #e8eaf6);
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-.page-size-select select {
-  padding: 6px 10px;
-  border: 1.5px solid var(--border, #dde1f8);
-  border-radius: 6px;
-  font-size: 0.82rem;
-  color: var(--text-secondary, #555);
-  font-family: 'Noto Sans KR', sans-serif;
-  outline: none;
-  cursor: pointer;
-  background: #fff;
-}
-
-.page-nav {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.page-btn {
-  min-width: 34px;
-  height: 34px;
-  padding: 0 8px;
-  border: 1.5px solid var(--border, #dde1f8);
-  border-radius: 6px;
-  background: #fff;
-  color: var(--text-secondary, #555);
-  font-size: 0.85rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.18s;
-  font-family: 'Outfit', sans-serif;
-}
-
-.page-btn:hover {
-  border-color: var(--primary, #5b6ef5);
-  color: var(--primary, #5b6ef5);
-  background: var(--primary-light, #eef0fe);
-}
-
-.page-btn.active {
-  background: var(--primary-gradient, linear-gradient(135deg,#5b6ef5,#7c8ff7));
-  color: #fff;
-  border-color: transparent;
-  box-shadow: 0 2px 8px rgba(91,110,245,0.3);
-}
-
-.page-total {
-  font-size: 0.8rem;
-  color: var(--text-muted, #9ca3af);
-}
-
-/* 검색 버튼 */
-.btn-search {
-  padding: 8px 16px;
-  border-radius: 6px;
-  font-size: 0.88rem;
-  font-weight: 600;
-  font-family: 'Noto Sans KR', sans-serif;
-  cursor: pointer;
-  border: none;
-  background: var(--primary-gradient, linear-gradient(135deg,#5b6ef5,#7c8ff7));
-  color: #fff;
-  transition: all 0.18s;
-  box-shadow: 0 2px 8px rgba(91,110,245,0.25);
-}
-
-.btn-search:hover { opacity: 0.88; transform: translateY(-1px); }
 </style>
 </body>
 </html>

@@ -46,20 +46,5 @@
     <delete id="deleteById">
         DELETE FROM users WHERE id = #{id}
     </delete>
-    
-    
-    
-    <!-- ===== [추가] users 페이징 ===== -->
-<select id="selectUsersWithPaging" resultType="com.example.demo.Domain.User">
-    SELECT * FROM users
-    ORDER BY id DESC
-    LIMIT #{size} OFFSET #{offset}
-</select>
-
-<!-- ===== [추가] users count ===== -->
-<select id="countUsers" resultType="int">
-    SELECT COUNT(*) FROM users
-</select>
-    
 
 </mapper>
