@@ -28,15 +28,8 @@ public class OrderService {
     public PageResult<Order> getByPage(OrderPageRequest req) {
         List<Order> list  = orderMapper.findByPage(req);
         int         total = orderMapper.countAll(req);
-        return new PageResult<>(list, total, toPageRequest(req));
-    }
-
-    // OrderPageRequest → PageRequest 변환 (PageResult 재사용)
-    private com.example.demo.Domain.PageRequest toPageRequest(OrderPageRequest req) {
-        com.example.demo.Domain.PageRequest pr = new com.example.demo.Domain.PageRequest();
-        pr.setPage(req.getPage());
-        pr.setSize(req.getSize());
-        return pr;
+        // OrderPageRequest가 PageRequest를 상속하므로 바로 넘길 수 있음
+        return new PageResult<>(list, total, req);
     }
 
     public List<Menu> getMenuList() {
