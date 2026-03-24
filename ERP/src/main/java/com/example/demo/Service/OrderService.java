@@ -9,6 +9,8 @@ import com.example.demo.mapper.OrderMapper;
 import com.example.demo.Domain.Menu;
 import com.example.demo.Domain.Order;
 import com.example.demo.Domain.OrderItem;
+import com.example.demo.Domain.OrderPageRequest;
+import com.example.demo.Domain.PageResult;
 
 @Service
 public class OrderService {
@@ -21,6 +23,13 @@ public class OrderService {
 
     public List<Order> getOrderList() {
         return orderMapper.selectOrderList();
+    }
+
+    public PageResult<Order> getByPage(OrderPageRequest req) {
+        List<Order> list  = orderMapper.findByPage(req);
+        int         total = orderMapper.countAll(req);
+        // OrderPageRequest가 PageRequest를 상속하므로 바로 넘길 수 있음
+        return new PageResult<>(list, total, req);
     }
 
     public List<Menu> getMenuList() {
@@ -38,7 +47,6 @@ public class OrderService {
         }
     }
 
-    // 상태 변경
     public void updateOrderStatus(Long id, String status) {
         Order order = new Order();
         order.setId(id);
