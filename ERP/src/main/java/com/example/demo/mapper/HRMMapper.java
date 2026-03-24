@@ -73,4 +73,16 @@ public interface HRMMapper {
 
     // 근태 UPDATE
     void updateAttendance(Attendances a);
+
+    /* ===== 페이징 조회 ===== */
+    List<Employees> searchEmployeesWithPaging(@Param("name") String name,
+                                              @Param("position") String position,
+                                              @Param("is_active") Integer is_active,
+                                              @Param("offset") int offset,
+                                              @Param("size") int size);
+
+    /* ===== 전체 개수 ===== */
+    int countEmployees(@Param("name") String name,
+                       @Param("position") String position,
+                       @Param("is_active") Integer is_active);
 }

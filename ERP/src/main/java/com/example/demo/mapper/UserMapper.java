@@ -30,4 +30,10 @@ public interface UserMapper {
 
     // 계정 삭제 (쿼리는 User.xml)
     void deleteById(@Param("id") Long id);
+
+    /* ===== 페이징 조회 ===== */
+    List<User> findWithPaging(@Param("offset") int offset, @Param("size") int size);
+
+    /* ===== 전체 개수 ===== */
+    int count();
 }

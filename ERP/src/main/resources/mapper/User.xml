@@ -47,4 +47,17 @@
         DELETE FROM users WHERE id = #{id}
     </delete>
 
+    <!-- 페이징 조회 -->
+    <select id="findWithPaging" resultType="com.example.demo.Domain.User">
+        SELECT id, user_pw, is_active
+        FROM users
+        ORDER BY id DESC
+        LIMIT #{size} OFFSET #{offset}
+    </select>
+
+    <!-- 전체 건수 -->
+    <select id="count" resultType="int">
+        SELECT COUNT(*) FROM users
+    </select>
+
 </mapper>

@@ -85,6 +85,17 @@ public class HRMService {
         return hrmMapper.getAttendanceWithEmployees(date);
     }
 
+    /* ===== 페이징 직원 조회 ===== */
+    public List<Employees> searchEmployeesWithPaging(String name, String position,
+            Integer isActive, int offset, int size) {
+        return hrmMapper.searchEmployeesWithPaging(name, position, isActive, offset, size);
+    }
+
+    /* ===== 전체 개수 조회 ===== */
+    public int countEmployees(String name, String position, Integer isActive) {
+        return hrmMapper.countEmployees(name, position, isActive);
+    }
+
     // 근태 저장 (insert or update)
     public void saveOrUpdate(Attendances a) {
         int count = hrmMapper.existsAttendance(a.getEmployee_id(), a.getWork_date());
