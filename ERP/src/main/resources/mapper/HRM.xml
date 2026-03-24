@@ -176,5 +176,40 @@
         WHERE employee_id = #{employee_id}
           AND work_date   = #{work_date}
     </update>
+    
+    
+    <!-- ===== [추가] 직원 페이징 조회 ===== -->
+<select id="searchEmployeesWithPaging" resultType="com.example.demo.Domain.Employees">
+    SELECT * FROM employees
+    <where>
+        <if test="name != null and name != ''">
+            AND name LIKE CONCAT('%', #{name}, '%')
+        </if>
+        <if test="position != null and position != ''">
+            AND position = #{position}
+        </if>
+        <if test="is_active != null">
+            AND is_active = #{is_active}
+        </if>
+    </where>
+    ORDER BY id DESC
+    LIMIT #{size} OFFSET #{offset}
+</select>
+    
+<!-- ===== [추가] 직원 전체 개수 ===== -->
+<select id="countEmployees" resultType="int">
+    SELECT COUNT(*) FROM employees
+    <where>
+        <if test="name != null and name != ''">
+            AND name LIKE CONCAT('%', #{name}, '%')
+        </if>
+        <if test="position != null and position != ''">
+            AND position = #{position}
+        </if>
+        <if test="is_active != null">
+            AND is_active = #{is_active}
+        </if>
+    </where>
+</select>   
 
 </mapper>
