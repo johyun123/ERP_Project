@@ -6,8 +6,7 @@
 <head>
     <meta charset="UTF-8">
     <title>발주 내역 | ERP CAFE</title>
-    <link rel="stylesheet" href="/css/header.css" />
-    <link rel="stylesheet" href="/css/Common.css" />
+    <link rel="stylesheet" href="/css/header.css"/>
     <link rel="stylesheet" href="/css/Ingredients/stock.css"/>
 </head>
 <body>
@@ -54,7 +53,8 @@
                    value="${keyword}" onkeydown="if(event.key==='Enter') doSearch()">
             <button class="btn btn-edit" onclick="doSearch()">🔍 검색</button>
             <c:if test="${not empty keyword}">
-                <button class="btn btn-cancel" onclick="location.href='/inventory/order/history?page=1&size=' + currentSize">✕ 초기화</button>
+                <button class="btn btn-cancel"
+                        onclick="location.href='/inventory/order/history?page=1&size=${size}'">✕ 초기화</button>
             </c:if>
         </div>
     </div>
@@ -87,7 +87,7 @@
                 <c:otherwise>
                     <c:forEach var="p" items="${result.list}">
                     <tr class="clickable-row"
-                        onclick="openDetailModal(${p.id},'${p.supplier}','${p.ordered_at}')">
+                        onclick="openDetailModal(${p.id}, '${p.supplier}', '${p.ordered_at}')">
                         <td>${p.id}</td>
                         <td><strong>${p.supplier}</strong></td>
                         <td><fmt:formatNumber value="${p.total_cost}" pattern="#,###"/>원</td>
@@ -110,15 +110,15 @@
                         <td onclick="event.stopPropagation()">
                             <c:if test="${p.status != 'cancelled'}">
                                 <button class="btn btn-edit"
-    								data-id="${p.id}"
-    								data-supplier="${p.supplier}"
-    								data-status="${p.status}"
-    								data-received="${p.received_at}"
-    								data-note="${p.note}"
-    								data-ordered="${p.ordered_at}"
-    								onclick="openEditModal(this)">
-    							수정
-								</button>
+                                    data-id="${p.id}"
+                                    data-supplier="${p.supplier}"
+                                    data-status="${p.status}"
+                                    data-received="${p.received_at}"
+                                    data-note="${p.note}"
+                                    data-ordered="${p.ordered_at}"
+                                    onclick="openEditModal(this)">
+                                    수정
+                                </button>
                                 <form action="/inventory/order/cancel/${p.id}" method="post" style="display:inline"
                                       onsubmit="return confirm('발주를 취하하시겠습니까?')">
                                     <input type="hidden" name="page" value="${result.page}">
@@ -145,7 +145,6 @@
                     <option value="50" ${size == 50 ? 'selected' : ''}>50개씩</option>
                 </select>
             </div>
-
             <div class="page-nav">
                 <c:if test="${result.hasPrev()}">
                     <button class="page-btn" onclick="goPage(${result.startPage - 1})">‹</button>
@@ -158,18 +157,14 @@
                     <button class="page-btn" onclick="goPage(${result.endPage + 1})">›</button>
                 </c:if>
             </div>
-
-            <div style="font-size:0.8rem; color:var(--text-muted);">
-                총 ${result.totalCount}건
-            </div>
+            <div style="font-size:0.8rem; color:var(--text-muted);">총 ${result.totalCount}건</div>
         </div>
-
     </div>
 </div>
 
-<%-- 발주 상세 모달 --%>
+<%-- ===== 발주 상세 모달 ===== --%>
 <div class="modal-overlay" id="detailModal">
-    <div class="modal" style="width:620px; max-width:95vw;">
+    <div class="modal" style="width:640px; max-width:95vw;">
         <div class="modal-title">
             📦 발주 상세
             <span id="detailInfo" style="font-size:0.82rem; font-weight:400;
@@ -182,7 +177,7 @@
     </div>
 </div>
 
-<%-- 수정 모달 --%>
+<%-- ===== 수정 모달 ===== --%>
 <div class="modal-overlay" id="editModal">
     <div class="modal">
         <div class="modal-title">✏️ 발주 수정</div>
@@ -198,7 +193,7 @@
                 <div class="form-group">
                     <label>
                         입고일
-                        <span style="font-size:0.75rem; color:var(--text-muted); font-weight:400;">
+                        <span style="font-size:0.72rem; color:var(--text-muted); font-weight:400;">
                             (입력 시 자동으로 입고완료 처리)
                         </span>
                     </label>
@@ -210,7 +205,6 @@
                 <label>비고</label>
                 <input type="text" name="note" id="edit_note">
             </div>
-            <%-- 현재 상태 표시 (읽기 전용) --%>
             <div class="form-group">
                 <label>현재 상태</label>
                 <div id="edit_status_display"
@@ -226,6 +220,7 @@
     </div>
 </div>
 
+
 <script>
 var currentKeyword = '${keyword}';
 var currentSize    = ${size};
@@ -236,7 +231,7 @@ function goPage(p) {
     location.href = url;
 }
 function doSearch() {
-    var kw = document.getElementById('keywordInput').value.trim();
+    var kw  = document.getElementById('keywordInput').value.trim();
     var url = '/inventory/order/history?page=1&size=' + currentSize;
     if (kw) url += '&keyword=' + encodeURIComponent(kw);
     location.href = url;
@@ -246,14 +241,17 @@ function changeSize(s) {
     if (currentKeyword) url += '&keyword=' + encodeURIComponent(currentKeyword);
     location.href = url;
 }
+
 function openModal(id)  { document.getElementById(id).classList.add('active'); }
 function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
+/* ===== 발주 상세 모달 ===== */
 function openDetailModal(purchaseId, supplier, orderedAt) {
     document.getElementById('detailInfo').innerText = supplier + ' · ' + orderedAt;
     document.getElementById('detailContent').innerHTML =
         '<div style="text-align:center; padding:40px; color:var(--text-muted);">로딩 중...</div>';
     openModal('detailModal');
+
     fetch('/inventory/order/items/' + purchaseId)
         .then(function(res) { return res.json(); })
         .then(function(items) {
@@ -263,11 +261,17 @@ function openDetailModal(purchaseId, supplier, orderedAt) {
                 return;
             }
             var total = 0;
-            var html = '<table class="detail-table"><thead><tr>'
-                + '<th>원재료명</th><th>단위</th><th>수량</th><th>단가</th><th>소계</th>'
+            var html  = '<table class="detail-table">'
+                + '<thead><tr>'
+                + '<th>원재료명</th>'
+                + '<th>단위</th>'
+                + '<th>수량</th>'
+                + '<th>단가</th>'
+                + '<th>소계</th>'
                 + '</tr></thead><tbody>';
+
             items.forEach(function(item) {
-                total += item.subtotal;
+                total += Number(item.subtotal);
                 html += '<tr>'
                     + '<td><strong>' + item.ingredient_name + '</strong></td>'
                     + '<td>' + item.ingredient_unit + '</td>'
@@ -276,9 +280,13 @@ function openDetailModal(purchaseId, supplier, orderedAt) {
                     + '<td><strong>' + Number(item.subtotal).toLocaleString() + '원</strong></td>'
                     + '</tr>';
             });
+
             html += '</tbody></table>';
-            html += '<div class="detail-total"><span>총 발주금액</span><span>'
-                + total.toLocaleString() + '원</span></div>';
+            html += '<div class="detail-total">'
+                + '<span>총 발주금액</span>'
+                + '<span class="total-amount">' + total.toLocaleString() + '원</span>'
+                + '</div>';
+
             document.getElementById('detailContent').innerHTML = html;
         })
         .catch(function() {
@@ -286,38 +294,46 @@ function openDetailModal(purchaseId, supplier, orderedAt) {
                 '<div style="text-align:center; padding:40px; color:var(--accent-red);">데이터를 불러오지 못했습니다.</div>';
         });
 }
-function handleReceivedDate(val) {
-    if (val) {
-        document.getElementById('edit_status').value = 'received';
-        document.getElementById('edit_status_display').innerText = '✅ 입고완료';
-        document.getElementById('edit_status_display').style.background = 'var(--accent-green-light)';
-        document.getElementById('edit_status_display').style.color = 'var(--accent-green)';
-    } else {
-        document.getElementById('edit_status').value = 'ordered';
-        document.getElementById('edit_status_display').innerText = '📋 발주완료';
-        document.getElementById('edit_status_display').style.background = 'var(--accent-orange-light)';
-        document.getElementById('edit_status_display').style.color = 'var(--accent-orange)';
-    }
-}
 
+/* ===== 수정 모달 - data-* 방식 ===== */
 function openEditModal(btn) {
-    const id          = btn.dataset.id;
-    const supplier    = btn.dataset.supplier;
-    const status      = btn.dataset.status;
-    const received_at = btn.dataset.received;
-    const note        = btn.dataset.note;
-    const ordered_at  = btn.dataset.ordered;
+    var id          = btn.dataset.id;
+    var supplier    = btn.dataset.supplier;
+    var status      = btn.dataset.status;
+    var received_at = btn.dataset.received;
+    var note        = btn.dataset.note;
+    var ordered_at  = btn.dataset.ordered;
 
     document.getElementById('edit_id').value          = id;
     document.getElementById('edit_supplier').value    = supplier;
     document.getElementById('edit_status').value      = status;
     document.getElementById('edit_received_at').value = (received_at === 'null' ? '' : received_at);
     document.getElementById('edit_note').value        = (note === 'null' ? '' : note);
-    document.getElementById('edit_received_at').min   = ordered_at;
 
+    // 발주일 이전 날짜 선택 불가
+    document.getElementById('edit_received_at').min = ordered_at;
+
+    // 현재 상태 표시
     handleReceivedDate(document.getElementById('edit_received_at').value);
     openModal('editModal');
 }
+
+function handleReceivedDate(val) {
+    var statusEl  = document.getElementById('edit_status');
+    var displayEl = document.getElementById('edit_status_display');
+    if (val) {
+        statusEl.value         = 'received';
+        displayEl.innerText    = '✅ 입고완료';
+        displayEl.style.background = 'var(--accent-green-light)';
+        displayEl.style.color      = 'var(--accent-green)';
+    } else {
+        statusEl.value         = 'ordered';
+        displayEl.innerText    = '📋 발주완료';
+        displayEl.style.background = 'var(--accent-orange-light)';
+        displayEl.style.color      = 'var(--accent-orange)';
+    }
+}
+
 document.querySelectorAll('.modal-overlay').forEach(function(o) {
     o.addEventListener('click', function(e) { if(e.target===o) o.classList.remove('active'); });
 });

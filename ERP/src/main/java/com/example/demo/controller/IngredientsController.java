@@ -4,6 +4,8 @@ import com.example.demo.Domain.*;
 import com.example.demo.Service.IngredientsService;
 import com.example.demo.Service.PurchasesService;
 import com.example.demo.Service.SuppliersService;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.ServletContext;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -11,7 +13,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -24,15 +25,24 @@ public class IngredientsController {
     private final IngredientsService ingredientsService;
     private final SuppliersService   suppliersService;
     private final PurchasesService   purchasesService;
+    private final ServletContext     servletContext;
 
-    public IngredientsController(IngredientsService is, SuppliersService ss, PurchasesService ps) {
+    public IngredientsController(IngredientsService is, SuppliersService ss,
+                                 PurchasesService ps, ServletContext sc) {
         this.ingredientsService = is;
         this.suppliersService   = ss;
         this.purchasesService   = ps;
+        this.servletContext     = sc;
+    }
+
+    private String getUploadDir() throws IOException {
+        String uploadDir = servletContext.getRealPath("/") + "uploads/contracts/";
+        Files.createDirectories(Paths.get(uploadDir));
+        return uploadDir;
     }
 
     // ============================================================
-    // 재고 현황 - 페이지네이션
+    // 재고 현황
     // ============================================================
     @GetMapping("/inventory")
     public String stock(
@@ -46,16 +56,32 @@ public class IngredientsController {
         req.setCategory(category);
         req.setKeyword(keyword);
 
-        PageResult<Ingredients> result = ingredientsService.getByPage(req);
-        model.addAttribute("result", result);
-        model.addAttribute("category", category);
-        model.addAttribute("keyword",  keyword);
-        model.addAttribute("size",     size);
+        model.addAttribute("result",       ingredientsService.getByPage(req));
+        model.addAttribute("supplierList", suppliersService.getAll()); // 거래처 드롭다운용
+        model.addAttribute("category",     category);
+        model.addAttribute("keyword",      keyword);
+        model.addAttribute("size",         size);
         return "Ingredients/ingredient";
     }
 
     @PostMapping("/inventory/register")
-    public String stockRegister(@ModelAttribute Ingredients i) {
+    public String stockRegister(
+            @RequestParam String name,
+            @RequestParam String category,
+            @RequestParam String unit,
+            @RequestParam(defaultValue = "0") double stock_qty,
+            @RequestParam(defaultValue = "0") double min_stock,
+            @RequestParam(defaultValue = "0") int    unit_cost,
+            @RequestParam(required = false)   Long   supplier_id) {
+
+        Ingredients i = new Ingredients();
+        i.setName(name);
+        i.setCategory(category);
+        i.setUnit(unit);
+        i.setStock_qty(stock_qty);
+        i.setMin_stock(min_stock);
+        i.setUnit_cost(unit_cost);
+        i.setSupplier_id(supplier_id);
         ingredientsService.register(i);
         return "redirect:/inventory";
     }
@@ -67,14 +93,32 @@ public class IngredientsController {
     }
 
     @PostMapping("/inventory/update")
-    public String stockUpdate(@ModelAttribute Ingredients i,
-                              @RequestParam(defaultValue = "1") int page,
-                              @RequestParam(required = false)   String category,
-                              @RequestParam(required = false)   String keyword) {
+    public String stockUpdate(
+            @RequestParam long   id,
+            @RequestParam String name,
+            @RequestParam String category,
+            @RequestParam String unit,
+            @RequestParam double stock_qty,
+            @RequestParam double min_stock,
+            @RequestParam int    unit_cost,
+            @RequestParam(required = false) Long supplier_id,
+            @RequestParam(defaultValue = "1") int  page,
+            @RequestParam(required = false)   String cat,
+            @RequestParam(required = false)   String keyword) {
+
+        Ingredients i = new Ingredients();
+        i.setId(id);
+        i.setName(name);
+        i.setCategory(category);
+        i.setUnit(unit);
+        i.setStock_qty(stock_qty);
+        i.setMin_stock(min_stock);
+        i.setUnit_cost(unit_cost);
+        i.setSupplier_id(supplier_id);
         ingredientsService.modify(i);
         return "redirect:/inventory?page=" + page
-                + (category != null ? "&category=" + category : "")
-                + (keyword  != null ? "&keyword="  + keyword  : "");
+                + (cat     != null ? "&category=" + cat     : "")
+                + (keyword != null ? "&keyword="  + keyword : "");
     }
 
     @PostMapping("/inventory/delete/{id}")
@@ -110,11 +154,7 @@ public class IngredientsController {
 
         if (file != null && !file.isEmpty()) {
             String filename  = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-            String uploadDir = System.getProperty("user.dir")
-                             + "/src/main/resources/static/uploads/contracts/";
-            Path path = Paths.get(uploadDir + filename);
-            Files.createDirectories(path.getParent());
-            Files.write(path, file.getBytes());
+            Files.write(Paths.get(getUploadDir() + filename), file.getBytes());
             s.setContract_file("/uploads/contracts/" + filename);
         }
         suppliersService.register(s);
@@ -130,8 +170,44 @@ public class IngredientsController {
         return "Ingredients/supplierList";
     }
 
+    // 거래처 상세 - 담당 원재료 목록 (JSON)
+    @GetMapping("/inventory/vendor/{id}/ingredients")
+    @ResponseBody
+    public List<Ingredients> supplierIngredients(@PathVariable Long id) {
+        return suppliersService.getIngredientsBySupplier(id);
+    }
+
     @PostMapping("/inventory/vendor/update")
-    public String supplierUpdate(@ModelAttribute Suppliers s) {
+    public String supplierUpdate(
+            @RequestParam Long   id,
+            @RequestParam String supplier_name,
+            @RequestParam(required = false) String supplier_type,
+            @RequestParam(required = false) String ceo_name,
+            @RequestParam(required = false) String address,
+            @RequestParam(required = false) String note,
+            @RequestParam(required = false) String  contract_file,
+            @RequestParam(required = false) String  delete_contract,
+            @RequestParam(value = "new_contract_file", required = false) MultipartFile newFile
+    ) throws IOException {
+
+        Suppliers s = new Suppliers();
+        s.setId(id);
+        s.setSupplier_name(supplier_name);
+        s.setSupplier_type(supplier_type);
+        s.setCeo_name(ceo_name);
+        s.setAddress(address);
+        s.setNote(note);
+
+        if ("true".equals(delete_contract)) {
+            s.setContract_file(null);
+        } else if (newFile != null && !newFile.isEmpty()) {
+            String filename = System.currentTimeMillis() + "_" + newFile.getOriginalFilename();
+            Files.write(Paths.get(getUploadDir() + filename), newFile.getBytes());
+            s.setContract_file("/uploads/contracts/" + filename);
+        } else {
+            s.setContract_file(contract_file);
+        }
+
         suppliersService.modify(s);
         return "redirect:/inventory/vendor";
     }
@@ -143,7 +219,7 @@ public class IngredientsController {
     }
 
     // ============================================================
-    // 발주 내역 - 페이지네이션
+    // 발주 내역
     // ============================================================
     @GetMapping("/inventory/order/history")
     public String purchaseList(
@@ -155,8 +231,7 @@ public class IngredientsController {
         PageRequest req = new PageRequest(page, size);
         req.setKeyword(keyword);
 
-        PageResult<Purchases> result = purchasesService.getByPage(req);
-        model.addAttribute("result",  result);
+        model.addAttribute("result",  purchasesService.getByPage(req));
         model.addAttribute("keyword", keyword);
         model.addAttribute("size",    size);
         return "Ingredients/purchaseList";
@@ -188,42 +263,33 @@ public class IngredientsController {
     @GetMapping("/inventory/order")
     public String purchaseOrder(Model model) {
         model.addAttribute("ingredientList", ingredientsService.getAll());
+        model.addAttribute("supplierList",   suppliersService.getAll());
         return "Ingredients/purchaseOrder";
     }
 
     @PostMapping("/inventory/order")
     public String purchaseOrderPost(
-            @RequestParam String supplier,
+            @RequestParam Long   supplier_id,
             @RequestParam String ordered_at,
             @RequestParam(required = false) String note,
-            @RequestParam int total_cost,
+            @RequestParam int    total_cost,
             @RequestParam String itemsJson) throws Exception {
 
         Purchases p = new Purchases();
-        p.setSupplier(supplier);
+        p.setSupplier_id(supplier_id);
         p.setOrdered_at(LocalDate.parse(ordered_at));
         p.setNote(note);
         p.setTotal_cost(total_cost);
 
+        ObjectMapper objectMapper = new ObjectMapper();
+        List<Map<String, Object>> rawItems = objectMapper.readValue(itemsJson, List.class);
 
         List<PurchaseItems> items = new ArrayList<>();
-        String cleaned = itemsJson.trim().replaceAll("^\\[|\\]$", "");
-        String[] objects = cleaned.split("\\},\\{");
-
-        for (String obj : objects) {
-            obj = obj.replaceAll("[\\[\\]\\{\\}]", "").trim();
+        for (Map<String, Object> raw : rawItems) {
             PurchaseItems item = new PurchaseItems();
-            for (String kv : obj.split(",")) {
-                String[] pair = kv.split(":");
-                if (pair.length < 2) continue;
-                String key = pair[0].replaceAll("\"", "").trim();
-                String val = pair[1].replaceAll("\"", "").trim();
-                switch (key) {
-                    case "id":        item.setIngredient_id(Long.parseLong(val));   break;
-                    case "qty":       item.setQty(Double.parseDouble(val));         break;
-                    case "unit_cost": item.setUnit_cost(Integer.parseInt(val));     break;
-                }
-            }
+            item.setIngredient_id(Long.parseLong(raw.get("id").toString()));
+            item.setQty(Double.parseDouble(raw.get("qty").toString()));
+            item.setUnit_cost(Integer.parseInt(raw.get("unit_cost").toString()));
             item.setSubtotal((int)(item.getQty() * item.getUnit_cost()));
             items.add(item);
         }

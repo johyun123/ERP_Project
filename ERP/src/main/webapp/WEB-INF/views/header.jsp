@@ -138,17 +138,28 @@ String avatarChar = loginName.length() > 0 ? String.valueOf(loginName.charAt(0))
 
     /* ===== 현재 URL로 메뉴 자동 활성화 ===== */
     function setActiveMenu() {
-        const path = location.pathname;
-        document.querySelectorAll('.menu > li').forEach(li => {
-            li.querySelectorAll('.submenu li').forEach(sub => {
-                const href = sub.getAttribute('onclick')?.match(/location\.href='([^']+)'/)?.[1];
-                if (href && (path === href || path.startsWith(href + '/'))) {
-                    li.classList.add('open');
-                    sub.classList.add('active');
-                }
-            });
+    const path = location.pathname;
+    let bestMatch = null;
+    let bestHref  = '';
+
+    // 모든 서브메뉴 중 현재 URL과 가장 길게 매칭되는 것 하나만 선택
+    document.querySelectorAll('.menu > li').forEach(li => {
+        li.querySelectorAll('.submenu li').forEach(sub => {
+            const href = sub.getAttribute('onclick')?.match(/location\.href='([^']+)'/)?.[1];
+            if (!href) return;
+            if ((path === href || path.startsWith(href + '/')) && href.length > bestHref.length) {
+                bestMatch = { li, sub };
+                bestHref  = href;
+            }
         });
+    });
+
+    // 가장 잘 맞는 메뉴 하나만 활성화
+    if (bestMatch) {
+        bestMatch.li.classList.add('open');
+        bestMatch.sub.classList.add('active');
     }
+}
     setActiveMenu();
 
     /* ===== 알림 드롭다운 ===== */
