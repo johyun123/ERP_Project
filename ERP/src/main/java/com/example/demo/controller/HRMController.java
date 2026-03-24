@@ -186,32 +186,46 @@ public class HRMController {
 
 	/* ===== ERP 사용자 관리 목록 ===== */
 	@GetMapping("/users")
-	public String usersPage(@RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "10") int size,
+	public String usersPage(
+			@RequestParam(defaultValue = "1") int userPage,   // 등록된 계정 페이지
+			@RequestParam(defaultValue = "1") int empPage,    // 전체 직원 페이지
 			Model model) {
 
-		int offset = (page - 1) * size;
+		final int PAGE_SIZE = 5;  // 두 테이블 모두 5개씩
 
-		/* ===== users 페이징 ===== */
-		List<User> users = userService.getUsersWithPaging(offset, size);
-		int totalCount = userService.countUsers();
-		int totalPages = (int) Math.ceil((double) totalCount / size);
+		// ── 등록된 계정 페이징 ──────────────────────────
+		int userOffset  = (userPage - 1) * PAGE_SIZE;
+		List<User> users = userService.getUsersWithPaging(userOffset, PAGE_SIZE);
+		int userTotal   = userService.countUsers();
+		int userTotalPages = (int) Math.ceil((double) userTotal / PAGE_SIZE);
 
-		/* 🔥 [수정] 잘못된 메서드 제거 */
-		// List<Employees> employees = hrmService.getEmployeesWithPaging(offset, size);
-		// ❌
+		// ── 전체 직원 페이징 ────────────────────────────
+		int empOffset = (empPage - 1) * PAGE_SIZE;
+		List<Employees> employees = hrmService.searchEmployeesWithPaging(
+				null, null, null, empOffset, PAGE_SIZE);
+		int empTotal  = hrmService.countEmployees(null, null, null);
+		int empTotalPages = (int) Math.ceil((double) empTotal / PAGE_SIZE);
 
-		/* 🔥 [수정] 정상 메서드 사용 */
-		List<Employees> employees = hrmService.getAllEmployees(); // ✔ 또는 필요하면 페이징 따로 구현
+		// empMapById 는 전체 직원 기준으로 만들어야 계정 테이블에서 조인 가능
+		// (계정 테이블 행은 users 기준, 직원 정보는 employees 테이블에서)
+		// 전체 직원 Map 은 별도로 조회 (페이징된 employees 와 별개)
+		List<Employees> allEmployees = hrmService.getAllEmployees();
+		Map<Long, Employees> empMapById = allEmployees.stream()
+				.collect(Collectors.toMap(Employees::getId, e -> e));
 
-		Map<Long, Employees> empMapById = employees.stream().collect(Collectors.toMap(Employees::getId, e -> e));
+		model.addAttribute("users",          users);
+		model.addAttribute("employees",      employees);   // 페이징된 직원 목록
+		model.addAttribute("empMapById",     empMapById);  // 계정 테이블 조인용 (전체)
 
-		model.addAttribute("users", users);
-		model.addAttribute("employees", employees);
-		model.addAttribute("empMapById", empMapById);
+		// 등록된 계정 페이징 정보
+		model.addAttribute("userPage",       userPage);
+		model.addAttribute("userTotalPages", userTotalPages);
+		model.addAttribute("userTotalCount", userTotal);
 
-		model.addAttribute("currentPage", page);
-		model.addAttribute("totalPages", totalPages);
-		model.addAttribute("size", size);
+		// 전체 직원 페이징 정보
+		model.addAttribute("empPage",        empPage);
+		model.addAttribute("empTotalPages",  empTotalPages);
+		model.addAttribute("empTotalCount",  empTotal);
 
 		return "hr/users";
 	}
