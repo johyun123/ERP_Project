@@ -670,3 +670,74 @@ input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--primary)
   .radio-group { flex-direction: column; }
   .att-count { display: none; }
 }
+
+/* ===========================
+   테이블 헤더 고정 (근태 상세)
+=========================== */
+.att-table-wrap {
+  max-height: 560px;
+  overflow-y: auto;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--border);
+}
+
+.att-table-wrap .att-table { min-width: 800px; }
+
+.att-table-wrap thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--primary-light);
+  border-bottom: 2px solid var(--border);
+}
+
+/* ===========================
+   페이징 (근태 상세)
+=========================== */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.pagination a,
+.pagination span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 34px;
+  height: 34px;
+  padding: 0 8px;
+  border-radius: var(--radius-sm);
+  font-size: 0.88rem;
+  text-decoration: none;
+  border: 1.5px solid var(--border);
+  color: var(--text-secondary);
+  background: var(--bg-card);
+  transition: var(--transition);
+}
+
+.pagination a:hover { background: var(--primary-light); border-color: var(--primary); color: var(--primary); }
+
+.pagination .active {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+  font-weight: 700;
+}
+
+.pagination .disabled {
+  color: var(--border);
+  pointer-events: none;
+  background: var(--bg-content);
+}
+
+.page-info {
+  text-align: center;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-top: 8px;
+}

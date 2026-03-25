@@ -487,13 +487,24 @@
         document.getElementById('receiptUpload').value = '';
 
         if (path && path !== '') {
-            img.src = path;
-            img.style.display = 'block';
-            empty.style.display = 'none';
+            // 경로 앞에 / 없으면 보정
+            var normalizedPath = (path.charAt(0) === '/') ? path : '/' + path;
+            img.onerror = function() {
+                img.style.display  = 'none';
+                empty.style.display = 'block';
+                empty.innerHTML = '영수증을 불러올 수 없습니다.<br>'
+                    + '<span style="font-size:0.76rem;color:var(--text-muted);">' + normalizedPath + '</span>';
+            };
+            img.onload = function() {
+                img.style.display   = 'block';
+                empty.style.display = 'none';
+            };
+            img.src = normalizedPath;
         } else {
             img.src = '';
             img.style.display = 'none';
             empty.style.display = 'block';
+            empty.innerHTML = '등록된 영수증이 없습니다.';
         }
 
         openModal('receiptModal');

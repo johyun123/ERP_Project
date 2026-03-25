@@ -85,6 +85,16 @@ public class HRMService {
         return hrmMapper.getAttendanceWithEmployees(date);
     }
 
+    // 근태 상세 페이징
+    public List<Map<String, Object>> getAttendanceWithEmployeesPaged(String date, int offset, int size) {
+        return hrmMapper.getAttendanceWithEmployeesPaged(date, offset, size);
+    }
+
+    // 근태 상세 전체 인원 수
+    public int countAttendanceWithEmployees(String date) {
+        return hrmMapper.countAttendanceWithEmployees(date);
+    }
+
     /* ===== 페이징 직원 조회 ===== */
     public List<Employees> searchEmployeesWithPaging(String name, String position,
             Integer isActive, int offset, int size) {

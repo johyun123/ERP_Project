@@ -55,7 +55,7 @@ public class FinanceController {
             try {
                 // src/main/resources/static/ 하위에 저장 → Spring Boot가 자동으로 정적 서빙
                 String uploadDir = System.getProperty("user.dir")
-                        + "/src/main/resources/static/uploads/receipts/";
+                        + "/src/main/webapp/uploads/receipts/";
                 File dir = new File(uploadDir);
                 if (!dir.exists()) dir.mkdirs();
 
@@ -142,28 +142,45 @@ public class FinanceController {
                 result.put("message", "파일이 없습니다.");
                 return result;
             }
+
+            // user.dir 기준 경로 구성 + 실제 경로 로그 출력 (경로 문제 디버그용)
             String uploadDir = System.getProperty("user.dir")
-                    + "/src/main/resources/static/uploads/receipts/";
+                    + "/src/main/webapp/uploads/receipts/";
             File dir = new File(uploadDir);
-            if (!dir.exists()) dir.mkdirs();
+            System.out.println("[영수증 업로드] 저장 경로: " + dir.getAbsolutePath());
+
+            if (!dir.exists()) {
+                boolean created = dir.mkdirs();
+                System.out.println("[영수증 업로드] 디렉토리 생성: " + created);
+            }
 
             String originalName = receiptFile.getOriginalFilename();
             String ext = (originalName != null && originalName.contains("."))
                     ? originalName.substring(originalName.lastIndexOf('.'))
                     : ".jpg";
-            String savedName  = UUID.randomUUID().toString() + ext;
+            String savedName = UUID.randomUUID().toString() + ext;
+            File destFile = new File(dir.getAbsolutePath() + "/" + savedName);
 
-            receiptFile.transferTo(new File(uploadDir + savedName));
+            // 파일 저장 먼저 시도 — 성공해야만 DB 업데이트
+            receiptFile.transferTo(destFile);
+
+            if (!destFile.exists()) {
+                result.put("success", false);
+                result.put("message", "파일 저장에 실패했습니다. 경로를 확인해주세요: " + destFile.getAbsolutePath());
+                return result;
+            }
+
             String receiptPath = "/uploads/receipts/" + savedName;
-
             financeService.updateReceiptPath(id, receiptPath);
 
+            System.out.println("[영수증 업로드] 저장 성공: " + destFile.getAbsolutePath());
             result.put("success", true);
             result.put("path", receiptPath);
+
         } catch (Exception e) {
             e.printStackTrace();
             result.put("success", false);
-            result.put("message", e.getMessage());
+            result.put("message", "오류: " + e.getMessage());
         }
         return result;
     }
@@ -215,6 +232,7 @@ public class FinanceController {
                                 @RequestParam int    basePay,
                                 @RequestParam int    deduction,
                                 @RequestParam int    netPay,
+                                @RequestParam int    payType,
                                 @RequestParam(required = false) String paidAt,
                                 @RequestParam(required = false) String note,
                                 RedirectAttributes ra) {
@@ -227,6 +245,7 @@ public class FinanceController {
         p.setBasePay(basePay);
         p.setDeduction(deduction);
         p.setNetPay(netPay);
+        p.setPayType(payType);
         p.setPaidAt(paidAt);
         p.setNote(note);
         financeService.updatePayroll(p);
@@ -251,6 +270,7 @@ public class FinanceController {
                                 @RequestParam int    basePay,
                                 @RequestParam int    deduction,
                                 @RequestParam int    netPay,
+                                @RequestParam int    payType,
                                 @RequestParam(required = false) String paidAt,
                                 @RequestParam(required = false) String note,
                                 RedirectAttributes ra) {
@@ -264,6 +284,7 @@ public class FinanceController {
         p.setNetPay(netPay);
         p.setPaidAt(paidAt);
         p.setNote(note);
+        p.setPayType(payType);
         financeService.registerPayroll(p);
         ra.addFlashAttribute("msg", "급여가 수동 처리되었습니다.");
         return "redirect:/f_payrolls";

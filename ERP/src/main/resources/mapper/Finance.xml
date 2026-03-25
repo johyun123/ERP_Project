@@ -153,6 +153,7 @@
             p.paid_at      AS paidAt,
             p.note,
             p.created_at   AS createdAt,
+            p.pay_type     AS payType,
             e.name         AS employeeName
         FROM payrolls p
         LEFT JOIN employees e ON p.employee_id = e.id
@@ -194,11 +195,11 @@
         INSERT INTO payrolls (
             employee_id, pay_year, pay_month,
             work_hours, base_pay, deduction, net_pay,
-            paid_at, note
+            paid_at, note, pay_type
         ) VALUES (
             #{employeeId}, #{payYear}, #{payMonth},
             #{workHours}, #{basePay}, #{deduction}, #{netPay},
-            #{paidAt}, #{note}
+            #{paidAt}, #{note}, #{payType}
         )
     </insert>
 
@@ -214,7 +215,8 @@
             deduction   = #{deduction},
             net_pay     = #{netPay},
             paid_at     = #{paidAt},
-            note        = #{note}
+            note        = #{note},
+            pay_type    = #{payType}
         WHERE id = #{id}
     </update>
 

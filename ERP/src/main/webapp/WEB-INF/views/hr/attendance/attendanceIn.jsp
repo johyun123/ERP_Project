@@ -53,6 +53,7 @@
     <div class="table-card">
         <form action="/hr/saveAttendance" method="post" id="attForm">
 
+            <div class="att-table-wrap">
             <table class="att-table">
                 <thead>
                     <tr>
@@ -141,13 +142,51 @@
                     </c:choose>
                 </tbody>
             </table>
+            </div><%-- /att-table-wrap --%>
 
             <div class="form-actions">
                 <button type="submit" class="btn-save">저장</button>
             </div>
 
         </form>
-    </div>
+
+        <!-- 페이징 -->
+        <div class="pagination">
+            <%-- 이전 블록 --%>
+            <c:choose>
+                <c:when test="${startPage > 1}">
+                    <a href="/hr/attendanceIn?date=${date}&page=${startPage - 1}&size=${size}">&#8249; 이전</a>
+                </c:when>
+                <c:otherwise>
+                    <span class="disabled">&#8249; 이전</span>
+                </c:otherwise>
+            </c:choose>
+
+            <%-- 페이지 번호 --%>
+            <c:forEach begin="${startPage}" end="${endPage}" var="p">
+                <c:choose>
+                    <c:when test="${p == currentPage}">
+                        <span class="active">${p}</span>
+                    </c:when>
+                    <c:otherwise>
+                        <a href="/hr/attendanceIn?date=${date}&page=${p}&size=${size}">${p}</a>
+                    </c:otherwise>
+                </c:choose>
+            </c:forEach>
+
+            <%-- 다음 블록 --%>
+            <c:choose>
+                <c:when test="${endPage < totalPages}">
+                    <a href="/hr/attendanceIn?date=${date}&page=${endPage + 1}&size=${size}">다음 &#8250;</a>
+                </c:when>
+                <c:otherwise>
+                    <span class="disabled">다음 &#8250;</span>
+                </c:otherwise>
+            </c:choose>
+        </div>
+        <p class="page-info">전체 ${totalCount}명 / ${currentPage} 페이지 (${totalPages} 페이지)</p>
+
+    </div><%-- /table-card --%>
 
 </div>
 

@@ -11,7 +11,7 @@ public class Payrolls {
     private int     netPay;
     private String  paidAt;
     private String  note;
-    private String  payType;    // 'salary' | 'incentive'
+    private int     payType;    // 'salary' | 'incentive'
     private String  createdAt;
 
     // 조인용 (employees 테이블에서)
@@ -47,8 +47,8 @@ public class Payrolls {
     public String getNote() { return note; }
     public void setNote(String note) { this.note = note; }
 
-    public String getPayType() { return payType; }
-    public void setPayType(String payType) { this.payType = payType; }
+    public int getPayType() { return payType; }
+    public void setPayType(int payType) { this.payType = payType; }
 
     public String getCreatedAt() { return createdAt; }
     public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }

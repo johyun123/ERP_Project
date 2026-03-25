@@ -23,7 +23,7 @@
                 <p class="page-sub">인사관리 &gt; 직원 관리</p>
             </div>
         </div>
-        <button class="btn-register" onclick="location.href='/hr/employees/register'">
+        <button class="btn-register" onclick="openRegisterModal()">
             + 직원 등록
         </button>
     </div>
@@ -98,7 +98,7 @@
                             <td>${emp.age}</td>
                             <td>
                                 <c:choose>
-                                    <c:when test="${emp.emp_num == '222'}">
+                                    <c:when test="${emp.position == '점장'}">
                                         <span class="position-badge pos-a">점장</span>
                                     </c:when>
                                     <c:when test="${emp.position == '매니저'}">
@@ -159,13 +159,13 @@
                             </td>
                             <td class="td-actions">
                                 <c:choose>
-                                    <c:when test="${emp.position == '점장'}">
+                                    <c:when test="${emp.position == '점장' && emp.emp_num == '222'}">
                                         <span class="btn-locked" title="보호된 계정입니다">수정 불가</span>
                                         <span class="btn-locked" title="보호된 계정입니다">삭제 불가</span>
                                     </c:when>
                                     <c:otherwise>
                                         <button class="btn-edit"
-                                                onclick="location.href='/hr/employees/edit/${emp.emp_num}'">
+                                                onclick="openEditModal('${emp.emp_num}')">
                                             수정
                                         </button>
                                         <button class="btn-delete"
@@ -275,99 +275,344 @@ function confirmDelete(empNum, name) {
 }
 </script>
 
-<style>
-.btn-locked {
-  display: inline-block;
-  padding: 5px 10px;
-  background: #f1f5f9;
-  color: #94a3b8;
-  border: 1.5px solid #e2e8f0;
-  border-radius: var(--radius-sm, 6px);
-  font-size: 0.78rem;
-  font-weight: 600;
-  font-family: 'Noto Sans KR', sans-serif;
-  cursor: not-allowed;
-  margin-right: 4px;
+
+
+<!-- ================================================================
+     등록 모달
+================================================================ -->
+<div class="emp-modal-overlay" id="registerModal">
+  <div class="emp-modal">
+    <div class="emp-modal-header">
+      <span class="emp-modal-title">&#128100; 직원 등록</span>
+      <button class="emp-modal-close" onclick="closeRegisterModal()">&#10005;</button>
+    </div>
+    <div class="emp-modal-body">
+      <form action="/hr/employees/register" method="post" id="registerForm">
+        <div class="form-grid">
+
+          <div class="form-group">
+            <label class="form-label">직원 번호</label>
+            <div class="input-with-btn">
+              <input type="text" class="form-input field-locked"
+                     name="emp_num" id="regEmpNum" readonly placeholder="자동 생성됩니다" />
+              <button type="button" class="btn-gen" onclick="genEmpNum()">&#8635; 재생성</button>
+            </div>
+            <span class="field-hint">CEP-XXXXXXXX 형식으로 자동 생성</span>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label required">이름</label>
+            <input type="text" class="form-input" name="name" placeholder="직원 이름" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">나이</label>
+            <input type="number" class="form-input" name="age" placeholder="나이" min="15" max="80" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">연락처</label>
+            <input type="text" class="form-input" name="phone" placeholder="010-0000-0000" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label required">직책</label>
+            <select class="form-input form-select" name="position">
+              <option value="">선택</option>
+              <option value="점장">점장</option>
+              <option value="매니저">매니저</option>
+              <option value="스탭">스탭</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label required">고용 형태</label>
+            <select class="form-input form-select" name="contract_type"
+                    id="regContractType" onchange="toggleRegSalary()">
+              <option value="">선택</option>
+              <option value="파트">파트타임 (시급제)</option>
+              <option value="풀">정규직 (월급제)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label required">입사일</label>
+            <input type="date" class="form-input" name="hire_date" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">퇴사일</label>
+            <input type="date" class="form-input" name="resign_date" />
+          </div>
+
+          <div class="form-group" id="regHourlyGroup">
+            <label class="form-label">시급 <span class="salary-type-badge part">파트타임</span></label>
+            <div class="input-wrap">
+              <input type="number" class="form-input input-with-unit field-locked"
+                     name="hourly_wage" id="regHourlyWage"
+                     placeholder="0" min="0" value="0" readonly />
+              <span class="input-unit">원/h</span>
+            </div>
+            <span class="field-hint" id="regHourlyHint">파트타임 선택 시 입력 가능</span>
+          </div>
+
+          <div class="form-group" id="regSalaryGroup">
+            <label class="form-label">월급 <span class="salary-type-badge full">정규직</span></label>
+            <div class="input-wrap">
+              <input type="number" class="form-input input-with-unit field-locked"
+                     name="monthly_salary" id="regMonthlySalary"
+                     placeholder="0" min="0" value="0" readonly />
+              <span class="input-unit">원</span>
+            </div>
+            <span class="field-hint" id="regSalaryHint">정규직 선택 시 입력 가능</span>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">은행명</label>
+            <input type="text" class="form-input" name="bank_name" placeholder="예) 농협, 신한" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">계좌번호</label>
+            <input type="text" class="form-input" name="account_no" placeholder="계좌번호 입력" />
+          </div>
+
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn-cancel" onclick="closeRegisterModal()">취소</button>
+          <button type="button" class="btn-submit" onclick="submitRegisterForm()">등록</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================
+     수정 모달
+================================================================ -->
+<div class="emp-modal-overlay" id="editModal">
+  <div class="emp-modal">
+    <div class="emp-modal-header">
+      <span class="emp-modal-title">&#9999;&#65039; 직원 수정</span>
+      <button class="emp-modal-close" onclick="closeEditModal()">&#10005;</button>
+    </div>
+    <div class="emp-modal-body">
+      <form action="/hr/employees/update" method="post" id="editForm">
+        <div class="form-grid">
+
+          <div class="form-group">
+            <label class="form-label">직원 번호</label>
+            <input type="text" class="form-input field-locked"
+                   name="emp_num" id="editEmpNum" readonly />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label required">이름</label>
+            <input type="text" class="form-input" name="name" id="editName" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">나이</label>
+            <input type="number" class="form-input" name="age" id="editAge" min="15" max="80" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">연락처</label>
+            <input type="text" class="form-input" name="phone" id="editPhone" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label required">직책</label>
+            <select class="form-input form-select" name="position" id="editPosition">
+              <option value="">선택</option>
+              <option value="점장">점장</option>
+              <option value="매니저">매니저</option>
+              <option value="스탭">스탭</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label required">고용 형태</label>
+            <select class="form-input form-select" name="contract_type" id="editContractType">
+              <option value="">선택</option>
+              <option value="풀">정규직 (풀타임)</option>
+              <option value="파트">파트타임</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label required">입사일</label>
+            <input type="date" class="form-input" name="hire_date" id="editHireDate" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">퇴사일</label>
+            <input type="date" class="form-input" name="resign_date" id="editResignDate" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">시급</label>
+            <div class="input-wrap">
+              <input type="number" class="form-input input-with-unit"
+                     name="hourly_wage" id="editHourlyWage" min="0" />
+              <span class="input-unit">원</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">월급</label>
+            <div class="input-wrap">
+              <input type="number" class="form-input input-with-unit"
+                     name="monthly_salary" id="editMonthlySalary" min="0" />
+              <span class="input-unit">원</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">은행명</label>
+            <input type="text" class="form-input" name="bank_name" id="editBankName" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">계좌번호</label>
+            <input type="text" class="form-input" name="account_no" id="editAccountNo" />
+          </div>
+
+          <div class="form-group form-group-full">
+            <label class="form-label required">재직 여부</label>
+            <div class="radio-group" id="editIsActiveGroup">
+              <label class="radio-item">
+                <input type="radio" name="is_active" value="1" /><span>재직</span>
+              </label>
+              <label class="radio-item">
+                <input type="radio" name="is_active" value="2" /><span>휴직</span>
+              </label>
+              <label class="radio-item">
+                <input type="radio" name="is_active" value="0" /><span>퇴사</span>
+              </label>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn-cancel" onclick="closeEditModal()">취소</button>
+          <button type="submit" class="btn-submit">수정 저장</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ================================================================
+   등록 모달
+================================================================ */
+function openRegisterModal() {
+    genEmpNum();
+    toggleRegSalary();
+    document.getElementById('registerForm').reset();
+    genEmpNum();
+    document.getElementById('registerModal').classList.add('active');
 }
 
-/* ===== 페이지네이션 ===== */
-.pagination {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px 20px;
-  border-top: 1.5px solid var(--border-light, #e8eaf6);
-  flex-wrap: wrap;
-  gap: 10px;
+function closeRegisterModal() {
+    document.getElementById('registerModal').classList.remove('active');
 }
 
-.page-size-select select {
-  padding: 6px 10px;
-  border: 1.5px solid var(--border, #dde1f8);
-  border-radius: 6px;
-  font-size: 0.82rem;
-  color: var(--text-secondary, #555);
-  font-family: 'Noto Sans KR', sans-serif;
-  outline: none;
-  cursor: pointer;
-  background: #fff;
+function genEmpNum() {
+    var suffix = String(Date.now()).slice(-8);
+    document.getElementById('regEmpNum').value = 'CEP-' + suffix;
 }
 
-.page-nav {
-  display: flex;
-  align-items: center;
-  gap: 4px;
+function toggleRegSalary() {
+    var type        = document.getElementById('regContractType').value;
+    var hourlyInput = document.getElementById('regHourlyWage');
+    var salaryInput = document.getElementById('regMonthlySalary');
+    var hourlyHint  = document.getElementById('regHourlyHint');
+    var salaryHint  = document.getElementById('regSalaryHint');
+
+    if (type === '파트') {
+        hourlyInput.readOnly = false; hourlyInput.classList.remove('field-locked');
+        hourlyInput.value = ''; hourlyInput.placeholder = '시급 입력';
+        hourlyHint.textContent = '';
+        salaryInput.readOnly = true; salaryInput.classList.add('field-locked');
+        salaryInput.value = '0'; salaryHint.textContent = '정규직 선택 시 입력 가능';
+    } else if (type === '풀') {
+        salaryInput.readOnly = false; salaryInput.classList.remove('field-locked');
+        salaryInput.value = ''; salaryInput.placeholder = '월급 입력';
+        salaryHint.textContent = '';
+        hourlyInput.readOnly = true; hourlyInput.classList.add('field-locked');
+        hourlyInput.value = '0'; hourlyHint.textContent = '파트타임 선택 시 입력 가능';
+    } else {
+        hourlyInput.readOnly = true; hourlyInput.classList.add('field-locked');
+        hourlyInput.value = '0'; hourlyHint.textContent = '파트타임 선택 시 입력 가능';
+        salaryInput.readOnly = true; salaryInput.classList.add('field-locked');
+        salaryInput.value = '0'; salaryHint.textContent = '정규직 선택 시 입력 가능';
+    }
 }
 
-.page-btn {
-  min-width: 34px;
-  height: 34px;
-  padding: 0 8px;
-  border: 1.5px solid var(--border, #dde1f8);
-  border-radius: 6px;
-  background: #fff;
-  color: var(--text-secondary, #555);
-  font-size: 0.85rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.18s;
-  font-family: 'Outfit', sans-serif;
+function submitRegisterForm() {
+    var name     = document.querySelector('#registerForm [name="name"]').value.trim();
+    var position = document.querySelector('#registerForm [name="position"]').value;
+    var type     = document.getElementById('regContractType').value;
+    var hireDate = document.querySelector('#registerForm [name="hire_date"]').value;
+    if (!name)     { alert('이름을 입력해주세요.'); return; }
+    if (!position) { alert('직책을 선택해주세요.'); return; }
+    if (!type)     { alert('고용 형태를 선택해주세요.'); return; }
+    if (!hireDate) { alert('입사일을 선택해주세요.'); return; }
+    document.getElementById('registerForm').submit();
 }
 
-.page-btn:hover {
-  border-color: var(--primary, #5b6ef5);
-  color: var(--primary, #5b6ef5);
-  background: var(--primary-light, #eef0fe);
+/* ================================================================
+   수정 모달
+================================================================ */
+function openEditModal(empNum) {
+    fetch('/hr/employees/json/' + empNum)
+        .then(function(res) {
+            if (!res.ok) throw new Error('직원 정보를 불러오지 못했습니다.');
+            return res.json();
+        })
+        .then(function(emp) {
+            document.getElementById('editEmpNum').value        = emp.emp_num        || '';
+            document.getElementById('editName').value          = emp.name           || '';
+            document.getElementById('editAge').value           = emp.age            || '';
+            document.getElementById('editPhone').value         = emp.phone          || '';
+            document.getElementById('editPosition').value      = emp.position       || '';
+            document.getElementById('editContractType').value  = emp.contract_type  || '';
+            document.getElementById('editHireDate').value      = emp.hire_date      || '';
+            document.getElementById('editResignDate').value    = emp.resign_date    || '';
+            document.getElementById('editHourlyWage').value    = emp.hourly_wage    || 0;
+            document.getElementById('editMonthlySalary').value = emp.monthly_salary || 0;
+            document.getElementById('editBankName').value      = emp.bank_name      || '';
+            document.getElementById('editAccountNo').value     = emp.account_no     || '';
+
+            // 재직 여부 라디오
+            var radios = document.querySelectorAll('#editIsActiveGroup input[type="radio"]');
+            radios.forEach(function(r) {
+                r.checked = (parseInt(r.value) === parseInt(emp.is_active));
+            });
+
+            document.getElementById('editModal').classList.add('active');
+        })
+        .catch(function(err) { alert(err.message); });
 }
 
-.page-btn.active {
-  background: var(--primary-gradient, linear-gradient(135deg,#5b6ef5,#7c8ff7));
-  color: #fff;
-  border-color: transparent;
-  box-shadow: 0 2px 8px rgba(91,110,245,0.3);
+function closeEditModal() {
+    document.getElementById('editModal').classList.remove('active');
 }
 
-.page-total {
-  font-size: 0.8rem;
-  color: var(--text-muted, #9ca3af);
-}
+/* 오버레이 클릭 시 닫기 */
+document.getElementById('registerModal').addEventListener('click', function(e) {
+    if (e.target === this) closeRegisterModal();
+});
+document.getElementById('editModal').addEventListener('click', function(e) {
+    if (e.target === this) closeEditModal();
+});
+</script>
 
-/* 검색 버튼 */
-.btn-search {
-  padding: 8px 16px;
-  border-radius: 6px;
-  font-size: 0.88rem;
-  font-weight: 600;
-  font-family: 'Noto Sans KR', sans-serif;
-  cursor: pointer;
-  border: none;
-  background: var(--primary-gradient, linear-gradient(135deg,#5b6ef5,#7c8ff7));
-  color: #fff;
-  transition: all 0.18s;
-  box-shadow: 0 2px 8px rgba(91,110,245,0.25);
-}
 
-.btn-search:hover { opacity: 0.88; transform: translateY(-1px); }
-</style>
+
 </body>
 </html>

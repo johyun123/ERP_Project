@@ -61,6 +61,14 @@ public interface HRMMapper {
     // 근태 상세 — 재직 직원 전체 + 해당 날짜 LEFT JOIN
     List<Map<String, Object>> getAttendanceWithEmployees(String date);
 
+    // 근태 상세 페이징
+    List<Map<String, Object>> getAttendanceWithEmployeesPaged(@Param("date") String date,
+                                                              @Param("offset") int offset,
+                                                              @Param("size") int size);
+
+    // 근태 상세 전체 인원 수 (페이징용)
+    int countAttendanceWithEmployees(String date);
+
     // 근태 상세 구버전
     List<Map<String, Object>> getAttendanceDetail(String date);
 

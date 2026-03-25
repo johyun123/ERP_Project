@@ -369,7 +369,7 @@ function submitAuth() {
         if (xhr.responseText.trim() === 'ok') {
             closeAuthModal();
             if (_pendingAction === 'register') {
-                location.href = '/hr/users/register';
+                openRegisterModal();
             } else if (_pendingAction === 'pwchange') {
                 openPwChangePrompt(_pendingEmpNum, _pendingName);
             } else if (_pendingAction === 'deleteuser') {
@@ -405,73 +405,280 @@ function openPwChangePrompt(empNum, name) {
 }
 </script>
 
-<style>
-/* ===== 페이지네이션 ===== */
-.pagination {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 20px;
-  border-top: 1.5px solid var(--border-light, #e8eaf6);
-  flex-wrap: wrap;
-  gap: 8px;
-}
-.page-nav {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-.page-btn {
-  min-width: 32px;
-  height: 32px;
-  padding: 0 8px;
-  border: 1.5px solid var(--border, #dde1f8);
-  border-radius: 6px;
-  background: #fff;
-  color: var(--text-secondary, #555);
-  font-size: 0.85rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.18s;
-  font-family: 'Outfit', sans-serif;
-}
-.page-btn:hover {
-  border-color: var(--primary, #5b6ef5);
-  color: var(--primary, #5b6ef5);
-  background: var(--primary-light, #eef0fe);
-}
-.page-btn.active {
-  background: var(--primary-gradient, linear-gradient(135deg,#5b6ef5,#7c8ff7));
-  color: #fff;
-  border-color: transparent;
-  box-shadow: 0 2px 8px rgba(91,110,245,0.3);
-}
-.page-total {
-  font-size: 0.8rem;
-  color: var(--text-muted, #9ca3af);
+
+
+
+<!-- ================================================================
+     계정 등록 모달
+================================================================ -->
+<!-- 직원 데이터 JS 주입 (퇴사자 + 이미 계정 있는 직원 제외) -->
+<script>
+var EMP_DATA = [
+    <c:forEach var="emp" items="${allEmployees}">
+        <c:if test="${emp.is_active != 0 and !registeredIds.contains(emp.id)}">
+        {
+            emp_num  : "${emp.emp_num}",
+            name     : "${emp.name}",
+            age      : "${emp.age}",
+            phone    : "${emp.phone}",
+            position : "${emp.position}",
+            contract : "${emp.contract_type}",
+            hourly   : ${emp.hourly_wage},
+            salary   : ${emp.monthly_salary},
+            hire     : "${emp.hire_date}",
+            bank     : "${emp.bank_name}",
+            account  : "${emp.account_no}",
+            status   : ${emp.is_active}
+        },
+        </c:if>
+    </c:forEach>
+];
+</script>
+
+<div class="modal-overlay" id="registerModal">
+  <div class="modal reg-modal">
+    <div class="modal-header">
+      <span class="modal-title">&#128272; ERP 계정 등록</span>
+      <button class="modal-close" onclick="closeRegisterModal()">&#10005;</button>
+    </div>
+    <div class="modal-body reg-modal-body">
+
+      <form action="/hr/users/register" method="post" id="regForm">
+        <input type="hidden" name="emp_num" id="hiddenEmpNum" />
+
+        <!-- 직원 선택 -->
+        <p class="reg-section-title">&#128100; 직원 선택</p>
+
+        <div class="emp-filter-bar">
+          <div class="search-wrap">
+            <span class="search-icon">&#128269;</span>
+            <input type="text" class="search-input" id="regSearchName"
+                   placeholder="이름 검색..." oninput="applyRegFilter()" />
+          </div>
+          <div class="pos-filter-tabs">
+            <button type="button" class="pos-tab active" id="reg-pos-all"    onclick="setRegPos('all')">전체</button>
+            <button type="button" class="pos-tab"        id="reg-pos-점장"   onclick="setRegPos('점장')">점장</button>
+            <button type="button" class="pos-tab"        id="reg-pos-매니저" onclick="setRegPos('매니저')">매니저</button>
+            <button type="button" class="pos-tab"        id="reg-pos-스탭"   onclick="setRegPos('스탭')">스탭</button>
+          </div>
+          <span class="filter-count" id="regFilterCount"></span>
+        </div>
+
+        <div class="emp-table-wrap">
+          <table class="emp-pick-table">
+            <thead>
+              <tr>
+                <th>선택</th><th>사원번호</th><th>이름</th>
+                <th>직위</th><th>고용형태</th><th>재직상태</th>
+              </tr>
+            </thead>
+            <tbody id="regEmpPickBody"></tbody>
+          </table>
+        </div>
+        <div class="pick-paging" id="regPickPaging"></div>
+
+        <!-- 선택된 직원 정보 -->
+        <div class="emp-info-box" id="regEmpInfoBox" style="display:none;">
+          <p class="info-box-title">&#128100; 선택된 직원 정보</p>
+          <div class="info-grid">
+            <div class="info-item"><span class="info-label">사원번호</span><span class="info-value" id="regDispEmpNum">-</span></div>
+            <div class="info-item"><span class="info-label">이름</span><span class="info-value" id="regDispName">-</span></div>
+            <div class="info-item"><span class="info-label">나이</span><span class="info-value" id="regDispAge">-</span></div>
+            <div class="info-item"><span class="info-label">연락처</span><span class="info-value" id="regDispPhone">-</span></div>
+            <div class="info-item"><span class="info-label">직위</span><span class="info-value" id="regDispPosition">-</span></div>
+            <div class="info-item"><span class="info-label">고용형태</span><span class="info-value" id="regDispContract">-</span></div>
+          </div>
+        </div>
+
+        <!-- 비밀번호 -->
+        <p class="reg-section-title" style="margin-top:24px;">&#128274; 비밀번호 설정</p>
+        <div class="pw-section">
+          <div class="form-group pw-group">
+            <label class="form-label required">비밀번호</label>
+            <input type="password" class="form-input" name="user_pw"
+                   id="regUserPw" placeholder="비밀번호를 입력하세요" />
+          </div>
+          <div class="form-group pw-group">
+            <label class="form-label required">비밀번호 확인</label>
+            <input type="password" class="form-input" id="regUserPwConfirm"
+                   placeholder="비밀번호를 다시 입력하세요" oninput="checkRegPw()" />
+            <span class="pw-hint" id="regPwHint"></span>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn-cancel" onclick="closeRegisterModal()">취소</button>
+          <button type="button" class="btn-submit" onclick="submitReg()">등록</button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+</div>
+
+<script>
+/* ================================================================
+   계정 등록 모달
+================================================================ */
+var REG_PAGE_SIZE   = 5;
+var regCurrentPage  = 1;
+var regCurrentPos   = 'all';
+var regCurrentName  = '';
+var regSelectedEmp  = null;
+var regFilteredData = [];
+
+function openRegisterModal() {
+    // 상태 초기화
+    regCurrentPage  = 1;
+    regCurrentPos   = 'all';
+    regCurrentName  = '';
+    regSelectedEmp  = null;
+    document.getElementById('regSearchName').value    = '';
+    document.getElementById('hiddenEmpNum').value     = '';
+    document.getElementById('regUserPw').value        = '';
+    document.getElementById('regUserPwConfirm').value = '';
+    document.getElementById('regPwHint').textContent  = '';
+    document.getElementById('regEmpInfoBox').style.display = 'none';
+    document.querySelectorAll('.pos-tab').forEach(function(b) { b.classList.remove('active'); });
+    document.getElementById('reg-pos-all').classList.add('active');
+    runRegFilter();
+    document.getElementById('registerModal').classList.add('active');
 }
 
-.btn-del-user {
-  padding: 5px 12px; background: #fee2e2; color: #dc2626;
-  border: 1.5px solid #ef4444; border-radius: var(--radius-sm);
-  font-size: 0.78rem; font-weight: 600; font-family: 'Noto Sans KR', sans-serif;
-  cursor: pointer; transition: var(--transition); white-space: nowrap;
+function closeRegisterModal() {
+    document.getElementById('registerModal').classList.remove('active');
 }
-.btn-del-user:hover { background: #ef4444; color: #fff; }
-.btn-locked {
-  display: inline-block;
-  padding: 5px 12px;
-  background: #f1f5f9;
-  color: #94a3b8;
-  border: 1.5px solid #e2e8f0;
-  border-radius: var(--radius-sm);
-  font-size: 0.78rem;
-  font-weight: 600;
-  font-family: 'Noto Sans KR', sans-serif;
-  cursor: not-allowed;
-  white-space: nowrap;
+
+function applyRegFilter() {
+    regCurrentName = document.getElementById('regSearchName').value.trim().toLowerCase();
+    regCurrentPage = 1;
+    runRegFilter();
 }
-</style>
+
+function setRegPos(pos) {
+    regCurrentPos  = pos;
+    regCurrentPage = 1;
+    document.querySelectorAll('#registerModal .pos-tab').forEach(function(b) { b.classList.remove('active'); });
+    document.getElementById('reg-pos-' + pos).classList.add('active');
+    runRegFilter();
+}
+
+function runRegFilter() {
+    regFilteredData = EMP_DATA.filter(function(e) {
+        var nameMatch = regCurrentName === '' || e.name.toLowerCase().includes(regCurrentName);
+        var posMatch  = regCurrentPos  === 'all' || e.position === regCurrentPos;
+        return nameMatch && posMatch;
+    });
+    var countEl = document.getElementById('regFilterCount');
+    countEl.textContent   = regFilteredData.length + '명';
+    countEl.style.display = 'inline';
+    renderRegTable();
+    renderRegPaging();
+}
+
+function renderRegTable() {
+    var tbody = document.getElementById('regEmpPickBody');
+    var start = (regCurrentPage - 1) * REG_PAGE_SIZE;
+    var end   = Math.min(start + REG_PAGE_SIZE, regFilteredData.length);
+    var html  = '';
+
+    if (regFilteredData.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="empty-row">계정 미등록 직원이 없습니다.</td></tr>';
+        return;
+    }
+
+    for (var i = start; i < end; i++) {
+        var e      = regFilteredData[i];
+        var isSel  = regSelectedEmp && regSelectedEmp.emp_num === e.emp_num;
+        var posCls = e.position === '점장' ? 'pos-a' : e.position === '매니저' ? 'pos-b' : 'pos-c';
+        var conLbl = e.contract === '풀'
+            ? '<span class="contract-badge full">정규직</span>'
+            : '<span class="contract-badge part">파트타임</span>';
+        var stLbl  = e.status === 2
+            ? '<span class="status-badge leave">휴직</span>'
+            : '<span class="status-badge active">재직</span>';
+
+        html += '<tr class="pick-row' + (isSel ? ' selected' : '') + '" onclick="selectRegEmp(' + i + ')">'
+              + '<td><span class="pick-radio' + (isSel ? ' checked' : '') + '"></span></td>'
+              + '<td class="td-empnum">' + e.emp_num   + '</td>'
+              + '<td class="td-name">'   + e.name      + '</td>'
+              + '<td><span class="pos-badge ' + posCls + '">' + e.position + '</span></td>'
+              + '<td>' + conLbl + '</td>'
+              + '<td>' + stLbl  + '</td>'
+              + '</tr>';
+    }
+    tbody.innerHTML = html;
+}
+
+function renderRegPaging() {
+    var total    = Math.ceil(regFilteredData.length / REG_PAGE_SIZE);
+    var pagingEl = document.getElementById('regPickPaging');
+    if (total <= 1) { pagingEl.innerHTML = ''; return; }
+
+    var html = '<button type="button" class="page-btn" onclick="goRegPage(' + (regCurrentPage - 1) + ')"'
+             + (regCurrentPage === 1 ? ' disabled' : '') + '>&#8249;</button>';
+    for (var p = 1; p <= total; p++) {
+        html += '<button type="button" class="page-btn' + (p === regCurrentPage ? ' active' : '')
+              + '" onclick="goRegPage(' + p + ')">' + p + '</button>';
+    }
+    html += '<button type="button" class="page-btn" onclick="goRegPage(' + (regCurrentPage + 1) + ')"'
+          + (regCurrentPage === total ? ' disabled' : '') + '>&#8250;</button>';
+    pagingEl.innerHTML = html;
+}
+
+function goRegPage(p) {
+    var total = Math.ceil(regFilteredData.length / REG_PAGE_SIZE);
+    if (p < 1 || p > total) return;
+    regCurrentPage = p;
+    renderRegTable();
+    renderRegPaging();
+}
+
+function selectRegEmp(filteredIdx) {
+    regSelectedEmp = regFilteredData[filteredIdx];
+    document.getElementById('hiddenEmpNum').value = regSelectedEmp.emp_num;
+
+    document.getElementById('regDispEmpNum').textContent   = regSelectedEmp.emp_num;
+    document.getElementById('regDispName').textContent     = regSelectedEmp.name;
+    document.getElementById('regDispAge').textContent      = regSelectedEmp.age      || '-';
+    document.getElementById('regDispPhone').textContent    = regSelectedEmp.phone    || '-';
+    document.getElementById('regDispPosition').textContent = regSelectedEmp.position;
+    document.getElementById('regDispContract').textContent = regSelectedEmp.contract === '풀' ? '정규직' : '파트타임';
+
+    document.getElementById('regEmpInfoBox').style.display = 'block';
+    renderRegTable();
+}
+
+function checkRegPw() {
+    var pw   = document.getElementById('regUserPw').value;
+    var conf = document.getElementById('regUserPwConfirm').value;
+    var hint = document.getElementById('regPwHint');
+    if (!conf) { hint.textContent = ''; return; }
+    if (pw === conf) {
+        hint.textContent = '✓ 비밀번호가 일치합니다.';
+        hint.style.color = '#16a34a';
+    } else {
+        hint.textContent = '✗ 비밀번호가 일치하지 않습니다.';
+        hint.style.color = '#dc2626';
+    }
+}
+
+function submitReg() {
+    var empNum = document.getElementById('hiddenEmpNum').value;
+    var pw     = document.getElementById('regUserPw').value;
+    var conf   = document.getElementById('regUserPwConfirm').value;
+    if (!empNum)       { alert('직원을 선택해주세요.'); return; }
+    if (!pw)           { alert('비밀번호를 입력해주세요.'); return; }
+    if (pw.length < 4) { alert('비밀번호는 4자 이상이어야 합니다.'); return; }
+    if (pw !== conf)   { alert('비밀번호가 일치하지 않습니다.'); return; }
+    document.getElementById('regForm').submit();
+}
+
+/* 모달 바깥 클릭 닫기 */
+document.getElementById('registerModal').addEventListener('click', function(e) {
+    if (e.target === this) closeRegisterModal();
+});
+</script>
 
 </body>
 </html>

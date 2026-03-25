@@ -37,8 +37,7 @@
     <div class="filter-bar">
         <select class="filter-input" id="filterYear" onchange="goFilter()">
             <option value="" ${empty param.payYear ? 'selected' : ''}>전체 연도</option>
-            <option value="2025" ${param.payYear == '2025' ? 'selected' : ''}>2025</option>
-            <option value="2026" ${param.payYear == '2026' ? 'selected' : ''}>2026</option>
+            <!-- JS로 동적 생성 — buildYearOptions() 참조 -->
         </select>
         <select class="filter-input" id="filterMonth" onchange="goFilter()">
             <option value="" ${empty param.payMonth ? 'selected' : ''}>전체 월</option>
@@ -69,6 +68,7 @@
                     <th>No.</th>
                     <th>직원명</th>
                     <th>사원번호</th>
+                    <th>유형</th>
                     <th>지급연월</th>
                     <th>근무시간</th>
                     <th>기본급</th>
@@ -82,7 +82,7 @@
             <tbody id="tableBody">
                 <c:choose>
                     <c:when test="${empty result.list}">
-                        <tr><td colspan="11" class="empty-row">등록된 급여 내역이 없습니다.</td></tr>
+                        <tr><td colspan="12" class="empty-row">등록된 급여 내역이 없습니다.</td></tr>
                     </c:when>
                     <c:otherwise>
                         <c:forEach var="p" items="${result.list}" varStatus="s">
@@ -90,6 +90,16 @@
                             <td class="td-no">${(result.page - 1) * result.size + s.count}</td>
                             <td class="td-name">${empty p.employeeName ? '-' : p.employeeName}</td>
                             <td class="td-empid">${p.employeeId}</td>
+                            <td>
+                                <c:choose>
+                                    <c:when test="${empty p.payType || p.payType == 0}">
+                                        <span class="pay-type-badge salary">&#128176; 급여</span>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <span class="pay-type-badge incentive">&#127942; 인센티브</span>
+                                    </c:otherwise>
+                                </c:choose>
+                            </td>
                             <td>${p.payYear}년 ${p.payMonth}월</td>
                             <td>${p.workHours}h</td>
                             <td class="td-money"><fmt:formatNumber value="${p.basePay}" pattern="#,###"/>원</td>
@@ -103,7 +113,8 @@
                                         ${p.id}, ${p.employeeId}, ${p.payYear}, ${p.payMonth},
                                         ${p.workHours}, ${p.basePay}, ${p.deduction}, ${p.netPay},
                                         '${empty p.paidAt ? "" : p.paidAt}',
-                                        '${empty p.note ? "" : p.note}')">&#9999;&#65039;</button>
+                                        '${empty p.note ? "" : p.note}',
+                                        ${empty p.payType ? 0 : p.payType})">&#9999;&#65039;</button>
                                 <button class="btn-icon btn-delete"
                                     onclick="openAuthModal('delete', ${p.id})">&#128465;&#65039;</button>
                             </td>
@@ -178,13 +189,14 @@
 <div class="modal-overlay" id="editModal">
     <div class="modal modal-wide">
         <div class="modal-header">
-            <span class="modal-title">급여 수정</span>
+            <span class="modal-title" id="editModalTitle">급여 수정</span>
             <button class="modal-close" onclick="closeModal('editModal')">&#10005;</button>
         </div>
         <div class="modal-body">
             <form id="editForm" action="/payroll/update" method="post">
                 <input type="hidden" id="editId"         name="id" />
                 <input type="hidden" id="editEmployeeId" name="employeeId" />
+                <input type="hidden" id="editPayType"    name="payType" />
                 <div class="form-grid">
                     <div class="form-group">
                         <label class="form-label required">지급 연도</label>
@@ -194,34 +206,51 @@
                         <label class="form-label required">지급 월</label>
                         <input type="number" class="form-input" id="editMonth" name="payMonth" min="1" max="12" />
                     </div>
+
+                    <!-- 근무시간: 급여=입력가능, 인센티브=잠금 -->
                     <div class="form-group">
-                        <label class="form-label">근무시간</label>
-                        <input type="number" class="form-input" id="editWorkHours" name="workHours" step="0.1" />
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label required">기본급</label>
+                        <label class="form-label" id="editWorkHoursLabel">근무시간</label>
                         <div class="input-wrap">
-                            <input type="text" class="form-input input-with-unit" id="editBasePayDisp" oninput="formatAmount(this)" />
+                            <input type="number" class="form-input input-with-unit" id="editWorkHours" name="workHours" step="0.1" />
+                            <span class="input-unit">h</span>
+                        </div>
+                    </div>
+
+                    <!-- 기본급/지급액: 급여·인센티브 모두 입력가능, 입력 시 공제·실수령 자동계산 -->
+                    <div class="form-group">
+                        <label class="form-label required" id="editBasePayLabel">기본급</label>
+                        <div class="input-wrap">
+                            <input type="text" class="form-input input-with-unit" id="editBasePayDisp"
+                                   oninput="onEditBasePayInput()" />
                             <input type="hidden" id="editBasePay" name="basePay" />
                             <span class="input-unit">원</span>
                         </div>
+                        <span class="field-hint" id="editBasePayHint"></span>
                     </div>
+
+                    <!-- 공제액: 급여·인센티브 모두 자동계산(잠금) -->
                     <div class="form-group">
-                        <label class="form-label">공제액</label>
+                        <label class="form-label">공제액 <span class="calc-badge" id="editDeductBadge">자동 9.4%</span></label>
                         <div class="input-wrap">
-                            <input type="text" class="form-input input-with-unit" id="editDeductionDisp" oninput="formatAmount(this)" />
+                            <input type="text" class="form-input input-with-unit field-locked"
+                                   id="editDeductionDisp" readonly />
                             <input type="hidden" id="editDeduction" name="deduction" />
                             <span class="input-unit">원</span>
                         </div>
+                        <span class="field-hint">4대보험 기준 자동계산</span>
                     </div>
+
+                    <!-- 실수령액: 급여·인센티브 모두 자동계산(잠금) -->
                     <div class="form-group">
                         <label class="form-label required">실수령액</label>
                         <div class="input-wrap">
-                            <input type="text" class="form-input input-with-unit" id="editNetPayDisp" oninput="formatAmount(this)" />
+                            <input type="text" class="form-input input-with-unit field-locked"
+                                   id="editNetPayDisp" readonly />
                             <input type="hidden" id="editNetPay" name="netPay" />
                             <span class="input-unit">원</span>
                         </div>
                     </div>
+
                     <div class="form-group">
                         <label class="form-label">지급일</label>
                         <input type="date" class="form-input" id="editPaidAt" name="paidAt" />
@@ -367,7 +396,7 @@
 
             <form id="manualForm" action="/payroll/manual" method="post">
                 <input type="hidden" name="employeeId" id="manualEmpId" />
-                <input type="hidden" name="payType"    value="salary" />
+                <input type="hidden" name="payType"    value=0 />
 
                 <!-- 지급일에서 JS로 연도/월 추출해서 채움 -->
                 <input type="hidden" name="payYear"  id="manualYear" />
@@ -450,22 +479,23 @@
 
             <form id="incentiveForm" action="/payroll/manual" method="post">
                 <input type="hidden" name="employeeId" id="incentiveEmpId" />
-                <input type="hidden" name="payType"    value="incentive" />
-                <!-- 일반 급여 필드 고정값 (0) — 백엔드 파라미터 맞춤 -->
+                <input type="hidden" name="payType"    value=1 />
+                <!-- 일반 급여 필드 고정값 — 백엔드 파라미터 맞춤 -->
                 <input type="hidden" name="basePay"   value="0" />
-                <input type="hidden" name="deduction" value="0" />
+                <input type="hidden" name="deduction" id="incentiveDeduction" value="0" />
                 <input type="hidden" name="workHours" value="0" />
 
                 <div class="incentive-amount-wrap">
-                    <label class="form-label required">인센티브 지급액</label>
+                    <label class="form-label required">인센티브 지급액 (세전)</label>
                     <div class="input-wrap incentive-amount-input-wrap">
                         <input type="text" class="form-input input-with-unit incentive-amount-input"
                                id="incentiveAmountDisp"
                                placeholder="0"
-                               oninput="formatAmountInput(this, 'incentiveNetPay')" />
+                               oninput="onIncentiveAmountInput(this)" />
                         <input type="hidden" name="netPay" id="incentiveNetPay" />
                         <span class="input-unit">원</span>
                     </div>
+                    <span class="field-hint" id="incentiveDeductHint" style="color:var(--text-muted);"></span>
                 </div>
 
                 <!-- 지급일에서 JS로 연도/월 추출해서 채움 -->
@@ -527,6 +557,22 @@ var EMP_LIST = [
 </script>
 
 <script>
+/* ================================================================
+   연도 select 동적 생성 (2020 ~ 현재 연도)
+================================================================ */
+(function buildYearOptions() {
+    var sel      = document.getElementById('filterYear');
+    var thisYear = new Date().getFullYear();
+    var selected = '${param.payYear}';
+    for (var y = thisYear; y >= thisYear - 5; y--) {
+        var opt = document.createElement('option');
+        opt.value     = y;
+        opt.textContent = y + '년';
+        if (String(y) === selected) opt.selected = true;
+        sel.appendChild(opt);
+    }
+})();
+
 /* ================================================================
    페이지 필터 / 페이징
 ================================================================ */
@@ -599,21 +645,80 @@ function submitAuth() {
 /* ================================================================
    수정 모달
 ================================================================ */
-function openEditModal(id, empId, year, month, workHours, basePay, deduction, netPay, paidAt, note) {
-    document.getElementById('editId').value             = id;
-    document.getElementById('editEmployeeId').value     = empId;
-    document.getElementById('editYear').value           = year;
-    document.getElementById('editMonth').value          = month;
-    document.getElementById('editWorkHours').value      = workHours;
-    document.getElementById('editBasePayDisp').value    = Number(basePay).toLocaleString();
-    document.getElementById('editBasePay').value        = basePay;
-    document.getElementById('editDeductionDisp').value  = Number(deduction).toLocaleString();
-    document.getElementById('editDeduction').value      = deduction;
-    document.getElementById('editNetPayDisp').value     = Number(netPay).toLocaleString();
-    document.getElementById('editNetPay').value         = netPay;
-    document.getElementById('editPaidAt').value         = paidAt;
-    document.getElementById('editNote').value           = note;
+function openEditModal(id, empId, year, month, workHours, basePay, deduction, netPay, paidAt, note, payType) {
+    var isSalary = (parseInt(payType, 10) === 0);
+
+    document.getElementById('editId').value         = id;
+    document.getElementById('editEmployeeId').value = empId;
+    document.getElementById('editPayType').value    = payType;
+    document.getElementById('editYear').value       = year;
+    document.getElementById('editMonth').value      = month;
+    document.getElementById('editPaidAt').value     = paidAt;
+    document.getElementById('editNote').value       = note;
+
+    // 모달 타이틀
+    document.getElementById('editModalTitle').innerHTML =
+        isSalary ? '&#128176; 급여 수정' : '&#127942; 인센티브 수정';
+
+    var workHoursEl   = document.getElementById('editWorkHours');
+    var basePayDispEl = document.getElementById('editBasePayDisp');
+
+    if (isSalary) {
+        /* ── 일반 급여: 기본급 입력 가능, 공제액·실수령액 자동계산, 근무시간 입력가능 ── */
+        workHoursEl.value   = workHours;
+        workHoursEl.readOnly = false;
+        workHoursEl.classList.remove('field-locked');
+
+        basePayDispEl.value    = Number(basePay).toLocaleString();
+        basePayDispEl.readOnly = false;
+        basePayDispEl.classList.remove('field-locked');
+
+        document.getElementById('editBasePayLabel').innerHTML  = '기본급';
+        document.getElementById('editWorkHoursLabel').textContent = '근무시간';
+        document.getElementById('editDeductBadge').style.display  = '';
+        document.getElementById('editBasePayHint').textContent = '기본급 입력 시 공제액·실수령액 자동계산';
+
+        // 기본급 기준으로 공제/실수령 자동계산 세팅
+        editCalcFromBase(Number(basePay));
+
+    } else {
+        /* ── 인센티브: 근무시간 잠금 / 지급액 입력가능 + 공제·실수령 자동계산 ── */
+        workHoursEl.value    = workHours;
+        workHoursEl.readOnly = true;
+        workHoursEl.classList.add('field-locked');
+
+        basePayDispEl.value    = Number(basePay).toLocaleString();
+        basePayDispEl.readOnly = false;
+        basePayDispEl.classList.remove('field-locked');
+
+        document.getElementById('editBasePayLabel').innerHTML     = '지급액 (세전)';
+        document.getElementById('editWorkHoursLabel').textContent = '근무시간 (잠금)';
+        document.getElementById('editDeductBadge').style.display  = '';
+        document.getElementById('editBasePayHint').textContent    = '지급액 입력 시 공제액·실수령액 자동계산';
+
+        // 기존 지급액 기준으로 공제/실수령 자동계산 세팅
+        editCalcFromBase(Number(basePay));
+    }
+
+    document.getElementById('editBasePay').value = basePay;
     openModal('editModal');
+}
+
+/* 기본급 입력 → 공제·실수령 자동계산 (급여 수정 전용) */
+function onEditBasePayInput() {
+    var raw  = document.getElementById('editBasePayDisp').value.replace(/[^0-9]/g, '');
+    document.getElementById('editBasePayDisp').value = raw ? Number(raw).toLocaleString() : '';
+    editCalcFromBase(parseInt(raw || '0', 10));
+}
+
+function editCalcFromBase(basePay) {
+    var deduction = Math.round(basePay * 0.094);
+    var netPay    = basePay - deduction;
+    document.getElementById('editBasePay').value      = basePay;
+    document.getElementById('editDeductionDisp').value = deduction.toLocaleString();
+    document.getElementById('editDeduction').value    = deduction;
+    document.getElementById('editNetPayDisp').value   = netPay.toLocaleString();
+    document.getElementById('editNetPay').value       = netPay;
 }
 
 function formatAmount(input) {
@@ -622,9 +727,11 @@ function formatAmount(input) {
 }
 
 function submitEdit() {
-    document.getElementById('editBasePay').value   = document.getElementById('editBasePayDisp').value.replace(/,/g,'');
-    document.getElementById('editDeduction').value = document.getElementById('editDeductionDisp').value.replace(/,/g,'');
-    document.getElementById('editNetPay').value    = document.getElementById('editNetPayDisp').value.replace(/,/g,'');
+    var basePay = document.getElementById('editBasePay').value;
+    if (!basePay || basePay === '0') {
+        alert('기본급(지급액)을 입력해주세요.');
+        return;
+    }
     document.getElementById('editForm').submit();
 }
 
@@ -759,13 +866,15 @@ function goStep3() {
         document.getElementById('bannerNameI').innerText   = nameText;
         document.getElementById('bannerDetailI').innerText = detailText;
 
-        document.getElementById('incentiveEmpId').value      = _selectedEmp.id;
-        document.getElementById('incentiveAmountDisp').value = '';
-        document.getElementById('incentiveNetPay').value     = '';
-        document.getElementById('incentiveYear').value       = '';
-        document.getElementById('incentiveMonth').value      = '';
-        document.getElementById('incentivePaidAt').value     = '';
-        document.getElementById('incentiveNote').value       = '';
+        document.getElementById('incentiveEmpId').value       = _selectedEmp.id;
+        document.getElementById('incentiveAmountDisp').value  = '';
+        document.getElementById('incentiveNetPay').value      = '';
+        document.getElementById('incentiveDeduction').value   = '0';
+        document.getElementById('incentiveYear').value        = '';
+        document.getElementById('incentiveMonth').value       = '';
+        document.getElementById('incentivePaidAt').value      = '';
+        document.getElementById('incentiveNote').value        = '';
+        document.getElementById('incentiveDeductHint').innerHTML = '';
     }
 
     showStep(3);
@@ -857,6 +966,24 @@ function formatAmountInput(dispInput, hiddenId) {
     var val = dispInput.value.replace(/[^0-9]/g, '');
     dispInput.value = val ? Number(val).toLocaleString() : '';
     document.getElementById(hiddenId).value = val || '0';
+}
+
+/* 인센티브 금액 입력 → 9.4% 공제 자동계산 */
+function onIncentiveAmountInput(dispInput) {
+    var val       = dispInput.value.replace(/[^0-9]/g, '');
+    dispInput.value = val ? Number(val).toLocaleString() : '';
+    var gross     = parseInt(val || '0', 10);
+    var deduction = Math.round(gross * 0.094);
+    var netPay    = gross - deduction;
+    document.getElementById('incentiveNetPay').value    = netPay;
+    document.getElementById('incentiveDeduction').value = deduction;
+    var hintEl = document.getElementById('incentiveDeductHint');
+    if (gross > 0) {
+        hintEl.innerHTML = '공제액 <strong>' + deduction.toLocaleString() + '원</strong> (9.4%)'
+            + ' &nbsp;→&nbsp; 실수령액 <strong>' + netPay.toLocaleString() + '원</strong>';
+    } else {
+        hintEl.innerHTML = '';
+    }
 }
 
 /* ================================================================
