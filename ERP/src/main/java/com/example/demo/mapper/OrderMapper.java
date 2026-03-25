@@ -11,12 +11,14 @@ import com.example.demo.Domain.OrderPageRequest;
 
 @Mapper
 public interface OrderMapper {
-    List<Order>    selectOrderList();
-    List<Order>    findByPage(OrderPageRequest req);   // 페이지네이션
-    int            countAll(OrderPageRequest req);     // 전체 건수
-    void           insertOrder(Order order);
-    void           insertOrderItem(OrderItem item);
-    List<Menu>     selectMenuList();
-    void           updateOrderStatus(Order order);
-    void           deleteOrder(Long id);
+    List<Order>     selectOrderList();
+    List<Order>     findByPage(OrderPageRequest req);
+    int             countAll(OrderPageRequest req);
+    Order           findById(Long id);                        // 상태 중복 방지용
+    List<OrderItem> findItemsByOrderId(Long orderId);         // 재고 차감용
+    void            insertOrder(Order order);
+    void            insertOrderItem(OrderItem item);
+    List<Menu>      selectMenuList();
+    void            updateOrderStatus(Order order);
+    void            deleteOrder(Long id);
 }

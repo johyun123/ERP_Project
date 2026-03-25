@@ -12,9 +12,10 @@ public interface IngredientsMapper {
     List<Ingredients> findByPage(PageRequest req);
     int               countAll(PageRequest req);
     Ingredients       findById(long id);
-    List<Ingredients> findBySupplierId(@Param("supplierId") Long supplierId); // 거래처별 원재료
+    List<Ingredients> findBySupplierId(@Param("supplierId") Long supplierId);
     void              insert(Ingredients i);
     void              update(Ingredients i);
+    void              addStock(@Param("id") long id, @Param("qty") double qty); // 입고 시 재고 증가
     void              unlinkFromPurchaseItems(long id);
     void              delete(long id);
 }

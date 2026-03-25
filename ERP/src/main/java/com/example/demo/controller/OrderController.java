@@ -6,8 +6,10 @@ import java.util.List;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.example.demo.Service.OrderService;
 import com.example.demo.Domain.Order;
@@ -101,12 +103,10 @@ public class OrderController {
         return "redirect:/order?page=" + page;
     }
 
-    // 주문 취소
-    @PostMapping("/orderDelete")
-    public String deleteOrder(
-            @RequestParam Long id,
-            @RequestParam(defaultValue = "1") int page) {
-        orderService.deleteOrder(id);
-        return "redirect:/order?page=" + page;
+    // 주문 상세 아이템 조회 (모달용 JSON)
+    @GetMapping("/order/{id}/items")
+    @ResponseBody
+    public java.util.List<OrderItem> getOrderItems(@PathVariable Long id) {
+        return orderService.getOrderItems(id);
     }
 }
