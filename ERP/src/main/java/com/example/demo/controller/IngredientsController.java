@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDate;
@@ -41,6 +43,12 @@ public class IngredientsController {
         return uploadDir;
     }
 
+    // URL 인코딩 헬퍼
+    private String encode(String value) {
+        if (value == null || value.isEmpty()) return null;
+        return URLEncoder.encode(value, StandardCharsets.UTF_8);
+    }
+
     // ============================================================
     // 재고 현황
     // ============================================================
@@ -57,7 +65,7 @@ public class IngredientsController {
         req.setKeyword(keyword);
 
         model.addAttribute("result",       ingredientsService.getByPage(req));
-        model.addAttribute("supplierList", suppliersService.getAll()); // 거래처 드롭다운용
+        model.addAttribute("supplierList", suppliersService.getAll());
         model.addAttribute("category",     category);
         model.addAttribute("keyword",      keyword);
         model.addAttribute("size",         size);
@@ -101,8 +109,8 @@ public class IngredientsController {
             @RequestParam double stock_qty,
             @RequestParam double min_stock,
             @RequestParam int    unit_cost,
-            @RequestParam(required = false) Long supplier_id,
-            @RequestParam(defaultValue = "1") int  page,
+            @RequestParam(required = false)   Long   supplier_id,
+            @RequestParam(defaultValue = "1") int    page,
             @RequestParam(required = false)   String cat,
             @RequestParam(required = false)   String keyword) {
 
@@ -116,16 +124,28 @@ public class IngredientsController {
         i.setUnit_cost(unit_cost);
         i.setSupplier_id(supplier_id);
         ingredientsService.modify(i);
-        return "redirect:/inventory?page=" + page
-                + (cat     != null ? "&category=" + cat     : "")
-                + (keyword != null ? "&keyword="  + keyword : "");
+
+        String redirect = "redirect:/inventory?page=" + page;
+        String encCat = encode(cat);
+        String encKw  = encode(keyword);
+        if (encCat != null) redirect += "&category=" + encCat;
+        if (encKw  != null) redirect += "&keyword="  + encKw;
+        return redirect;
     }
 
     @PostMapping("/inventory/delete/{id}")
     public String stockDelete(@PathVariable long id,
-                              @RequestParam(defaultValue = "1") int page) {
+                              @RequestParam(defaultValue = "1") int    page,
+                              @RequestParam(required = false)   String cat,
+                              @RequestParam(required = false)   String keyword) {
         ingredientsService.remove(id);
-        return "redirect:/inventory?page=" + page;
+
+        String redirect = "redirect:/inventory?page=" + page;
+        String encCat = encode(cat);
+        String encKw  = encode(keyword);
+        if (encCat != null) redirect += "&category=" + encCat;
+        if (encKw  != null) redirect += "&keyword="  + encKw;
+        return redirect;
     }
 
     // ============================================================
@@ -153,7 +173,7 @@ public class IngredientsController {
         s.setNote(note);
 
         if (file != null && !file.isEmpty()) {
-            String filename  = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+            String filename = System.currentTimeMillis() + "_" + file.getOriginalFilename();
             Files.write(Paths.get(getUploadDir() + filename), file.getBytes());
             s.setContract_file("/uploads/contracts/" + filename);
         }
@@ -165,12 +185,24 @@ public class IngredientsController {
     // 거래처 관리
     // ============================================================
     @GetMapping("/inventory/vendor")
-    public String supplierList(Model model) {
-        model.addAttribute("list", suppliersService.getAll());
+    public String supplierList(
+            @RequestParam(defaultValue = "1")  int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false)    String category,
+            @RequestParam(required = false)    String keyword,
+            Model model) {
+
+        PageRequest req = new PageRequest(page, size);
+        req.setCategory(category);
+        req.setKeyword(keyword);
+
+        model.addAttribute("result",   suppliersService.getByPage(req));
+        model.addAttribute("category", category);
+        model.addAttribute("keyword",  keyword);
+        model.addAttribute("size",     size);
         return "Ingredients/supplierList";
     }
 
-    // 거래처 상세 - 담당 원재료 목록 (JSON)
     @GetMapping("/inventory/vendor/{id}/ingredients")
     @ResponseBody
     public List<Ingredients> supplierIngredients(@PathVariable Long id) {

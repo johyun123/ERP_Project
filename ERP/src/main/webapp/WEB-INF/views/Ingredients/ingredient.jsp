@@ -150,27 +150,25 @@ request.setAttribute("emojiMap", emojiMap);
                                     </a>
                                 </c:when>
                                 <c:otherwise>
-                                    <span style="color:var(--text-muted);">-</span>
+                                    <span class="badge badge-low">미등록</span>
                                 </c:otherwise>
                             </c:choose>
                         </td>
                         <td><fmt:formatNumber value="${item.unit_cost}" pattern="#,###"/>원</td>
                         <td>
                             <button class="btn btn-edit"
-                                data-id="${item.id}"
-                                data-name="${item.name}"
-                                data-category="${item.category}"
-                                data-unit="${item.unit}"
-                                data-stock="${item.stock_qty}"
-                                data-minstock="${item.min_stock}"
-                                data-cost="${item.unit_cost}"
-                                data-supplierid="${item.supplier_id}"
-                                onclick="openEditModal(this)">
+                                onclick="openEditModal(${item.id})">
                                 수정
                             </button>
                             <form action="/inventory/delete/${item.id}" method="post" style="display:inline"
                                   onsubmit="return confirm('${item.name}을(를) 삭제하시겠습니까?')">
                                 <input type="hidden" name="page" value="${result.page}">
+                                <c:if test="${not empty category}">
+                                    <input type="hidden" name="cat" value="${category}">
+                                </c:if>
+                                <c:if test="${not empty keyword}">
+                                    <input type="hidden" name="keyword" value="${keyword}">
+                                </c:if>
                                 <button type="submit" class="btn btn-delete">삭제</button>
                             </form>
                         </td>
@@ -368,17 +366,22 @@ function openModal(id)  { document.getElementById(id).classList.add('active'); }
 function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
 /* data-* 방식으로 수정 모달 열기 */
-function openEditModal(btn) {
-    document.getElementById('edit_id').value          = btn.dataset.id;
-    document.getElementById('edit_name').value        = btn.dataset.name;
-    document.getElementById('edit_category').value    = btn.dataset.category;
-    document.getElementById('edit_unit').value        = btn.dataset.unit;
-    document.getElementById('edit_stock_qty').value   = btn.dataset.stock;
-    document.getElementById('edit_min_stock').value   = btn.dataset.minstock;
-    document.getElementById('edit_unit_cost').value   = btn.dataset.cost;
-    var supplierId = btn.dataset.supplierid;
-    document.getElementById('edit_supplier_id').value = (supplierId && supplierId !== 'null') ? supplierId : '';
-    openModal('editModal');
+function openEditModal(id) {
+    fetch('/inventory/' + id)
+        .then(function(res) { return res.json(); })
+        .then(function(item) {
+            document.getElementById('edit_id').value          = item.id;
+            document.getElementById('edit_name').value        = item.name;
+            document.getElementById('edit_category').value    = item.category;
+            document.getElementById('edit_unit').value        = item.unit;
+            document.getElementById('edit_stock_qty').value   = item.stock_qty;
+            document.getElementById('edit_min_stock').value   = item.min_stock;
+            document.getElementById('edit_unit_cost').value   = item.unit_cost;
+            var supplierId = item.supplier_id;
+            document.getElementById('edit_supplier_id').value =
+                (supplierId && supplierId !== null) ? supplierId : '';
+            openModal('editModal');
+        });
 }
 
 document.querySelectorAll('.modal-overlay').forEach(function(o) {

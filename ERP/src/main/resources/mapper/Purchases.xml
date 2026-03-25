@@ -3,17 +3,29 @@
     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.example.demo.mapper.PurchasesMapper">
 
-    <select id="findAll" resultType="Purchases">
-        SELECT p.*, s.supplier_name AS supplier
+    <!-- supplier 텍스트 컬럼 없이 supplier_id JOIN으로만 이름 가져옴 -->
+    <sql id="selectPurchase">
+        SELECT
+            p.id,
+            p.supplier_id,
+            p.total_cost,
+            p.status,
+            p.ordered_at,
+            p.received_at,
+            p.note,
+            p.created_at,
+            s.supplier_name AS supplier
         FROM purchases p
         LEFT JOIN suppliers s ON p.supplier_id = s.id
+    </sql>
+
+    <select id="findAll" resultType="Purchases">
+        <include refid="selectPurchase"/>
         ORDER BY p.ordered_at DESC, p.id DESC
     </select>
 
     <select id="findByPage" parameterType="PageRequest" resultType="Purchases">
-        SELECT p.*, s.supplier_name AS supplier
-        FROM purchases p
-        LEFT JOIN suppliers s ON p.supplier_id = s.id
+        <include refid="selectPurchase"/>
         <where>
             <if test="keyword != null and keyword != ''">
                 AND s.supplier_name LIKE CONCAT('%', #{keyword}, '%')
@@ -35,9 +47,7 @@
     </select>
 
     <select id="findById" parameterType="long" resultType="Purchases">
-        SELECT p.*, s.supplier_name AS supplier
-        FROM purchases p
-        LEFT JOIN suppliers s ON p.supplier_id = s.id
+        <include refid="selectPurchase"/>
         WHERE p.id = #{id}
     </select>
 

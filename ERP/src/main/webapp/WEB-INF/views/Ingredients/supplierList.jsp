@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="c"   uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fn"  uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <!DOCTYPE html>
 <html>
@@ -20,10 +21,39 @@
         <button class="btn btn-primary" onclick="openModal('registerModal')">+ 거래처 등록</button>
     </div>
 
+    <%-- 유형 탭 + 검색 --%>
+    <div class="filter-bar">
+        <div class="category-tabs">
+            <button class="tab-btn ${empty category ? 'active' : ''}"
+                    onclick="goFilter('', '${keyword}')">전체</button>
+            <button class="tab-btn ${category == '원두' ? 'active' : ''}"
+                    onclick="goFilter('원두', '${keyword}')">☕ 원두</button>
+            <button class="tab-btn ${category == '유제품' ? 'active' : ''}"
+                    onclick="goFilter('유제품', '${keyword}')">🥛 유제품</button>
+            <button class="tab-btn ${category == '시럽/소스' ? 'active' : ''}"
+                    onclick="goFilter('시럽/소스', '${keyword}')">🍯 시럽/소스</button>
+            <button class="tab-btn ${category == '소모품' ? 'active' : ''}"
+                    onclick="goFilter('소모품', '${keyword}')">🧴 소모품</button>
+            <button class="tab-btn ${category == '기타' ? 'active' : ''}"
+                    onclick="goFilter('기타', '${keyword}')">📦 기타</button>
+        </div>
+        <div class="search-box">
+            <input type="text" id="keywordInput" placeholder="거래처명 검색..."
+                   value="${keyword}" onkeydown="if(event.key==='Enter') doSearch()">
+            <button class="btn btn-edit" onclick="doSearch()">🔍 검색</button>
+            <c:if test="${not empty keyword}">
+                <button class="btn btn-cancel"
+                        onclick="goFilter('${category}', '')">✕ 초기화</button>
+            </c:if>
+        </div>
+    </div>
+
     <div class="table-card">
         <div class="table-card-header">
             <h3>거래처 목록</h3>
-            <span style="font-size:0.82rem; color:var(--text-muted);">총 ${list.size()}개</span>
+            <span style="font-size:0.82rem; color:var(--text-muted);">
+                총 ${result.totalCount}개 중 ${result.list.size()}개 표시
+            </span>
         </div>
         <table class="data-table">
             <thead>
@@ -39,16 +69,23 @@
             </thead>
             <tbody>
             <c:choose>
-                <c:when test="${empty list}">
+                <c:when test="${empty result.list}">
                     <tr class="empty-row"><td colspan="7">등록된 거래처가 없습니다.</td></tr>
                 </c:when>
                 <c:otherwise>
-                    <c:forEach var="s" items="${list}">
-                    <tr class="clickable-row" onclick="openDetailModal(${s.id}, '${s.supplier_name}', '${s.supplier_type}', '${s.ceo_name}', '${s.address}', '${s.note}')">
+                    <c:forEach var="s" items="${result.list}">
+                    <tr class="clickable-row"
+                        data-id="${s.id}"
+                        data-name="${fn:escapeXml(s.supplier_name)}"
+                        data-type="${fn:escapeXml(s.supplier_type)}"
+                        data-ceo="${fn:escapeXml(s.ceo_name)}"
+                        data-address="${fn:escapeXml(s.address)}"
+                        data-note="${fn:escapeXml(s.note)}"
+                        onclick="openDetailModal(this)">
                         <td><strong>${s.supplier_name}</strong></td>
                         <td>
                             <c:if test="${not empty s.supplier_type}">
-                                <span class="badge badge-normal">${s.supplier_type}</span>
+                                <span class="badge badge-category">${s.supplier_type}</span>
                             </c:if>
                         </td>
                         <td>${empty s.ceo_name ? '-' : s.ceo_name}</td>
@@ -66,13 +103,20 @@
                                 </c:otherwise>
                             </c:choose>
                         </td>
-                        <td>${s.created_at}</td>
+                        <td style="font-family:'Outfit',sans-serif; font-size:0.82rem;">
+                            ${s.created_at}
+                        </td>
                         <td onclick="event.stopPropagation()">
                             <button class="btn btn-edit"
-                                onclick="openEditModal(${s.id},'${s.supplier_name}','${s.supplier_type}','${s.ceo_name}','${s.address}','${s.note}','${s.contract_file}')">
+                                onclick="openEditModal(
+                                    ${s.id},'${fn:escapeXml(s.supplier_name)}',
+                                    '${fn:escapeXml(s.supplier_type)}','${fn:escapeXml(s.ceo_name)}',
+                                    '${fn:escapeXml(s.address)}','${fn:escapeXml(s.note)}',
+                                    '${s.contract_file}')">
                                 수정
                             </button>
-                            <form action="/inventory/vendor/delete/${s.id}" method="post" style="display:inline"
+                            <form action="/inventory/vendor/delete/${s.id}" method="post"
+                                  style="display:inline"
                                   onsubmit="return confirm('${s.supplier_name}을(를) 삭제하시겠습니까?')">
                                 <button type="submit" class="btn btn-delete">삭제</button>
                             </form>
@@ -83,6 +127,30 @@
             </c:choose>
             </tbody>
         </table>
+
+        <%-- 페이지네이션 --%>
+        <div class="pagination">
+            <div class="page-size-select">
+                <select onchange="changeSize(this.value)">
+                    <option value="10"  ${size == 10  ? 'selected' : ''}>10개씩</option>
+                    <option value="20"  ${size == 20  ? 'selected' : ''}>20개씩</option>
+                    <option value="50"  ${size == 50  ? 'selected' : ''}>50개씩</option>
+                </select>
+            </div>
+            <div class="page-nav">
+                <c:if test="${result.hasPrev()}">
+                    <button class="page-btn" onclick="goPage(${result.startPage - 1})">‹</button>
+                </c:if>
+                <c:forEach begin="${result.startPage}" end="${result.endPage}" var="p">
+                    <button class="page-btn ${p == result.page ? 'active' : ''}"
+                            onclick="goPage(${p})">${p}</button>
+                </c:forEach>
+                <c:if test="${result.hasNext()}">
+                    <button class="page-btn" onclick="goPage(${result.endPage + 1})">›</button>
+                </c:if>
+            </div>
+            <div style="font-size:0.8rem; color:var(--text-muted);">총 ${result.totalCount}개</div>
+        </div>
     </div>
 </div>
 
@@ -93,8 +161,6 @@
             🏢 <span id="detailName"></span>
             <span id="detailType" style="font-size:0.78rem; font-weight:500; margin-left:8px;"></span>
         </div>
-
-        <%-- 거래처 기본 정보 --%>
         <div class="detail-info-grid">
             <div class="detail-info-item">
                 <span class="detail-label">대표자</span>
@@ -104,13 +170,11 @@
                 <span class="detail-label">주소</span>
                 <span id="detailAddress" class="detail-value"></span>
             </div>
-            <div class="detail-info-item" id="detailNoteWrap">
+            <div class="detail-info-item" style="grid-column:1/-1;">
                 <span class="detail-label">비고</span>
                 <span id="detailNote" class="detail-value"></span>
             </div>
         </div>
-
-        <%-- 담당 원재료 목록 --%>
         <div style="margin-top:20px;">
             <div style="font-size:0.85rem; font-weight:700; color:var(--text-primary);
                         margin-bottom:10px; padding-bottom:8px; border-bottom:1.5px solid var(--border-light);">
@@ -122,7 +186,6 @@
                 <div style="text-align:center; padding:20px; color:var(--text-muted);">로딩 중...</div>
             </div>
         </div>
-
         <div class="modal-footer">
             <button type="button" class="btn btn-cancel" onclick="closeModal('detailModal')">닫기</button>
         </div>
@@ -267,61 +330,70 @@
     border-radius: var(--radius-md);
     margin-bottom: 4px;
 }
-.detail-info-item {
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-}
+.detail-info-item { display: flex; flex-direction: column; gap: 3px; }
 .detail-label {
-    font-size: 0.72rem;
-    font-weight: 600;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    font-size: 0.72rem; font-weight: 600;
+    color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;
 }
-.detail-value {
-    font-size: 0.88rem;
-    color: var(--text-primary);
-    font-weight: 500;
-}
+.detail-value { font-size: 0.88rem; color: var(--text-primary); font-weight: 500; }
 
-/* 담당 원재료 테이블 */
-.ingredient-detail-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.85rem;
-}
+.ingredient-detail-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
 .ingredient-detail-table th {
-    background: #fafafa;
-    padding: 9px 14px;
-    font-size: 0.72rem;
-    font-weight: 600;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    text-align: center;
-    border-bottom: 1.5px solid var(--border-light);
+    background: #fafafa; padding: 9px 14px; font-size: 0.72rem; font-weight: 600;
+    color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;
+    text-align: center; border-bottom: 1.5px solid var(--border-light);
 }
 .ingredient-detail-table td {
-    padding: 10px 14px;
-    text-align: center;
-    border-bottom: 1px solid var(--border-light);
-    color: var(--text-primary);
+    padding: 10px 14px; text-align: center;
+    border-bottom: 1px solid var(--border-light); color: var(--text-primary);
 }
 .ingredient-detail-table tr:last-child td { border-bottom: none; }
-.ingredient-detail-table td:first-child    { text-align: left; }
-.ingredient-detail-table th:first-child    { text-align: left; }
+.ingredient-detail-table td:first-child,
+.ingredient-detail-table th:first-child { text-align: left; }
 </style>
 
 <script>
+var currentCategory = '${category}';
+var currentKeyword  = '${keyword}';
+var currentSize     = ${size};
+
+function goPage(p) {
+    var url = '/inventory/vendor?page=' + p + '&size=' + currentSize;
+    if (currentCategory) url += '&category=' + encodeURIComponent(currentCategory);
+    if (currentKeyword)  url += '&keyword='  + encodeURIComponent(currentKeyword);
+    location.href = url;
+}
+function goFilter(cat, kw) {
+    var url = '/inventory/vendor?page=1&size=' + currentSize;
+    if (cat) url += '&category=' + encodeURIComponent(cat);
+    if (kw)  url += '&keyword='  + encodeURIComponent(kw);
+    location.href = url;
+}
+function doSearch() {
+    goFilter(currentCategory, document.getElementById('keywordInput').value.trim());
+}
+function changeSize(s) {
+    var url = '/inventory/vendor?page=1&size=' + s;
+    if (currentCategory) url += '&category=' + encodeURIComponent(currentCategory);
+    if (currentKeyword)  url += '&keyword='  + encodeURIComponent(currentKeyword);
+    location.href = url;
+}
+
 function openModal(id)  { document.getElementById(id).classList.add('active'); }
 function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
-/* ===== 거래처 상세 모달 ===== */
-function openDetailModal(id, name, type, ceo, address, note) {
+/* 거래처 상세 모달 */
+function openDetailModal(row) {
+    var id      = row.dataset.id;
+    var name    = row.dataset.name    || '';
+    var type    = row.dataset.type    || '';
+    var ceo     = row.dataset.ceo     || '';
+    var address = row.dataset.address || '';
+    var note    = row.dataset.note    || '';
+
     document.getElementById('detailName').innerText    = name;
     document.getElementById('detailType').innerHTML    = type
-        ? '<span class="badge badge-normal">' + type + '</span>' : '';
+        ? '<span class="badge badge-category">' + type + '</span>' : '';
     document.getElementById('detailCeo').innerText     = ceo     || '-';
     document.getElementById('detailAddress').innerText = address || '-';
     document.getElementById('detailNote').innerText    = (note && note !== 'null') ? note : '-';
@@ -332,7 +404,6 @@ function openDetailModal(id, name, type, ceo, address, note) {
 
     openModal('detailModal');
 
-    // 담당 원재료 목록 조회
     fetch('/inventory/vendor/' + id + '/ingredients')
         .then(function(res) { return res.json(); })
         .then(function(list) {
@@ -344,20 +415,16 @@ function openDetailModal(id, name, type, ceo, address, note) {
                 return;
             }
             countEl.innerText = '(' + list.length + '개)';
-
             var badgeMap = {
-                '원두': '☕', '유제품': '🥛', '시럽/소스': '🍯',
-                '파우더': '🌿', '차류': '🍵', '소모품': '🧴', '기타': '📦'
+                '원두':'☕','유제품':'🥛','시럽/소스':'🍯',
+                '파우더':'🌿','차류':'🍵','소모품':'🧴','기타':'📦'
             };
-
-            var html = '<table class="ingredient-detail-table">'
-                + '<thead><tr>'
+            var html = '<table class="ingredient-detail-table"><thead><tr>'
                 + '<th>원재료명</th><th>카테고리</th><th>단위</th>'
                 + '<th>현재 재고</th><th>상태</th><th>단가</th>'
                 + '</tr></thead><tbody>';
-
             list.forEach(function(item) {
-                var emoji  = badgeMap[item.category] || '📦';
+                var emoji = badgeMap[item.category] || '📦';
                 var status, statusClass;
                 if (item.stock_qty <= item.min_stock) {
                     status = '⚠ 부족'; statusClass = 'badge-low';
@@ -384,7 +451,7 @@ function openDetailModal(id, name, type, ceo, address, note) {
         });
 }
 
-/* ===== 수정 모달 ===== */
+/* 수정 모달 */
 function openEditModal(id, name, type, ceo, address, note, contractFile) {
     document.getElementById('edit_id').value            = id;
     document.getElementById('edit_supplier_name').value = name;
@@ -422,7 +489,7 @@ function toggleContractInput(checked) {
     if (checked) document.getElementById('edit_contract_input').value  = '';
 }
 
-/* ===== 계약서 조회 ===== */
+/* 계약서 조회 */
 function viewContract(filepath) {
     if (!filepath || filepath === 'null') return;
     var ext    = filepath.split('.').pop().toLowerCase();
