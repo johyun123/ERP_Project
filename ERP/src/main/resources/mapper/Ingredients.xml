@@ -81,6 +81,13 @@
         WHERE id = #{id}
     </update>
 
+    <!-- 재고 증감 (입고: 양수, 판매차감: 음수 / 음수 재고 허용) -->
+    <update id="addStock">
+        UPDATE ingredients
+        SET stock_qty = stock_qty + #{qty}
+        WHERE id = #{id}
+    </update>
+
     <!-- 삭제 전 purchase_items 참조 해제 -->
     <update id="unlinkFromPurchaseItems" parameterType="long">
         UPDATE purchase_items SET ingredient_id = NULL WHERE ingredient_id = #{id}

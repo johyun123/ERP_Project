@@ -33,6 +33,13 @@
         ORDER BY ordered_at DESC
     </select>
 
+    <!-- 단건 조회 (상태 변경 전 현재 상태 확인용) -->
+    <select id="findById" parameterType="Long" resultType="Order">
+        SELECT <include refid="orderColumns"/>
+        FROM orders o
+        WHERE o.id = #{id}
+    </select>
+
     <!-- 페이지네이션 + 필터 -->
     <select id="findByPage" parameterType="OrderPageRequest" resultType="Order">
         SELECT <include refid="orderColumns"/>
@@ -75,6 +82,21 @@
                 AND DATE(o.ordered_at) &lt;= #{dateTo}
             </if>
         </where>
+    </select>
+
+    <!-- 주문 상세 아이템 조회 (재고 차감 + 모달 표시용) -->
+    <select id="findItemsByOrderId" parameterType="Long" resultType="OrderItem">
+        SELECT
+            oi.id,
+            oi.order_id   AS orderId,
+            oi.menu_id    AS menuId,
+            oi.qty,
+            oi.unit_price AS unitPrice,
+            oi.subtotal,
+            m.name        AS menuName
+        FROM order_items oi
+        LEFT JOIN menus m ON oi.menu_id = m.id
+        WHERE oi.order_id = #{orderId}
     </select>
 
     <!-- 주문 등록 -->

@@ -242,6 +242,18 @@ public class IngredientsController {
 
     @PostMapping("/inventory/vendor/delete/{id}")
     public String supplierDelete(@PathVariable long id) {
+        // 계약서 파일 먼저 삭제
+        Suppliers s = suppliersService.getById(id);
+        if (s != null && s.getContract_file() != null && !s.getContract_file().isEmpty()) {
+            try {
+                String filePath = servletContext.getRealPath("/")
+                                + s.getContract_file().replaceFirst("^/", "");
+                java.nio.file.Path path = java.nio.file.Paths.get(filePath);
+                java.nio.file.Files.deleteIfExists(path);
+            } catch (Exception e) {
+                // 파일 삭제 실패해도 거래처 삭제는 계속 진행
+            }
+        }
         suppliersService.remove(id);
         return "redirect:/inventory/vendor";
     }
@@ -272,8 +284,20 @@ public class IngredientsController {
     }
 
     @PostMapping("/inventory/order/update")
-    public String purchaseUpdate(@ModelAttribute Purchases p,
-                                 @RequestParam(defaultValue = "1") int page) {
+    public String purchaseUpdate(
+            @RequestParam long   id,
+            @RequestParam String status,
+            @RequestParam(required = false) String received_at,
+            @RequestParam(required = false) String note,
+            @RequestParam(defaultValue = "1") int page) {
+
+        Purchases p = new Purchases();
+        p.setId(id);
+        p.setStatus(status);
+        p.setNote(note);
+        if (received_at != null && !received_at.isEmpty()) {
+            p.setReceived_at(java.time.LocalDate.parse(received_at));
+        }
         purchasesService.modify(p);
         return "redirect:/inventory/order/history?page=" + page;
     }
