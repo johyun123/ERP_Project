@@ -80,7 +80,8 @@
                     </c:when>
                     <c:otherwise>
                         <c:forEach var="order" items="${result.list}">
-                            <tr>
+                            <tr class="clickable-row"
+                                onclick="openDetailModal(${order.id}, '${order.orderNo}', '${order.status}', ${order.discountAmount}, ${order.finalAmount})">
                                 <td>${order.orderNo}</td>
                                 <td><fmt:formatNumber value="${order.totalAmount}" pattern="#,###"/>원</td>
                                 <td><fmt:formatNumber value="${order.discountAmount}" pattern="#,###"/>원</td>
@@ -89,11 +90,10 @@
                                 <td><span class="status-badge status-${order.status}">${order.status}</span></td>
                                 <td>${empty order.note ? '-' : order.note}</td>
                                 <td>${order.orderedAtFormatted}</td>
-                                <td class="action-cell">
+                                <td class="action-cell" onclick="event.stopPropagation()">
                                     <button class="btn-action btn-status"
                                             onclick="openStatusPopup(${order.id}, '${order.status}')">상태변경</button>
-                                    <button class="btn-action btn-cancel-order"
-                                            onclick="confirmDelete(${order.id})">삭제</button>
+
                                 </td>
                             </tr>
                         </c:forEach>
@@ -213,6 +213,28 @@
         </div>
     </div>
 
+    <%-- ===== 주문 상세 모달 ===== --%>
+    <div class="popup-overlay" id="detailModal" style="display:none;" onclick="if(event.target===this)this.style.display='none'">
+        <div class="popup-box" style="width:540px; max-width:95vw;">
+            <div class="popup-header">
+                <h3 style="display:flex; align-items:center; gap:8px;">
+                    📋 주문 상세
+                    <span id="detailOrderNo" style="font-size:0.85rem; font-weight:400;
+                          color:var(--text-muted); margin-left:8px;"></span>
+                </h3>
+                <button class="btn-close" onclick="document.getElementById('detailModal').style.display='none'">✕</button>
+            </div>
+            <div class="popup-body">
+                <div id="detailContent">
+                    <div style="text-align:center; padding:30px; color:var(--text-muted);">로딩 중...</div>
+                </div>
+            </div>
+            <div class="popup-footer">
+                <button type="button" class="btn-cancel" onclick="document.getElementById('detailModal').style.display='none'">닫기</button>
+            </div>
+        </div>
+    </div>
+
     <%-- ===== 상태 변경 팝업 ===== --%>
     <div class="popup-overlay" id="statusOverlay" onclick="closeStatusPopupOutside(event)">
         <div class="popup-box" style="width:360px;">
@@ -227,7 +249,6 @@
                     <div class="form-row">
                         <label>변경할 상태 선택</label>
                         <div class="status-options">
-                            <button type="button" class="btn-status-opt" data-value="대기"  onclick="selectStatus(this)">대기</button>
                             <button type="button" class="btn-status-opt" data-value="완료"  onclick="selectStatus(this)">완료</button>
                             <button type="button" class="btn-status-opt" data-value="취소"  onclick="selectStatus(this)">취소</button>
                         </div>
@@ -242,11 +263,7 @@
         </div>
     </div>
 
-    <%-- 삭제 form --%>
-    <form id="deleteForm" action="/orderDelete" method="post">
-        <input type="hidden" name="id"   id="deleteOrderId"/>
-        <input type="hidden" name="page" value="${result.page}"/>
-    </form>
+
 
     <script>
     var currentStatus   = '${status}';
@@ -407,12 +424,70 @@
         document.getElementById('statusForm').submit();
     }
 
-    /* ===== 삭제 ===== */
-    function confirmDelete(orderId) {
-        if (!confirm('주문을 삭제하시겠습니까?')) return;
-        document.getElementById('deleteOrderId').value = orderId;
-        document.getElementById('deleteForm').submit();
+    
+    /* ===== 주문 상세 모달 ===== */
+    function openDetailModal(orderId, orderNo, status, discountAmount, finalAmount) {
+        document.getElementById('detailOrderNo').innerText = orderNo;
+        document.getElementById('detailContent').innerHTML =
+            '<div style="text-align:center; padding:30px; color:var(--text-muted);">로딩 중...</div>';
+        document.getElementById('detailModal').style.display = 'flex';
+
+        fetch('/order/' + orderId + '/items')
+            .then(function(res) { return res.json(); })
+            .then(function(items) {
+                if (!items || items.length === 0) {
+                    document.getElementById('detailContent').innerHTML =
+                        '<div style="text-align:center; padding:30px; color:var(--text-muted);">주문 항목이 없습니다.</div>';
+                    return;
+                }
+                var total = 0;
+                var html  = '<table style="width:100%; border-collapse:collapse; font-size:0.88rem;">'
+                    + '<thead><tr style="background:#fafafa;">'
+                    + '<th style="padding:10px 14px; text-align:left; border-bottom:1.5px solid #f3f4f6; font-size:0.75rem; color:#9ca3af; font-weight:600; text-transform:uppercase;">메뉴명</th>'
+                    + '<th style="padding:10px 14px; text-align:center; border-bottom:1.5px solid #f3f4f6; font-size:0.75rem; color:#9ca3af; font-weight:600; text-transform:uppercase;">수량</th>'
+                    + '<th style="padding:10px 14px; text-align:right; border-bottom:1.5px solid #f3f4f6; font-size:0.75rem; color:#9ca3af; font-weight:600; text-transform:uppercase;">단가</th>'
+                    + '<th style="padding:10px 14px; text-align:right; border-bottom:1.5px solid #f3f4f6; font-size:0.75rem; color:#9ca3af; font-weight:600; text-transform:uppercase;">소계</th>'
+                    + '</tr></thead><tbody>';
+
+                items.forEach(function(item) {
+                    total += item.subtotal;
+                    html += '<tr style="border-bottom:1px solid #f3f4f6;">'
+                        + '<td style="padding:12px 14px; text-align:left;"><strong>' + (item.menuName || '-') + '</strong></td>'
+                        + '<td style="padding:12px 14px; text-align:center;">' + item.qty + '</td>'
+                        + '<td style="padding:12px 14px; text-align:right;">' + Number(item.unitPrice).toLocaleString() + '원</td>'
+                        + '<td style="padding:12px 14px; text-align:right;"><strong>' + Number(item.subtotal).toLocaleString() + '원</strong></td>'
+                        + '</tr>';
+                });
+
+                html += '</tbody></table>';
+                html += '<div style="padding:12px 14px; background:#f8f9ff; border-top:1px solid #f3f4f6; border-radius:0 0 8px 8px;">';
+                if (discountAmount > 0) {
+                    html += '<div style="display:flex; justify-content:space-between; font-size:0.85rem; color:#9ca3af; margin-bottom:6px;">'
+                        + '<span>소계</span><span>' + Number(total).toLocaleString() + '원</span></div>';
+                    html += '<div style="display:flex; justify-content:space-between; font-size:0.85rem; color:#ef4444; margin-bottom:8px;">'
+                        + '<span>할인</span><span>-' + Number(discountAmount).toLocaleString() + '원</span></div>';
+                }
+                html += '<div style="display:flex; justify-content:space-between; font-weight:700; color:#5b6ef5; font-size:1rem;">'
+                    + '<span>최종 결제</span>'
+                    + '<span style="font-family:Outfit,sans-serif;">' + Number(finalAmount).toLocaleString() + '원</span></div>';
+                html += '</div>';
+
+                document.getElementById('detailContent').innerHTML = html;
+            })
+            .catch(function() {
+                document.getElementById('detailContent').innerHTML =
+                    '<div style="text-align:center; padding:30px; color:#ef4444;">불러오기 실패</div>';
+            });
     }
+
+    function closeModal(id) {
+        document.getElementById(id).style.display = 'none';
+    }
+
+    document.getElementById('detailModal').addEventListener('click', function(e) {
+        if (e.target === this) this.style.display = 'none';
+    });
+
     </script>
 </body>
 </html>
