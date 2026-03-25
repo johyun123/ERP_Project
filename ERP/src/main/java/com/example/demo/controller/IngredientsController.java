@@ -151,10 +151,6 @@ public class IngredientsController {
     // ============================================================
     // 거래처 등록
     // ============================================================
-    @GetMapping("/inventory/vendor/register")
-    public String supplierRegist() {
-        return "Ingredients/supplierRegist";
-    }
 
     @PostMapping("/inventory/vendor/register")
     public String supplierRegistPost(

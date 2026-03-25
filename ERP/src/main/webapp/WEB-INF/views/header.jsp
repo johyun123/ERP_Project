@@ -82,7 +82,6 @@ String avatarChar = loginName.length() > 0 ? String.valueOf(loginName.charAt(0))
 
         <li class="has-submenu" onclick="toggleSubmenu(this)">💰 재무관리
             <ul class="submenu">
-                <li onclick="event.stopPropagation(); location.href='/f_register'">지출 등록</li>
                 <li onclick="event.stopPropagation(); location.href='/f_list'">지출 내역</li>
                 <li onclick="event.stopPropagation(); location.href='/f_payrolls'">급여 내역</li>
             </ul>
