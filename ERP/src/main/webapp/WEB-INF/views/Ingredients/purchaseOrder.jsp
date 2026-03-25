@@ -31,9 +31,8 @@ request.setAttribute("emojiMap", emojiMap);
         <div class="page-title">발주 등록 <span>재고를 선택하여 발주합니다</span></div>
     </div>
 
-    <%-- 거래처 선택 안내 배너 --%>
-    <div id="supplierBanner" class="supplier-banner">
-        <span>💡 원재료를 선택하면 거래처가 자동으로 설정됩니다. 같은 거래처의 원재료만 한 번에 발주할 수 있습니다.</span>
+    <div class="supplier-banner">
+        💡 원재료를 선택하면 거래처가 자동으로 설정됩니다. 같은 거래처의 원재료만 한 번에 발주할 수 있습니다.
     </div>
 
     <div class="order-layout">
@@ -50,7 +49,6 @@ request.setAttribute("emojiMap", emojiMap);
                                   width:160px; outline:none;">
                 </div>
 
-                <%-- 카테고리 탭 --%>
                 <div style="padding:12px 20px 0; display:flex; gap:6px; flex-wrap:wrap;
                             border-bottom:1.5px solid var(--border-light);">
                     <button class="tab-btn active" onclick="filterOrderCategory('all',this)">전체</button>
@@ -76,65 +74,88 @@ request.setAttribute("emojiMap", emojiMap);
                         </tr>
                     </thead>
                     <tbody>
-                    <c:set var="currentCat" value=""/>
                     <c:choose>
                         <c:when test="${empty ingredientList}">
                             <tr class="empty-row"><td colspan="7">등록된 원재료가 없습니다.</td></tr>
                         </c:when>
                         <c:otherwise>
+                            <%-- 거래처 있는 원재료 (삭제된 거래처 제외) --%>
                             <c:forEach var="item" items="${ingredientList}">
-                                <%-- 카테고리 구분 행 --%>
-                                <c:if test="${item.category != currentCat}">
-                                    <c:set var="currentCat" value="${item.category}"/>
-                                    <tr class="category-header-row" data-category="${item.category}">
-                                        <td colspan="7" style="background:#f8f9ff; font-weight:700;
-                                            color:var(--primary); font-size:0.82rem;
-                                            padding:8px 16px; letter-spacing:0.3px;">
-                                            ${emojiMap[item.category]} ${item.category}
-                                        </td>
-                                    </tr>
-                                </c:if>
+                                <c:if test="${not empty item.supplier}">
                                 <tr class="ingredient-row"
-                                    id="row-${item.id}"
                                     data-category="${item.category}"
-                                    data-supplier="${item.supplier}">
+                                    data-supplier-id="${item.supplier_id}"
+                                    data-supplier-name="${item.supplier}">
                                     <td><strong>${item.name}</strong>
                                         <c:if test="${item.stock_qty <= item.min_stock}">
                                             <span class="badge badge-low" style="margin-left:6px;">부족</span>
                                         </c:if>
                                     </td>
-                                    <td>
-                                        <span class="badge badge-category">
-                                            ${emojiMap[item.category]} ${item.category}
-                                        </span>
-                                    </td>
+                                    <td><span class="badge badge-category">${emojiMap[item.category]} ${item.category}</span></td>
                                     <td>${item.unit}</td>
                                     <td>${item.stock_qty}</td>
                                     <td><fmt:formatNumber value="${item.unit_cost}" pattern="#,###"/>원</td>
+                                    <td><span class="supplier-tag">${item.supplier}</span></td>
                                     <td>
-                                        <c:choose>
-                                            <c:when test="${not empty item.supplier}">
-                                                <span class="supplier-tag">${item.supplier}</span>
-                                            </c:when>
-                                            <c:otherwise>
-                                                <span style="color:var(--text-muted);">미등록</span>
-                                            </c:otherwise>
-                                        </c:choose>
-                                    </td>
-                                    <td>
-                                        <button type="button"
-                                            id="btn-${item.id}"
-                                            class="btn btn-edit"
-                                            onclick="addToCart(${item.id},'${item.name}','${item.unit}',${item.unit_cost},'${item.supplier}')">
+                                        <button type="button" class="btn btn-edit"
+                                            onclick="addToCart(${item.id},'${item.name}','${item.unit}',${item.unit_cost},${item.supplier_id},'${item.supplier}')">
                                             + 추가
                                         </button>
                                     </td>
                                 </tr>
+                                </c:if>
                             </c:forEach>
+
+                            <%-- 거래처 없는 원재료 구분선 --%>
+                            <c:set var="hasNoSupplier" value="false"/>
+                            <c:forEach var="item" items="${ingredientList}">
+                                <c:if test="${empty item.supplier}"><c:set var="hasNoSupplier" value="true"/></c:if>
+                            </c:forEach>
+                            <c:if test="${hasNoSupplier == 'true'}">
+                                <tr class="no-supplier-header">
+                                    <td colspan="7">
+                                        ⚠️ 거래처 미등록 원재료 &mdash; 발주 불가 (거래처 관리에서 거래처를 먼저 등록해 주세요)
+                                    </td>
+                                </tr>
+                                <c:forEach var="item" items="${ingredientList}">
+                                    <c:if test="${empty item.supplier}">
+                                    <tr class="ingredient-row no-supplier-row"
+                                        data-category="${item.category}"
+                                        data-supplier-id="0"
+                                        data-supplier-name="">
+                                        <td><strong>${item.name}</strong></td>
+                                        <td><span class="badge badge-category">${emojiMap[item.category]} ${item.category}</span></td>
+                                        <td>${item.unit}</td>
+                                        <td>${item.stock_qty}</td>
+                                        <td><fmt:formatNumber value="${item.unit_cost}" pattern="#,###"/>원</td>
+                                        <td><span style="color:var(--accent-red); font-size:0.78rem; font-weight:600;">미등록</span></td>
+                                        <td>
+                                            <button type="button" class="btn btn-cancel" disabled
+                                                style="cursor:not-allowed; opacity:0.5;"
+                                                title="거래처를 먼저 등록해 주세요">
+                                                발주불가
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    </c:if>
+                                </c:forEach>
+                            </c:if>
                         </c:otherwise>
                     </c:choose>
                     </tbody>
                 </table>
+                <%-- JS 페이지네이션 --%>
+                <div class="pagination" id="orderPagination">
+                    <div class="page-size-select">
+                        <select onchange="changePageSize(this.value)">
+                            <option value="10">10개씩</option>
+                            <option value="20">20개씩</option>
+                            <option value="50">50개씩</option>
+                        </select>
+                    </div>
+                    <div class="page-nav" id="pageNav"></div>
+                    <div style="font-size:0.8rem; color:var(--text-muted);" id="pageInfo"></div>
+                </div>
             </div>
         </div>
 
@@ -145,9 +166,8 @@ request.setAttribute("emojiMap", emojiMap);
                 <div style="padding:16px 20px;">
                     <div class="form-row">
                         <div class="form-group">
-                            <label>거래처명</label>
-                            <%-- 자동 세팅, 읽기 전용 --%>
-                            <input type="text" id="cart_supplier"
+                            <label>거래처</label>
+                            <input type="text" id="cart_supplier_name"
                                    placeholder="원재료 선택 시 자동 설정"
                                    readonly
                                    style="background:#f8f9ff; color:var(--primary);
@@ -195,13 +215,13 @@ request.setAttribute("emojiMap", emojiMap);
     </div>
 </div>
 
-<%-- hidden form --%>
+<%-- hidden form - supplier_id로 전송 --%>
 <form id="orderForm" action="/inventory/order" method="post">
-    <input type="hidden" name="supplier"   id="form_supplier">
-    <input type="hidden" name="ordered_at" id="form_ordered_at">
-    <input type="hidden" name="note"       id="form_note">
-    <input type="hidden" name="total_cost" id="form_total_cost">
-    <input type="hidden" name="itemsJson"  id="form_items">
+    <input type="hidden" name="supplier_id" id="form_supplier_id">
+    <input type="hidden" name="ordered_at"  id="form_ordered_at">
+    <input type="hidden" name="note"        id="form_note">
+    <input type="hidden" name="total_cost"  id="form_total_cost">
+    <input type="hidden" name="itemsJson"   id="form_items">
 </form>
 
 <style>
@@ -229,7 +249,6 @@ request.setAttribute("emojiMap", emojiMap);
     font-weight: 600;
     padding: 3px 10px;
     border-radius: 20px;
-    white-space: nowrap;
 }
 .cart-total {
     display: flex;
@@ -245,16 +264,25 @@ request.setAttribute("emojiMap", emojiMap);
     font-size: 1.2rem;
     color: var(--primary);
 }
-/* 비활성화된 원재료 행 */
 .ingredient-row.disabled {
     opacity: 0.35;
     pointer-events: none;
 }
-.ingredient-row.disabled .btn {
-    background: var(--border-light);
-    color: var(--text-muted);
-    cursor: not-allowed;
+/* 거래처 미등록 구분선 */
+.no-supplier-header td {
+    background: var(--accent-red-light);
+    color: var(--accent-red);
+    font-size: 0.82rem;
+    font-weight: 600;
+    padding: 10px 16px;
+    border-top: 2px solid var(--accent-red);
 }
+/* 거래처 미등록 행 */
+.no-supplier-row {
+    opacity: 0.6;
+    background: #fff8f8;
+}
+.no-supplier-row td { background: #fff8f8 !important; }
 .tab-btn {
     padding: 6px 14px;
     border: 1.5px solid var(--border);
@@ -281,73 +309,127 @@ request.setAttribute("emojiMap", emojiMap);
 </style>
 
 <script>
-let cart = [];
-let currentSupplier = ''; // 현재 선택된 거래처
+var cart                = [];
+var currentSupplierId   = 0;
+var currentSupplierName = '';
+
+// 페이지네이션 변수
+var pageSize    = 10;
+var currentPage = 1;
+var currentCat  = 'all';
+var currentKw   = '';
 
 document.getElementById('cart_ordered_at').value = new Date().toISOString().split('T')[0];
 
-/* 거래처 기준으로 행 활성/비활성 처리 */
+// 페이지 로드 시 초기 렌더링
+window.addEventListener('DOMContentLoaded', function() {
+    renderPage();
+});
+
 function updateRowStates() {
     document.querySelectorAll('.ingredient-row').forEach(function(row) {
-        if (!currentSupplier) {
-            row.classList.remove('disabled');
-            return;
-        }
-        const rowSupplier = row.dataset.supplier || '';
-        if (rowSupplier === currentSupplier) {
-            row.classList.remove('disabled');
-        } else {
-            row.classList.add('disabled');
-        }
+        if (!currentSupplierId) { row.classList.remove('disabled'); return; }
+        var rowSid = parseInt(row.dataset.supplierId) || 0;
+        if (rowSid === currentSupplierId) { row.classList.remove('disabled'); }
+        else                              { row.classList.add('disabled'); }
     });
-    // 카테고리 헤더도 체크 - 해당 카테고리 전체 비활성이면 헤더도 어둡게
-    document.querySelectorAll('.category-header-row').forEach(function(header) {
-        const cat = header.dataset.category;
-        const hasActive = Array.from(
-            document.querySelectorAll('.ingredient-row[data-category="' + cat + '"]')
-        ).some(function(r) { return !r.classList.contains('disabled'); });
-        header.style.opacity = hasActive ? '1' : '0.35';
-    });
+    // 거래처 미등록 섹션은 항상 표시 유지
+    var noSupplierHeader = document.querySelector('.no-supplier-header');
+    if (noSupplierHeader) noSupplierHeader.style.display = '';
 }
 
 function filterIngredients() {
-    const kw = document.getElementById('searchInput').value.toLowerCase();
-    document.querySelectorAll('.ingredient-row').forEach(function(row) {
-        const name = row.querySelector('td strong').innerText.toLowerCase();
-        row.style.display = name.includes(kw) ? '' : 'none';
-    });
-    document.querySelectorAll('.category-header-row').forEach(function(header) {
-        const cat = header.dataset.category;
-        const hasVisible = Array.from(
-            document.querySelectorAll('.ingredient-row[data-category="' + cat + '"]')
-        ).some(function(r) { return r.style.display !== 'none'; });
-        header.style.display = hasVisible ? '' : 'none';
-    });
+    currentKw   = document.getElementById('searchInput').value.toLowerCase();
+    currentPage = 1;
+    renderPage();
 }
 
 function filterOrderCategory(category, btn) {
     document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
     btn.classList.add('active');
-    document.querySelectorAll('.ingredient-row').forEach(function(row) {
-        row.style.display = (category === 'all' || row.dataset.category === category) ? '' : 'none';
-    });
-    document.querySelectorAll('.category-header-row').forEach(function(row) {
-        row.style.display = (category === 'all' || row.dataset.category === category) ? '' : 'none';
+    currentCat  = category;
+    currentPage = 1;
+    renderPage();
+}
+
+/* JS 페이지네이션 핵심 함수 */
+function getFilteredRows() {
+    return Array.from(document.querySelectorAll('.ingredient-row')).filter(function(row) {
+        var nameEl = row.querySelector('td strong');
+        if (!nameEl) return false;
+        var name   = nameEl.innerText.toLowerCase();
+        var catOk  = (currentCat === 'all' || row.dataset.category === currentCat);
+        var kwOk   = (currentKw === '' || name.includes(currentKw));
+        return catOk && kwOk;
     });
 }
 
-function addToCart(id, name, unit, unit_cost, supplier) {
-    // 이미 카트에 있으면 수량만 증가
-    const existing = cart.find(function(c) { return c.id === id; });
-    if (existing) {
-        existing.qty++;
-        renderCart();
-        return;
+function renderPage() {
+    var allRows    = Array.from(document.querySelectorAll('.ingredient-row, .no-supplier-header'));
+    var filtered   = getFilteredRows();
+    var total      = filtered.length;
+    var totalPages = Math.max(1, Math.ceil(total / pageSize));
+    if (currentPage > totalPages) currentPage = totalPages;
+
+    var start = (currentPage - 1) * pageSize;
+    var end   = start + pageSize;
+
+    // 모든 행 숨기기
+    document.querySelectorAll('.ingredient-row').forEach(function(row) {
+        row.style.display = 'none';
+    });
+
+    // no-supplier-header 처리
+    var noSupHeader = document.querySelector('.no-supplier-header');
+    if (noSupHeader) noSupHeader.style.display = 'none';
+
+    // 필터된 행 중 현재 페이지 분만 표시
+    filtered.slice(start, end).forEach(function(row) {
+        row.style.display = '';
+        // no-supplier-row면 헤더도 표시
+        if (row.classList.contains('no-supplier-row') && noSupHeader) {
+            noSupHeader.style.display = '';
+        }
+    });
+
+    // 페이지 정보
+    document.getElementById('pageInfo').innerText =
+        '총 ' + total + '개 중 ' + Math.min(start + 1, total) + '-' + Math.min(end, total) + '개 표시';
+
+    // 페이지 버튼 렌더
+    var nav    = document.getElementById('pageNav');
+    var html   = '';
+    var block  = 5;
+    var startP = Math.floor((currentPage - 1) / block) * block + 1;
+    var endP   = Math.min(startP + block - 1, totalPages);
+
+    if (startP > 1) html += '<button class="page-btn" onclick="goToPage(' + (startP - 1) + ')">‹</button>';
+    for (var p = startP; p <= endP; p++) {
+        html += '<button class="page-btn ' + (p === currentPage ? 'active' : '') + '" onclick="goToPage(' + p + ')">' + p + '</button>';
     }
-    // 첫 번째 추가 시 거래처 자동 세팅
-    if (!currentSupplier) {
-        currentSupplier = supplier || '';
-        document.getElementById('cart_supplier').value = currentSupplier;
+    if (endP < totalPages) html += '<button class="page-btn" onclick="goToPage(' + (endP + 1) + ')">›</button>';
+    nav.innerHTML = html;
+}
+
+function goToPage(p) {
+    currentPage = p;
+    renderPage();
+}
+
+function changePageSize(s) {
+    pageSize    = parseInt(s);
+    currentPage = 1;
+    renderPage();
+}
+
+function addToCart(id, name, unit, unit_cost, supplierId, supplierName) {
+    var existing = cart.find(function(c) { return c.id === id; });
+    if (existing) { existing.qty++; renderCart(); return; }
+
+    if (!currentSupplierId) {
+        currentSupplierId   = supplierId;
+        currentSupplierName = supplierName || '';
+        document.getElementById('cart_supplier_name').value = currentSupplierName;
         updateRowStates();
     }
     cart.push({ id: id, name: name, unit: unit, unit_cost: unit_cost, qty: 1 });
@@ -355,16 +437,16 @@ function addToCart(id, name, unit, unit_cost, supplier) {
 }
 
 function changeQty(id, qty) {
-    const item = cart.find(function(c) { return c.id === id; });
+    var item = cart.find(function(c) { return c.id === id; });
     if (item) { item.qty = Math.max(1, parseInt(qty) || 1); renderCart(); }
 }
 
 function removeFromCart(id) {
     cart = cart.filter(function(c) { return c.id !== id; });
-    // 카트가 비면 거래처 초기화
     if (cart.length === 0) {
-        currentSupplier = '';
-        document.getElementById('cart_supplier').value = '';
+        currentSupplierId   = 0;
+        currentSupplierName = '';
+        document.getElementById('cart_supplier_name').value = '';
         updateRowStates();
     }
     renderCart();
@@ -372,22 +454,23 @@ function removeFromCart(id) {
 
 function clearCart() {
     cart = [];
-    currentSupplier = '';
-    document.getElementById('cart_supplier').value = '';
+    currentSupplierId   = 0;
+    currentSupplierName = '';
+    document.getElementById('cart_supplier_name').value = '';
     updateRowStates();
     renderCart();
 }
 
 function renderCart() {
-    const tbody = document.getElementById('cartBody');
+    var tbody = document.getElementById('cartBody');
     if (cart.length === 0) {
         tbody.innerHTML = '<tr><td colspan="5" style="padding:30px; color:var(--text-muted); text-align:center;">원재료를 추가해 주세요</td></tr>';
         document.getElementById('totalAmount').innerText = '0원';
         return;
     }
-    let total = 0, html = '';
+    var total = 0, html = '';
     cart.forEach(function(item) {
-        const sub = item.qty * item.unit_cost;
+        var sub = item.qty * item.unit_cost;
         total += sub;
         html += '<tr>'
             + '<td><strong>' + item.name + '</strong><br><small style="color:var(--text-muted)">' + item.unit + '</small></td>'
@@ -404,15 +487,17 @@ function renderCart() {
 
 function submitOrder() {
     if (cart.length === 0)  { alert('발주할 원재료를 추가해 주세요.'); return; }
-    const supplier   = document.getElementById('cart_supplier').value.trim();
-    const ordered_at = document.getElementById('cart_ordered_at').value;
-    if (!ordered_at) { alert('발주일을 선택해 주세요.'); return; }
-    const total = cart.reduce(function(s, c) { return s + c.qty * c.unit_cost; }, 0);
-    document.getElementById('form_supplier').value   = supplier;
-    document.getElementById('form_ordered_at').value = ordered_at;
-    document.getElementById('form_note').value       = document.getElementById('cart_note').value;
-    document.getElementById('form_total_cost').value = total;
-    document.getElementById('form_items').value      = JSON.stringify(cart);
+    if (!currentSupplierId) { alert('거래처가 등록된 원재료를 선택해 주세요.'); return; }
+    var ordered_at = document.getElementById('cart_ordered_at').value;
+    if (!ordered_at)        { alert('발주일을 선택해 주세요.'); return; }
+
+    var total = cart.reduce(function(s, c) { return s + c.qty * c.unit_cost; }, 0);
+    document.getElementById('form_supplier_id').value = currentSupplierId;
+    document.getElementById('form_ordered_at').value  = ordered_at;
+    document.getElementById('form_note').value        = document.getElementById('cart_note').value;
+    document.getElementById('form_total_cost').value  = total;
+    document.getElementById('form_items').value       = JSON.stringify(cart);
+
     if (confirm('총 ' + total.toLocaleString() + '원 발주하시겠습니까?')) {
         document.getElementById('orderForm').submit();
     }

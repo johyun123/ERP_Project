@@ -42,7 +42,9 @@ public class IngredientsService {
         mapper.update(i);
     }
 
+    @org.springframework.transaction.annotation.Transactional
     public void remove(long id) {
+        mapper.unlinkFromPurchaseItems(id); // FK 참조 해제
         mapper.delete(id);
     }
 }

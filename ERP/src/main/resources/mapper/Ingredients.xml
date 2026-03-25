@@ -3,17 +3,31 @@
     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.example.demo.mapper.IngredientsMapper">
 
-    <select id="findAll" resultType="Ingredients">
-        SELECT i.*, s.supplier_name AS supplier
+    <!-- supplier 텍스트 컬럼 없이 supplier_id JOIN으로만 이름 가져옴 -->
+    <sql id="selectIngredient">
+        SELECT
+            i.id,
+            i.name,
+            i.category,
+            i.unit,
+            i.stock_qty,
+            i.min_stock,
+            i.unit_cost,
+            i.supplier_id,
+            i.created_at,
+            i.updated_at,
+            s.supplier_name AS supplier
         FROM ingredients i
-        LEFT JOIN suppliers s ON i.supplier_id = s.id
+        LEFT JOIN suppliers s ON i.supplier_id = s.id AND s.is_active = 1
+    </sql>
+
+    <select id="findAll" resultType="Ingredients">
+        <include refid="selectIngredient"/>
         ORDER BY FIELD(i.category,'원두','유제품','시럽/소스','파우더','차류','소모품','기타'), i.name
     </select>
 
     <select id="findByPage" parameterType="PageRequest" resultType="Ingredients">
-        SELECT i.*, s.supplier_name AS supplier
-        FROM ingredients i
-        LEFT JOIN suppliers s ON i.supplier_id = s.id
+        <include refid="selectIngredient"/>
         <where>
             <if test="category != null and category != ''">
                 AND i.category = #{category}
@@ -39,24 +53,20 @@
     </select>
 
     <select id="findById" parameterType="long" resultType="Ingredients">
-        SELECT i.*, s.supplier_name AS supplier
-        FROM ingredients i
-        LEFT JOIN suppliers s ON i.supplier_id = s.id
+        <include refid="selectIngredient"/>
         WHERE i.id = #{id}
     </select>
 
     <!-- 거래처별 원재료 목록 (거래처 상세 모달용) -->
     <select id="findBySupplierId" resultType="Ingredients">
-        SELECT * FROM ingredients
-        WHERE supplier_id = #{supplierId}
-        ORDER BY FIELD(category,'원두','유제품','시럽/소스','파우더','차류','소모품','기타'), name
+        <include refid="selectIngredient"/>
+        WHERE i.supplier_id = #{supplierId}
+        ORDER BY FIELD(i.category,'원두','유제품','시럽/소스','파우더','차류','소모품','기타'), i.name
     </select>
 
     <insert id="insert" parameterType="Ingredients">
-        INSERT INTO ingredients (name, category, unit, stock_qty, min_stock, unit_cost,
-                                 supplier_id)
-        VALUES (#{name}, #{category}, #{unit}, #{stock_qty}, #{min_stock}, #{unit_cost},
-                #{supplier_id})
+        INSERT INTO ingredients (name, category, unit, stock_qty, min_stock, unit_cost, supplier_id)
+        VALUES (#{name}, #{category}, #{unit}, #{stock_qty}, #{min_stock}, #{unit_cost}, #{supplier_id})
     </insert>
 
     <update id="update" parameterType="Ingredients">
@@ -69,6 +79,11 @@
             unit_cost   = #{unit_cost},
             supplier_id = #{supplier_id}
         WHERE id = #{id}
+    </update>
+
+    <!-- 삭제 전 purchase_items 참조 해제 -->
+    <update id="unlinkFromPurchaseItems" parameterType="long">
+        UPDATE purchase_items SET ingredient_id = NULL WHERE ingredient_id = #{id}
     </update>
 
     <delete id="delete" parameterType="long">

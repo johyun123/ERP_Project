@@ -15,5 +15,6 @@ public interface IngredientsMapper {
     List<Ingredients> findBySupplierId(@Param("supplierId") Long supplierId); // 거래처별 원재료
     void              insert(Ingredients i);
     void              update(Ingredients i);
+    void              unlinkFromPurchaseItems(long id);
     void              delete(long id);
 }

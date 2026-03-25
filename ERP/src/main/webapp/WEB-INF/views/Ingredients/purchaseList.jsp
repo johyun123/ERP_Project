@@ -108,10 +108,11 @@
                         </td>
                         <td>${empty p.note ? '-' : p.note}</td>
                         <td onclick="event.stopPropagation()">
-                            <c:if test="${p.status != 'cancelled'}">
+                            <c:if test="${p.status == 'ordered'}">
                                 <button class="btn btn-edit"
                                     data-id="${p.id}"
                                     data-supplier="${p.supplier}"
+                                    data-supplierid="${p.supplier_id}"
                                     data-status="${p.status}"
                                     data-received="${p.received_at}"
                                     data-note="${p.note}"
@@ -125,7 +126,7 @@
                                     <button type="submit" class="btn btn-delete">취하</button>
                                 </form>
                             </c:if>
-                            <c:if test="${p.status == 'cancelled'}">
+                            <c:if test="${p.status == 'cancelled' or p.status == 'received'}">
                                 <span style="color:var(--text-muted); font-size:0.82rem;">처리완료</span>
                             </c:if>
                         </td>
@@ -182,13 +183,16 @@
     <div class="modal">
         <div class="modal-title">✏️ 발주 수정</div>
         <form action="/inventory/order/update" method="post">
-            <input type="hidden" name="id"     id="edit_id">
-            <input type="hidden" name="page"   value="${result.page}">
-            <input type="hidden" name="status" id="edit_status">
+            <input type="hidden" name="id"          id="edit_id">
+            <input type="hidden" name="page"        value="${result.page}">
+            <input type="hidden" name="status"      id="edit_status">
+            <input type="hidden" name="supplier_id" id="edit_supplier_id">
             <div class="form-row">
                 <div class="form-group">
                     <label>거래처명</label>
-                    <input type="text" name="supplier" id="edit_supplier">
+                    <input type="text" id="edit_supplier" readonly
+                           style="background:#f8f9ff; color:var(--primary);
+                                  font-weight:600; cursor:default;">
                 </div>
                 <div class="form-group">
                     <label>
@@ -299,6 +303,7 @@ function openDetailModal(purchaseId, supplier, orderedAt) {
 function openEditModal(btn) {
     var id          = btn.dataset.id;
     var supplier    = btn.dataset.supplier;
+    var supplierId  = btn.dataset.supplierid;
     var status      = btn.dataset.status;
     var received_at = btn.dataset.received;
     var note        = btn.dataset.note;
@@ -306,6 +311,7 @@ function openEditModal(btn) {
 
     document.getElementById('edit_id').value          = id;
     document.getElementById('edit_supplier').value    = supplier;
+    document.getElementById('edit_supplier_id').value = supplierId;
     document.getElementById('edit_status').value      = status;
     document.getElementById('edit_received_at').value = (received_at === 'null' ? '' : received_at);
     document.getElementById('edit_note').value        = (note === 'null' ? '' : note);
