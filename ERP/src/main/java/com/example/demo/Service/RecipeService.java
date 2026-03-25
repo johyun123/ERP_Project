@@ -26,6 +26,14 @@ public class RecipeService {
 
     public void deleteRecipe(Long id) { recipeMapper.deleteRecipe(id); }
     
+    public void recalcMenuCost(Long menuId) {
+        int cost = recipeMapper.calcMenuCost(menuId);
+        MenuDomain menu = new MenuDomain();
+        menu.setId(menuId);
+        menu.setCost(cost);
+        recipeMapper.updateMenuCost(menu);
+    }
+    
     public MenuDomain getMenuById(Long menuId) { return recipeMapper.getMenuById(menuId); }
     
     public List<RecipeDomain> getRecipeByMenuId(Long menuId) { return recipeMapper.getRecipeByMenuId(menuId); }

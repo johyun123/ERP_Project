@@ -193,10 +193,6 @@
                     <input type="number" name="price" placeholder="0" min="0" required>
                 </div>
                 <div class="input-row">
-                    <label>원가</label>
-                    <input type="number" name="cost" placeholder="0" min="0" required>
-                </div>
-                <div class="input-row">
                     <label>판매 여부</label>
                     <select name="isAvailable">
                         <option value="1">판매중</option>

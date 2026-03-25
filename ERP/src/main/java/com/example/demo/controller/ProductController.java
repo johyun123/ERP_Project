@@ -67,7 +67,7 @@ public class ProductController {
                                 @RequestParam String name,
                                 @RequestParam(required = false) String description,
                                 @RequestParam int price,
-                                @RequestParam int cost,
+                                @RequestParam(defaultValue = "0") int cost,
                                 @RequestParam int isAvailable) {
 
         MenuDomain menu = new MenuDomain();

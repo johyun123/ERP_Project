@@ -12,6 +12,7 @@ public class RecipeDomain {
     private String ingredientName;
     private java.math.BigDecimal currentStock;
     private String stockStatus; // 재고 부족 여부
+    private String unit;
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -31,4 +32,6 @@ public class RecipeDomain {
     public void setCurrentStock(java.math.BigDecimal currentStock) { this.currentStock = currentStock; }
     public String getStockStatus() { return stockStatus; }
     public void setStockStatus(String stockStatus) { this.stockStatus = stockStatus; }
+    public String getUnit() { return unit; }
+    public void setUnit(String unit) { this.unit = unit; }
 }
