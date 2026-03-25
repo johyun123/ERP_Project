@@ -90,12 +90,12 @@
             <div class="modal-body">
                 <div class="input-row">
                     <label>원재료</label>
-                    <select name="ingredientId" required>
-                        <option value="">원재료 선택</option>
-                        <c:forEach var="ing" items="${ingredientList}">
-                            <option value="${ing.id}">${ing.ingredientName}</option>
-                        </c:forEach>
-                    </select>
+                    <select name="ingredientId" id="insertIngredientId" required onchange="autoFillUnit(this, 'insertRecipe')">
+    					<option value="">원재료 선택</option>
+    					<c:forEach var="ing" items="${ingredientList}">
+        					<option value="${ing.id}" data-unit="${ing.unit}">${ing.ingredientName}</option>
+    					</c:forEach>
+					</select>
                 </div>
                 <div class="input-row">
                     <label>개당 소모량</label>
@@ -103,7 +103,7 @@
                 </div>
                 <div class="input-row">
                     <label>단위 / 메모</label>
-                    <input type="text" name="recipe" placeholder="예: ml, 투샷">
+                    <input type="text" name="recipe" id="insertRecipe" placeholder="예: ml, 투샷">
                 </div>
             </div>
             <div class="modal-footer">
@@ -127,11 +127,11 @@
             <div class="modal-body">
                 <div class="input-row">
                     <label>원재료</label>
-                    <select name="ingredientId" id="editIngredientId" required>
-                        <c:forEach var="ing" items="${ingredientList}">
-                            <option value="${ing.id}">${ing.ingredientName}</option>
-                        </c:forEach>
-                    </select>
+                    <select name="ingredientId" id="editIngredientId" required onchange="autoFillUnit(this, 'editRecipe')">
+    					<c:forEach var="ing" items="${ingredientList}">
+        					<option value="${ing.id}" data-unit="${ing.unit}">${ing.ingredientName}</option>
+    					</c:forEach>
+					</select>
                 </div>
                 <div class="input-row">
                     <label>개당 소모량</label>
@@ -172,6 +172,7 @@
 <!-- 삭제용 hidden form -->
 <form id="deleteForm" action="/recipeDelete" method="post">
     <input type="hidden" id="deleteRecipeId" name="id">
+    <input type="hidden" name="menuId" value="${menu.id}"> <!-- ← 추가 -->
 </form>
 
 <!-- 토스트 -->
@@ -189,6 +190,11 @@ function openEditModal(id, ingredientId, quantity, recipe) {
     document.getElementById('editModal').classList.add('active');
 }
 function closeEditModal() { document.getElementById('editModal').classList.remove('active'); }
+
+function autoFillUnit(selectEl, targetId) {
+    const unit = selectEl.options[selectEl.selectedIndex].getAttribute('data-unit');
+    document.getElementById(targetId).value = unit || '';
+}
 
 function openDeleteRecipeModal(id, name) {
     document.getElementById('deleteRecipeId').value = id;

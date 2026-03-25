@@ -16,4 +16,6 @@ public interface RecipeMapper {
     void insertRecipe(RecipeDomain domain);
     void updateRecipe(RecipeDomain domain);
     void deleteRecipe(Long id);
+    int calcMenuCost(Long menuId);
+    void updateMenuCost(MenuDomain menu);
 }

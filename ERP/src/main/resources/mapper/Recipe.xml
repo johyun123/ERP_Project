@@ -52,10 +52,22 @@
 
     <!-- 원재료 목록 (콤보박스용) -->
 <select id="getIngredientList" resultType="com.example.demo.Domain.RecipeDomain">
-    SELECT id, name AS ingredientName, stock_qty AS currentStock
+    SELECT id, name AS ingredientName, stock_qty AS currentStock, unit
     FROM ingredients
     ORDER BY name
 </select>
+
+<!-- 메뉴 원가 재계산 -->
+<select id="calcMenuCost" parameterType="Long" resultType="int">
+    SELECT COALESCE(SUM(r.quantity * i.unit_cost), 0)
+    FROM recipes r
+    LEFT JOIN ingredients i ON r.ingredient_id = i.id
+    WHERE r.menu_id = #{menuId}
+</select>
+
+<update id="updateMenuCost" parameterType="com.example.demo.Domain.MenuDomain">
+    UPDATE menus SET cost = #{cost} WHERE id = #{id}
+</update>
 
     <!-- 레시피 등록 -->
     <insert id="insertRecipe" parameterType="com.example.demo.Domain.RecipeDomain">

@@ -45,7 +45,8 @@ public class RecipeController {
         domain.setQuantity(quantity);
         domain.setRecipe(recipe);
         recipeService.insertRecipe(domain);
-        return "redirect:/product/recipe";
+        recipeService.recalcMenuCost(menuId); // ← 원가 재계산
+        return "redirect:/product/recipe/" + menuId;
     }
 
     // 레시피 수정
@@ -62,13 +63,15 @@ public class RecipeController {
         domain.setQuantity(quantity);
         domain.setRecipe(recipe);
         recipeService.updateRecipe(domain);
-        return "redirect:/product/recipe/" + domain.getMenuId(); // ← 현재 페이지로 유지
+        recipeService.recalcMenuCost(menuId); // ← 원가 재계산
+        return "redirect:/product/recipe/" + menuId;
     }
-
     // 레시피 삭제
     @PostMapping("/recipeDelete")
-    public String recipeDelete(@RequestParam Long id) {
+    public String recipeDelete(@RequestParam Long id,
+                               @RequestParam Long menuId) {
         recipeService.deleteRecipe(id);
-        return "redirect:/product/recipe";
+        recipeService.recalcMenuCost(menuId); // ← 원가 재계산
+        return "redirect:/product/recipe/" + menuId;
     }
 }
