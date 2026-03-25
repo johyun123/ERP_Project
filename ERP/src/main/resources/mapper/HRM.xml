@@ -138,6 +138,33 @@
         WHERE e.is_active = 1
     </select>
 
+    <!-- 근태 상세 페이징 -->
+    <select id="getAttendanceWithEmployeesPaged" resultType="map">
+        SELECT
+            e.id         AS employee_id,
+            e.emp_num,
+            e.name,
+            a.work_date,
+            a.clock_in,
+            a.clock_out,
+            a.work_hours,
+            a.note
+        FROM employees e
+        LEFT JOIN attendances a
+            ON e.id = a.employee_id
+            AND a.work_date = #{date}
+        WHERE e.is_active = 1
+        ORDER BY e.id ASC
+        LIMIT #{size} OFFSET #{offset}
+    </select>
+
+    <!-- 근태 상세 전체 인원 수 (페이징용) -->
+    <select id="countAttendanceWithEmployees" parameterType="String" resultType="int">
+        SELECT COUNT(*)
+        FROM employees
+        WHERE is_active = 1
+    </select>
+
     <!-- 근태 상세 구버전 -->
     <select id="getAttendanceDetail" parameterType="String" resultType="map">
         SELECT

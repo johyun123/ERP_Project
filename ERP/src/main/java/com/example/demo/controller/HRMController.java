@@ -93,6 +93,15 @@ public class HRMController {
 		return "hr/employees/edit";
 	}
 
+	/* ===== 직원 단건 JSON 조회 (팝업용 AJAX) ===== */
+	@GetMapping("/employees/json/{emp_num}")
+	@ResponseBody
+	public ResponseEntity<Employees> getEmployeeJson(@PathVariable String emp_num) {
+		Employees emp = hrmService.getEmployeeById(emp_num);
+		if (emp == null) return ResponseEntity.notFound().build();
+		return ResponseEntity.ok(emp);
+	}
+
 	/* ===== 직원 수정 처리 ===== */
 	@PostMapping("/employees/update")
 	public String updateEmployee(Employees employee) {
@@ -122,9 +131,29 @@ public class HRMController {
 
 	/* ===== 근태 상세 ===== */
 	@GetMapping("/attendanceIn")
-	public String attendanceInPage(@RequestParam String date, Model model) {
-		model.addAttribute("attendance", hrmService.getAttendanceWithEmployees(date));
-		model.addAttribute("date", date);
+	public String attendanceInPage(@RequestParam String date,
+			@RequestParam(defaultValue = "1") int page,
+			@RequestParam(defaultValue = "10") int size,
+			Model model) {
+
+		int offset     = (page - 1) * size;
+		int totalCount = hrmService.countAttendanceWithEmployees(date);
+		int totalPages = (int) Math.ceil((double) totalCount / size);
+		if (totalPages == 0) totalPages = 1;
+
+		// 페이지 블록 (5개씩)
+		int block      = 5;
+		int startPage  = ((page - 1) / block) * block + 1;
+		int endPage    = Math.min(startPage + block - 1, totalPages);
+
+		model.addAttribute("attendance",  hrmService.getAttendanceWithEmployeesPaged(date, offset, size));
+		model.addAttribute("date",        date);
+		model.addAttribute("currentPage", page);
+		model.addAttribute("totalPages",  totalPages);
+		model.addAttribute("startPage",   startPage);
+		model.addAttribute("endPage",     endPage);
+		model.addAttribute("size",        size);
+		model.addAttribute("totalCount",  totalCount);
 		return "hr/attendance/attendanceIn";
 	}
 
@@ -213,9 +242,16 @@ public class HRMController {
 		Map<Long, Employees> empMapById = allEmployees.stream()
 				.collect(Collectors.toMap(Employees::getId, e -> e));
 
+		// ── 등록 모달용: 전체 직원 + 계정 등록된 id Set ──────────
+		List<User> allUsers = userService.getAllUsers();
+		java.util.Set<Long> registeredIds = allUsers.stream()
+				.map(User::getId).collect(java.util.stream.Collectors.toSet());
+
 		model.addAttribute("users",          users);
-		model.addAttribute("employees",      employees);   // 페이징된 직원 목록
-		model.addAttribute("empMapById",     empMapById);  // 계정 테이블 조인용 (전체)
+		model.addAttribute("employees",      employees);     // 페이징된 직원 목록
+		model.addAttribute("empMapById",     empMapById);    // 계정 테이블 조인용 (전체)
+		model.addAttribute("allEmployees",   allEmployees);  // 등록 모달용 전체 직원
+		model.addAttribute("registeredIds",  registeredIds); // 등록 모달용 계정 등록 여부
 
 		// 등록된 계정 페이징 정보
 		model.addAttribute("userPage",       userPage);

@@ -904,3 +904,24 @@
 @media (max-width: 600px) {
   .pay-type-grid { grid-template-columns: 1fr; }
 }
+/* ===========================
+   급여 유형 배지 (목록 테이블)
+=========================== */
+.pay-type-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.pay-type-badge.salary {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.pay-type-badge.incentive {
+  background: #fef3c7;
+  color: #b45309;
+}

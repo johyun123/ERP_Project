@@ -138,7 +138,12 @@ String avatarChar = loginName.length() > 0 ? String.valueOf(loginName.charAt(0))
 
     /* ===== 현재 URL로 메뉴 자동 활성화 ===== */
     function setActiveMenu() {
-    const path = location.pathname;
+    // 상세 페이지 -> 부모 메뉴 경로 별칭 매핑
+    const pathAliasMap = {
+        '/hr/attendanceIn': '/hr/attendance'
+    };
+    const rawPath = location.pathname;
+    const path = pathAliasMap[rawPath] || rawPath;
     let bestMatch = null;
     let bestHref  = '';
 
