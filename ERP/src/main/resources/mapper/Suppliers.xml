@@ -71,8 +71,8 @@
         WHERE id = #{id}
     </update>
 
-    <update id="delete">
-        UPDATE suppliers SET is_active = 0 WHERE id = #{id}
-    </update>
+    <delete id="delete">
+        DELETE FROM suppliers WHERE id = #{id}
+    </delete>
 
 </mapper>
