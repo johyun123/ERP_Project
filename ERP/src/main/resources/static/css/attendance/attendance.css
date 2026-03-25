@@ -675,7 +675,7 @@ input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--primary)
    테이블 헤더 고정 (근태 상세)
 =========================== */
 .att-table-wrap {
-  max-height: 560px;
+  max-height: 700px;
   overflow-y: auto;
   border-radius: var(--radius-sm);
   border: 1.5px solid var(--border);
