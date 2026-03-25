@@ -280,13 +280,12 @@
             <div class="form-group">
                 <label>계약서</label>
                 <div id="edit_contract_preview" style="margin-bottom:8px;"></div>
-                <div id="edit_contract_delete_wrap" style="display:none; margin-bottom:8px;">
-                    <label style="display:flex; align-items:center; gap:6px; cursor:pointer;
-                                  font-size:0.82rem; color:var(--accent-red); font-weight:500;">
-                        <input type="checkbox" name="delete_contract" id="edit_delete_contract"
-                               value="true" onchange="toggleContractInput(this.checked)">
-                        기존 계약서 삭제
-                    </label>
+                <div id="edit_contract_delete_wrap" style="display:none;">
+                    <input type="hidden" name="delete_contract" id="edit_delete_contract_val" value="">
+                    <button type="button" class="contract-delete-btn" id="edit_delete_contract_btn"
+                            onclick="toggleDeleteContract(this)">
+                        계약서 삭제
+                    </button>
                 </div>
                 <div id="edit_contract_upload_wrap">
                     <input type="file" name="new_contract_file" id="edit_contract_input"
@@ -460,8 +459,10 @@ function openEditModal(id, name, type, ceo, address, note, contractFile) {
     document.getElementById('edit_address').value       = address;
     document.getElementById('edit_note').value          = (note === 'null' ? '' : note);
     document.getElementById('edit_contract_file').value = (contractFile === 'null' ? '' : contractFile);
-    document.getElementById('edit_delete_contract').checked = false;
-    document.getElementById('edit_contract_input').value    = '';
+    var delBtn = document.getElementById('edit_delete_contract_btn');
+    if (delBtn) { delBtn.classList.remove('active'); delBtn.innerText = '계약서 삭제'; }
+    document.getElementById('edit_delete_contract_val').value = '';
+    document.getElementById('edit_contract_input').value      = '';
     document.getElementById('edit_contract_upload_wrap').style.display = '';
 
     var preview    = document.getElementById('edit_contract_preview');
@@ -483,10 +484,13 @@ function openEditModal(id, name, type, ceo, address, note, contractFile) {
     openModal('editModal');
 }
 
-function toggleContractInput(checked) {
-    document.getElementById('edit_contract_upload_wrap').style.display = checked ? 'none' : '';
-    document.getElementById('edit_contract_preview').style.opacity     = checked ? '0.4' : '1';
-    if (checked) document.getElementById('edit_contract_input').value  = '';
+function toggleDeleteContract(btn) {
+    var isActive = btn.classList.toggle('active');
+    document.getElementById('edit_delete_contract_val').value = isActive ? 'true' : '';
+    document.getElementById('edit_contract_upload_wrap').style.display = isActive ? 'none' : '';
+    document.getElementById('edit_contract_preview').style.opacity     = isActive ? '0.4' : '1';
+    if (isActive) document.getElementById('edit_contract_input').value = '';
+    btn.innerText = isActive ? '삭제 취소' : '계약서 삭제';
 }
 
 /* 계약서 조회 */
