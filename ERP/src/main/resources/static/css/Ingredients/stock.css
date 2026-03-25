@@ -653,3 +653,36 @@
 .no-supplier-row:hover td {
     background: #fff0f0 !important;
 }
+
+/* ===========================
+   계약서 삭제 버튼
+=========================== */
+#edit_contract_delete_wrap {
+    margin-bottom: 10px;
+}
+
+.contract-delete-btn {
+    background: none;
+    border: 1.5px solid var(--accent-red);
+    color: var(--accent-red);
+    font-size: 0.82rem;
+    font-weight: 600;
+    font-family: 'Noto Sans KR', sans-serif;
+    padding: 6px 16px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.contract-delete-btn:hover {
+    background: var(--accent-red-light);
+}
+
+.contract-delete-btn.active {
+    background: var(--accent-red);
+    color: #fff;
+}
+
+.contract-delete-btn.active:hover {
+    opacity: 0.85;
+}
