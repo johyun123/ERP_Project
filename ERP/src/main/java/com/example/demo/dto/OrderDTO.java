@@ -2,19 +2,19 @@ package com.example.demo.dto;
 
 public class OrderDTO {
 
-	private Long orderId;
+	private Long id;
 	private int totalAmount;
 	private int finalAmount;
 	private String paymentType;
 	private String status;
 	private String orderedAt;
 
-	public Long getOrderId() {
-		return orderId;
+	public Long getId() {
+		return id;
 	}
 
-	public void setOrderId(Long orderId) {
-		this.orderId = orderId;
+	public void setId(Long id) {
+		this.id = id;
 	}
 
 	public int getTotalAmount() {

@@ -58,7 +58,7 @@ public class DataApiController {
 
 		return orders.stream().map(o -> {
 			OrderDTO dto = new OrderDTO();
-			dto.setOrderId(o.getId());
+			dto.setId(o.getId());
 			dto.setTotalAmount(o.getTotalAmount());
 			dto.setFinalAmount(o.getFinalAmount());
 			dto.setPaymentType(o.getPaymentType());

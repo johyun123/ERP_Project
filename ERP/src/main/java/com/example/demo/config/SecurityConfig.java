@@ -34,6 +34,8 @@ public class SecurityConfig {
                 .requestMatchers("/notice", "/notice/**").authenticated()
                 // ERP 사용자 관리
                 .requestMatchers("/hr/users/**").hasAnyRole("MANAGER", "STAFF")
+                // 분석용 API — Python(FastAPI) 내부 호출이므로 인증 제외
+                .requestMatchers("/api/**").permitAll()
                 .anyRequest().authenticated()
             )
             .formLogin(login -> login
