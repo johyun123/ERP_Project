@@ -3,7 +3,6 @@ package com.example.demo.controller;
 import java.util.List;
 
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -67,9 +66,14 @@ public class DataApiController {
 	}
 
 	// 2. 메뉴
-	@GetMapping("/menus")
-	public List<?> getMenus() {
-		return productMapper.getMenuList();
+//	@GetMapping("/menus")
+//	public List<?> getMenus() {
+//		return productMapper.getMenuList();
+//	}
+
+	@GetMapping("/menus/all")
+	public List<?> getMenusAll() {
+		return productMapper.getMenuList(10000, 0);
 	}
 
 	// 3. 재료
@@ -85,9 +89,14 @@ public class DataApiController {
 	}
 
 	// 5. 발주 상세
-	@GetMapping("/purchase-items/{purchaseId}")
-	public List<?> getPurchaseItems(@PathVariable long purchaseId) {
-		return purchaseItemsMapper.findByPurchaseId(purchaseId);
+//	@GetMapping("/purchase-items/{purchaseId}")
+//	public List<?> getPurchaseItems(@PathVariable long purchaseId) {
+//		return purchaseItemsMapper.findByPurchaseId(purchaseId);
+//	}
+
+	@GetMapping("/purchase-items/all")
+	public List<?> getAllPurchaseItems() {
+		return purchaseItemsMapper.findAll();
 	}
 
 	// 6. 지출

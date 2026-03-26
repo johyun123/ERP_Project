@@ -46,9 +46,28 @@
     	LIMIT #{size} OFFSET #{offset}
 	</select>
 
+ <!-- 메뉴 목록 조회 all 용으로 (카테고리 이름 JOIN) -->
+	<select id="getMenuListAll" resultType="MenuDomain">
+    SELECT
+        m.id,
+        m.category_id AS categoryId,
+        c.name AS categoryName,
+        m.name,
+        m.description,
+        m.price,
+        m.cost,
+        m.is_available AS isAvailable
+    FROM menus m
+    LEFT JOIN categories c ON m.category_id = c.id
+    ORDER BY m.id DESC
+	</select>
+
+
 	<select id="getMenuCount" resultType="int">
     	SELECT COUNT(*) FROM menus
 	</select>
+	
+	
 
     <!-- 카테고리 목록 조회 -->
     <select id="getCategoryList" resultType="CategoryDomain">
