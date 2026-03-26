@@ -1,0 +1,128 @@
+package com.example.demo.controller;
+
+import java.util.List;
+
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.example.demo.Domain.Order;
+import com.example.demo.Domain.StockLogs;
+import com.example.demo.dto.OrderDTO;
+import com.example.demo.dto.StockLogDTO;
+import com.example.demo.mapper.FinanceMapper;
+import com.example.demo.mapper.IngredientsMapper;
+import com.example.demo.mapper.OrderMapper;
+import com.example.demo.mapper.ProductMapper;
+import com.example.demo.mapper.PurchaseItemsMapper;
+import com.example.demo.mapper.PurchasesMapper;
+import com.example.demo.mapper.StockLogsMapper;
+
+@RestController
+@RequestMapping("/api")
+public class DataApiController {
+
+	private final OrderMapper orderMapper;
+	private final FinanceMapper financeMapper;
+	private final IngredientsMapper ingredientsMapper;
+	private final PurchasesMapper purchasesMapper;
+	private final PurchaseItemsMapper purchaseItemsMapper;
+	private final ProductMapper productMapper;
+	private final StockLogsMapper stockLogsMapper;
+
+	public DataApiController(OrderMapper orderMapper, FinanceMapper financeMapper, IngredientsMapper ingredientsMapper,
+			PurchasesMapper purchasesMapper, PurchaseItemsMapper purchaseItemsMapper, ProductMapper productMapper,
+			StockLogsMapper stockLogsMapper) {
+		this.orderMapper = orderMapper;
+		this.financeMapper = financeMapper;
+		this.ingredientsMapper = ingredientsMapper;
+		this.purchasesMapper = purchasesMapper;
+		this.purchaseItemsMapper = purchaseItemsMapper;
+		this.productMapper = productMapper;
+		this.stockLogsMapper = stockLogsMapper;
+	}
+
+	// 1. 주문
+//	@GetMapping("/orders")
+//	public List<?> getOrders() {
+//		return orderMapper.selectOrderList();
+//	}
+
+	@GetMapping("/orders")
+	public List<OrderDTO> getOrders() {
+
+		List<Order> orders = orderMapper.selectOrderList();
+
+		return orders.stream().map(o -> {
+			OrderDTO dto = new OrderDTO();
+			dto.setOrderId(o.getId());
+			dto.setTotalAmount(o.getTotalAmount());
+			dto.setFinalAmount(o.getFinalAmount());
+			dto.setPaymentType(o.getPaymentType());
+			dto.setStatus(o.getStatus());
+			dto.setOrderedAt(o.getOrderedAtFormatted());
+			return dto;
+		}).toList();
+	}
+
+	// 2. 메뉴
+	@GetMapping("/menus")
+	public List<?> getMenus() {
+		return productMapper.getMenuList();
+	}
+
+	// 3. 재료
+	@GetMapping("/ingredients")
+	public List<?> getIngredients() {
+		return ingredientsMapper.findAll();
+	}
+
+	// 4. 발주
+	@GetMapping("/purchases")
+	public List<?> getPurchases() {
+		return purchasesMapper.findAll();
+	}
+
+	// 5. 발주 상세
+	@GetMapping("/purchase-items/{purchaseId}")
+	public List<?> getPurchaseItems(@PathVariable long purchaseId) {
+		return purchaseItemsMapper.findByPurchaseId(purchaseId);
+	}
+
+	// 6. 지출
+	@GetMapping("/expenses")
+	public List<?> getExpenses() {
+		return financeMapper.selectExpenseList();
+	}
+
+	// 7. 급여
+	@GetMapping("/payrolls")
+	public List<?> getPayrolls() {
+		return financeMapper.selectPayrollList();
+	}
+
+//	@GetMapping("/stock-logs")
+//	public List<?> getStockLogs() {
+//		return stockLogsMapper.findAll();
+//	}
+
+	@GetMapping("/stock-logs")
+	public List<StockLogDTO> getStockLogs() {
+
+		List<StockLogs> logs = stockLogsMapper.findAll();
+
+		return logs.stream().map((StockLogs s) -> {
+			StockLogDTO dto = new StockLogDTO();
+			dto.setId(s.getId());
+			dto.setIngredientId(s.getIngredientId());
+			dto.setChangeQty(s.getChangeQty());
+			dto.setBeforeQty(s.getBeforeQty());
+			dto.setAfterQty(s.getAfterQty());
+			dto.setChangeType(s.getChangeType());
+			dto.setCreatedAt(s.getCreatedAt().toString());
+			return dto;
+		}).toList();
+	}
+
+}
