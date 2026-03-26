@@ -333,9 +333,8 @@ function updateRowStates() {
         if (rowSid === currentSupplierId) { row.classList.remove('disabled'); }
         else                              { row.classList.add('disabled'); }
     });
-    // 거래처 미등록 섹션은 항상 표시 유지
-    var noSupplierHeader = document.querySelector('.no-supplier-header');
-    if (noSupplierHeader) noSupplierHeader.style.display = '';
+    // 거래처 미등록 섹션은 renderPage()가 제어하므로 여기서 건드리지 않음
+    renderPage();
 }
 
 function filterIngredients() {
