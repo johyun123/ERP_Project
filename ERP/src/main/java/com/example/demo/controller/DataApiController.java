@@ -12,6 +12,7 @@ import com.example.demo.dto.OrderDTO;
 import com.example.demo.dto.StockLogDTO;
 import com.example.demo.mapper.FinanceMapper;
 import com.example.demo.mapper.IngredientsMapper;
+import com.example.demo.mapper.OrderItemsMapper;
 import com.example.demo.mapper.OrderMapper;
 import com.example.demo.mapper.ProductMapper;
 import com.example.demo.mapper.PurchaseItemsMapper;
@@ -23,6 +24,7 @@ import com.example.demo.mapper.StockLogsMapper;
 public class DataApiController {
 
 	private final OrderMapper orderMapper;
+	private final OrderItemsMapper orderItemsMapper;
 	private final FinanceMapper financeMapper;
 	private final IngredientsMapper ingredientsMapper;
 	private final PurchasesMapper purchasesMapper;
@@ -30,10 +32,11 @@ public class DataApiController {
 	private final ProductMapper productMapper;
 	private final StockLogsMapper stockLogsMapper;
 
-	public DataApiController(OrderMapper orderMapper, FinanceMapper financeMapper, IngredientsMapper ingredientsMapper,
-			PurchasesMapper purchasesMapper, PurchaseItemsMapper purchaseItemsMapper, ProductMapper productMapper,
-			StockLogsMapper stockLogsMapper) {
+	public DataApiController(OrderMapper orderMapper, OrderItemsMapper orderItemsMapper, FinanceMapper financeMapper,
+			IngredientsMapper ingredientsMapper, PurchasesMapper purchasesMapper,
+			PurchaseItemsMapper purchaseItemsMapper, ProductMapper productMapper, StockLogsMapper stockLogsMapper) {
 		this.orderMapper = orderMapper;
+		this.orderItemsMapper = orderItemsMapper;
 		this.financeMapper = financeMapper;
 		this.ingredientsMapper = ingredientsMapper;
 		this.purchasesMapper = purchasesMapper;
@@ -65,7 +68,13 @@ public class DataApiController {
 		}).toList();
 	}
 
-	// 2. 메뉴
+	// 2. 주문 상세 (Python용)
+	@GetMapping("/order-items/all")
+	public List<?> getAllOrderItems() {
+		return orderItemsMapper.findAll();
+	}
+
+	// 3. 메뉴
 //	@GetMapping("/menus")
 //	public List<?> getMenus() {
 //		return productMapper.getMenuList();
@@ -76,19 +85,19 @@ public class DataApiController {
 		return productMapper.getMenuList(10000, 0);
 	}
 
-	// 3. 재료
+	// 4. 재료
 	@GetMapping("/ingredients")
 	public List<?> getIngredients() {
 		return ingredientsMapper.findAll();
 	}
 
-	// 4. 발주
+	// 5. 발주
 	@GetMapping("/purchases")
 	public List<?> getPurchases() {
 		return purchasesMapper.findAll();
 	}
 
-	// 5. 발주 상세
+	// 6. 발주 상세
 //	@GetMapping("/purchase-items/{purchaseId}")
 //	public List<?> getPurchaseItems(@PathVariable long purchaseId) {
 //		return purchaseItemsMapper.findByPurchaseId(purchaseId);
@@ -99,13 +108,13 @@ public class DataApiController {
 		return purchaseItemsMapper.findAll();
 	}
 
-	// 6. 지출
+	// 7. 지출
 	@GetMapping("/expenses")
 	public List<?> getExpenses() {
 		return financeMapper.selectExpenseList();
 	}
 
-	// 7. 급여
+	// 8. 급여
 	@GetMapping("/payrolls")
 	public List<?> getPayrolls() {
 		return financeMapper.selectPayrollList();
