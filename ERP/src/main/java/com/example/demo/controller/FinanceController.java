@@ -32,11 +32,6 @@ public class FinanceController {
         this.userService    = userService;
     }
 
-    /* ===== 지출 등록 (기존 페이지 — F_register 삭제 전까지 유지) ===== */
-    @GetMapping("/f_register")
-    public String financeForm() {
-        return "Finance/F_register";
-    }
 
     @PostMapping("/f_register")
     public String registerExpense(
