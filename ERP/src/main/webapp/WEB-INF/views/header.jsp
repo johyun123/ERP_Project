@@ -88,10 +88,11 @@ String avatarChar = loginName.length() > 0 ? String.valueOf(loginName.charAt(0))
             </ul>
         </li>
 
-        <li class="has-submenu" onclick="toggleSubmenu(this)">📈 데이터분석
+        <li class="has-submenu" onclick="toggleSubmenu(this)">📈 수익분석
             <ul class="submenu">
-                <li onclick="event.stopPropagation(); location.href='/analysis/statement'">재무제표 조회</li>
-                <li onclick="event.stopPropagation(); location.href='/analysis/check'">재무점검</li>
+                <li onclick="event.stopPropagation(); location.href='/analysis/stats'">수익통계</li>
+                <li onclick="event.stopPropagation(); location.href='/analysis/forecast'">수익 예측</li>
+                <li onclick="event.stopPropagation(); location.href='/analysis/inventory'">재고 소진 추이 예측</li>
             </ul>
         </li>
 

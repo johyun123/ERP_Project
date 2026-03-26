@@ -1,58 +1,309 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8"
-    pageEncoding="UTF-8"%>
-
-
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
 <html>
 <head>
-	<meta charset="UTF-8">
-	<title>ERP CAFE SYSTEM</title>
-	<link rel="stylesheet" href="/css/header.css" />
-	<link rel="stylesheet" href="/css/MainPage.css" />
+    <meta charset="UTF-8">
+    <title>ERP CAFE SYSTEM</title>
+    <link rel="stylesheet" href="/css/header.css"/>
+    <link rel="stylesheet" href="/css/MainPage.css"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 </head>
-
 <body>
 
 <jsp:include page="/WEB-INF/views/header.jsp"/>
 
-<!-- 컨텐츠 -->
-	<div class="content">
-		<div class="dashboard">
-			<div class="card">
-				<div class="card-title">오늘 주문</div>
-				<div class="card-value">12</div>
-			</div>
-			<div class="card">
-				<div class="card-title">재고 상태</div>
-				<div class="card-value">정상</div>
-			</div>
-			<div class="card">
-				<div class="card-title">오늘 매출</div>
-				<div class="card-value">₩245,000</div>
-			</div>
-		</div>
-		<div class="chart-box">
-			<canvas id="salesChart"></canvas>
-		</div>
-	</div>
-	
-<script>
-const ctx = document.getElementById('salesChart');
-new Chart(ctx, {
-	type: 'bar',
-	data: {
-		labels: ['월','화','수','목','금','토','일'],
-		datasets: [{
-			label: '주간 매출',
-			data: [120,190,300,250,220,400,350],
-			backgroundColor: '#6c8cff'
-		}]
-	},
-	options: {
-		responsive:true
-	}
-});
-</script>
+<div class="content">
 
+    <div class="page-header">
+        <div class="page-title">업무 대시보드 <span id="todayDate"></span></div>
+    </div>
+
+    <%-- 알림 배너 (재고 부족 / 소진 임박) --%>
+    <div id="alertArea"></div>
+
+    <%-- 요약 카드 3개 --%>
+    <div class="stat-row">
+        <div class="stat-card" onclick="location.href='/order'">
+            <div class="stat-icon blue">🧾</div>
+            <div class="stat-info">
+                <div class="label">오늘 주문건수</div>
+                <div class="value blue" id="todayCount">-</div>
+            </div>
+        </div>
+        <div class="stat-card" onclick="location.href='/order'">
+            <div class="stat-icon green">💰</div>
+            <div class="stat-info">
+                <div class="label">오늘 매출</div>
+                <div class="value green" id="todayRevenue">-</div>
+            </div>
+        </div>
+        <div class="stat-card" onclick="location.href='/inventory'">
+            <div class="stat-icon red">⚠️</div>
+            <div class="stat-info">
+                <div class="label">재고 부족 원재료</div>
+                <div class="value red" id="lowStockCount">-</div>
+            </div>
+        </div>
+    </div>
+
+    <%-- 메인 그리드 --%>
+    <div class="main-grid">
+
+        <%-- 주간 매출 그래프 --%>
+        <div class="dash-card main-grid-full">
+            <div class="dash-card-header">
+                <h3>📊 주간 매출 현황</h3>
+                <span id="weeklyTotal" style="font-size:0.82rem; color:var(--text-muted);"></span>
+            </div>
+            <div class="chart-wrap">
+                <canvas id="weeklyChart"></canvas>
+            </div>
+        </div>
+
+        <%-- 재고 부족 원재료 --%>
+        <div class="dash-card">
+            <div class="dash-card-header">
+                <h3>⚠️ 재고 부족 원재료</h3>
+                <a href="/inventory" style="font-size:0.8rem; color:var(--primary);
+                   text-decoration:none; font-weight:600;">전체 보기 →</a>
+            </div>
+            <div id="lowStockArea">
+                <div class="empty-msg">로딩 중...</div>
+            </div>
+            <div class="dash-pagination" id="lowStockPaging" style="display:none;">
+                <button class="dash-page-btn" id="lowStockPrev" onclick="changeLowStockPage(-1)">‹</button>
+                <span id="lowStockPageInfo" style="font-size:0.82rem; color:var(--text-muted);"></span>
+                <button class="dash-page-btn" id="lowStockNext" onclick="changeLowStockPage(1)">›</button>
+            </div>
+        </div>
+
+        <%-- 금일 근무자 --%>
+        <div class="dash-card">
+            <div class="dash-card-header">
+                <h3>👥 금일 근무자</h3>
+                <a id="linkTodayAttendance" href="/hr/attendanceIn?date="
+                   style="font-size:0.8rem; color:var(--primary);
+                   text-decoration:none; font-weight:600;">근태 현황 →</a>
+            </div>
+            <div class="dash-card-body">
+                <div id="employeeArea">
+                    <div class="empty-msg">로딩 중...</div>
+                </div>
+                <div class="dash-pagination" id="empPaging" style="display:none;">
+                    <button class="dash-page-btn" id="empPrev" onclick="changeEmpPage(-1)">‹</button>
+                    <span id="empPageInfo" style="font-size:0.82rem; color:var(--text-muted);"></span>
+                    <button class="dash-page-btn" id="empNext" onclick="changeEmpPage(1)">›</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+/* ===== 오늘 날짜 표시 + 버튼/링크에 적용 ===== */
+var todayStr = '';
+(function() {
+    var now  = new Date();
+    var days = ['일','월','화','수','목','금','토'];
+    document.getElementById('todayDate').textContent =
+        now.getFullYear() + '년 ' + (now.getMonth()+1) + '월 ' + now.getDate() + '일 (' + days[now.getDay()] + ')';
+
+    // yyyy-MM-dd 형식
+    var mm = String(now.getMonth() + 1).padStart(2, '0');
+    var dd = String(now.getDate()).padStart(2, '0');
+    todayStr = now.getFullYear() + '-' + mm + '-' + dd;
+
+    // 근태 현황 링크도 오늘 날짜
+    document.getElementById('linkTodayAttendance').href = '/hr/attendanceIn?date=' + todayStr;
+})();
+
+/* ===== 오늘 매출/주문 ===== */
+fetch('/api/main/today')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        document.getElementById('todayCount').textContent   = (data.todayCount   || 0) + '건';
+        document.getElementById('todayRevenue').textContent = '₩' + (data.todayRevenue || 0).toLocaleString();
+    });
+
+/* ===== 주간 매출 차트 ===== */
+fetch('/api/main/weekly')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        var total = (data.amounts || []).reduce(function(s, v) { return s + v; }, 0);
+        document.getElementById('weeklyTotal').textContent = '주간 합계: ₩' + total.toLocaleString();
+
+        new Chart(document.getElementById('weeklyChart'), {
+            type: 'bar',
+            data: {
+                labels: data.labels || [],
+                datasets: [{
+                    label: '매출',
+                    data:  data.amounts || [],
+                    backgroundColor: 'rgba(91, 110, 245, 0.7)',
+                    borderRadius: 8,
+                    borderSkipped: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { callback: function(v) { return '₩' + v.toLocaleString(); } },
+                        grid: { color: 'rgba(0,0,0,0.05)' }
+                    },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    });
+
+/* ===== 재고 부족 페이징 ===== */
+var lowStockData = [];
+var lowStockPage = 1;
+var lowStockSize = 5;
+
+function renderLowStock() {
+    var total      = lowStockData.length;
+    var totalPages = Math.max(1, Math.ceil(total / lowStockSize));
+    if (lowStockPage > totalPages) lowStockPage = totalPages;
+    var start = (lowStockPage - 1) * lowStockSize;
+    var paged = lowStockData.slice(start, start + lowStockSize);
+    var area  = document.getElementById('lowStockArea');
+
+    if (total === 0) {
+        area.innerHTML = '<div class="empty-msg">✅ 재고 부족 원재료가 없습니다.</div>';
+        document.getElementById('lowStockPaging').style.display = 'none';
+        return;
+    }
+
+    var rows = paged.map(function(item) {
+        return '<tr>'
+            + '<td style="text-align:left;"><strong>' + (item.name || '-') + '</strong></td>'
+            + '<td><span style="background:var(--primary-light);color:var(--primary);font-size:0.75rem;font-weight:600;padding:2px 8px;border-radius:20px;">' + (item.category || '-') + '</span></td>'
+            + '<td class="stock-qty-low">' + (item.stock_qty || 0) + ' ' + (item.unit || '') + '</td>'
+            + '<td style="color:var(--text-muted);">' + (item.min_stock || 0) + ' ' + (item.unit || '') + '</td>'
+            + '<td><button class="btn-order-now" onclick="orderNow(' + item.id + ',&quot;' + encodeURIComponent(item.name||'') + '&quot;,' + (item.unit_cost||0) + ',' + (item.supplier_id||0) + ')">🛒 발주</button></td>'
+            + '</tr>';
+    }).join('');
+
+    area.innerHTML = '<table class="low-stock-table"><thead><tr><th>원재료명</th><th>카테고리</th><th>현재 재고</th><th>최소 기준</th><th>발주</th></tr></thead><tbody>' + rows + '</tbody></table>';
+
+    document.getElementById('lowStockPageInfo').textContent = lowStockPage + ' / ' + totalPages;
+    document.getElementById('lowStockPrev').disabled = (lowStockPage <= 1);
+    document.getElementById('lowStockNext').disabled = (lowStockPage >= totalPages);
+    document.getElementById('lowStockPaging').style.display = total > lowStockSize ? 'flex' : 'none';
+}
+
+function changeLowStockPage(dir) {
+    lowStockPage += dir;
+    renderLowStock();
+}
+
+/* ===== 금일 근무자 페이징 ===== */
+var empData = [];
+var empPage = 1;
+var empSize = 5;
+
+function renderEmployees() {
+    var total      = empData.length;
+    var totalPages = Math.max(1, Math.ceil(total / empSize));
+    if (empPage > totalPages) empPage = totalPages;
+    var start = (empPage - 1) * empSize;
+    var paged = empData.slice(start, start + empSize);
+    var area  = document.getElementById('employeeArea');
+
+    if (total === 0) {
+        area.innerHTML = '<div class="empty-msg">등록된 재직 직원이 없습니다.</div>';
+        document.getElementById('empPaging').style.display = 'none';
+        return;
+    }
+
+    var statusMap = {
+        'absent':  { label: '미출근', cls: 'status-absent' },
+        'working': { label: '출근 중', cls: 'status-working' },
+        'done':    { label: '퇴근',   cls: 'status-done' }
+    };
+
+    var html = '<div class="employee-list">';
+    paged.forEach(function(emp) {
+        var avatarChar = emp.name ? emp.name.charAt(0) : '?';
+        var ct        = emp.contract_type || '';
+        var typeLabel = (ct === 'full' || ct === '풀') ? '정규직' : '파트타임';
+        var typeClass = (ct === 'full' || ct === '풀') ? 'full' : 'part';
+        var st        = statusMap[emp.status] || { label: '-', cls: '' };
+        var clockIn   = emp.clock_in  ? String(emp.clock_in).substring(0,5)  : '-';
+        var clockOut  = emp.clock_out ? String(emp.clock_out).substring(0,5) : '-';
+        html += '<div class="employee-item">'
+            + '<div class="emp-avatar">' + avatarChar + '</div>'
+            + '<div class="emp-info"><div class="emp-name">' + (emp.name||'-') + '</div><div class="emp-position">' + (emp.position||'-') + '</div></div>'
+            + '<div class="emp-clock"><span style="font-size:0.72rem;color:var(--text-muted);">출근 ' + clockIn + '</span>'
+            + (emp.status === 'done' ? '<span style="font-size:0.72rem;color:var(--text-muted);">퇴근 ' + clockOut + '</span>' : '')
+            + '</div>'
+            + '<span class="emp-status ' + st.cls + '">' + st.label + '</span>'
+            + '<span class="emp-type ' + typeClass + '">' + typeLabel + '</span>'
+            + '</div>';
+    });
+    html += '</div>';
+    area.innerHTML = html;
+
+    document.getElementById('empPageInfo').textContent = empPage + ' / ' + totalPages;
+    document.getElementById('empPrev').disabled = (empPage <= 1);
+    document.getElementById('empNext').disabled = (empPage >= totalPages);
+    document.getElementById('empPaging').style.display = total > empSize ? 'flex' : 'none';
+}
+
+function changeEmpPage(dir) {
+    empPage += dir;
+    renderEmployees();
+}
+
+/* ===== 재고 부족 원재료 ===== */
+fetch('/api/main/low-stock')
+    .then(function(r) { return r.json(); })
+    .then(function(list) {
+        document.getElementById('lowStockCount').textContent = (list.length || 0) + '개';
+
+        // 알림 배너
+        var alertArea = document.getElementById('alertArea');
+        if (list.length > 0) {
+            alertArea.innerHTML =
+                '<div class="alert-banner danger">'
+                + '⚠️ 재고 부족 원재료가 <strong>' + list.length + '개</strong> 있습니다. 즉시 발주가 필요합니다.'
+                + '<a href="/inventory/order">발주 페이지로 →</a>'
+                + '</div>';
+        }
+
+        lowStockData = list;
+        lowStockPage = 1;
+        renderLowStock();
+    });
+
+/* ===== 발주 즉시 이동 (해당 원재료 발주 페이지로) ===== */
+function orderNow(ingredientId, name, unitCost, supplierId) {
+    // 발주 페이지로 이동하면서 해당 원재료 자동 선택 파라미터 전달
+    var params = '?highlight=' + ingredientId;
+    location.href = '/inventory/order' + params;
+}
+
+/* ===== 금일 근무자 ===== */
+fetch('/api/main/today-employees')
+    .then(function(r) { return r.json(); })
+    .then(function(list) {
+        // 직급 순서 정렬
+        var posOrder = { '점장': 0, '매니저': 1, '스탭': 2 };
+        list.sort(function(a, b) {
+            var pa = posOrder[a.position] !== undefined ? posOrder[a.position] : 99;
+            var pb = posOrder[b.position] !== undefined ? posOrder[b.position] : 99;
+            return pa - pb;
+        });
+        empData = list;
+        empPage = 1;
+        renderEmployees();
+    });
+</script>
 </body>
 </html>
