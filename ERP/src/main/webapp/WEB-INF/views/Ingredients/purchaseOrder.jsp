@@ -83,9 +83,13 @@ request.setAttribute("emojiMap", emojiMap);
                             <c:forEach var="item" items="${ingredientList}">
                                 <c:if test="${not empty item.supplier}">
                                 <tr class="ingredient-row"
-                                    data-category="${item.category}"
+                                    data-id="${item.id}"
+                                    data-name="${item.name}"
+                                    data-unit="${item.unit}"
+                                    data-cost="${item.unit_cost}"
                                     data-supplier-id="${item.supplier_id}"
-                                    data-supplier-name="${item.supplier}">
+                                    data-supplier-name="${item.supplier}"
+                                    data-category="${item.category}">
                                     <td><strong>${item.name}</strong>
                                         <c:if test="${item.stock_qty <= item.min_stock}">
                                             <span class="badge badge-low" style="margin-left:6px;">부족</span>
@@ -324,6 +328,40 @@ document.getElementById('cart_ordered_at').value = new Date().toISOString().spli
 // 페이지 로드 시 초기 렌더링
 window.addEventListener('DOMContentLoaded', function() {
     renderPage();
+
+    // 메인페이지에서 발주 버튼 클릭 시 해당 원재료 자동 추가
+    var params    = new URLSearchParams(location.search);
+    var highlight = params.get('highlight');
+    if (highlight) {
+        // renderPage 후 약간 딜레이 줘서 DOM 렌더 완료 후 실행
+        setTimeout(function() {
+            var row = document.querySelector('.ingredient-row[data-id="' + highlight + '"]');
+            if (row) {
+                // 해당 행 표시 (숨겨진 경우 페이지 이동)
+                row.style.display = '';
+
+                // 행 강조
+                row.style.background = 'var(--accent-orange-light)';
+                row.style.transition = 'background 1.5s';
+                setTimeout(function() { row.style.background = ''; }, 2000);
+
+                // 스크롤
+                row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+                // 데이터 추출 후 카트에 바로 추가
+                var id           = parseInt(row.dataset.id);
+                var name         = decodeURIComponent(row.dataset.name || '');
+                var unit         = row.dataset.unit || '';
+                var unit_cost    = parseInt(row.dataset.cost) || 0;
+                var supplierId   = parseInt(row.dataset.supplierId) || 0;
+                var supplierName = row.dataset.supplierName || '';
+
+                if (id && name && supplierId) {
+                    addToCart(id, name, unit, unit_cost, supplierId, supplierName);
+                }
+            }
+        }, 300);
+    }
 });
 
 function updateRowStates() {
@@ -333,9 +371,8 @@ function updateRowStates() {
         if (rowSid === currentSupplierId) { row.classList.remove('disabled'); }
         else                              { row.classList.add('disabled'); }
     });
-    // 거래처 미등록 섹션은 항상 표시 유지
-    var noSupplierHeader = document.querySelector('.no-supplier-header');
-    if (noSupplierHeader) noSupplierHeader.style.display = '';
+    // 거래처 미등록 섹션은 renderPage()가 제어하므로 여기서 건드리지 않음
+    renderPage();
 }
 
 function filterIngredients() {

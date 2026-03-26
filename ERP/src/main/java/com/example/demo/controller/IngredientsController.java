@@ -287,6 +287,7 @@ public class IngredientsController {
     public String purchaseUpdate(
             @RequestParam long   id,
             @RequestParam String status,
+            @RequestParam(required = false) Long   supplier_id,
             @RequestParam(required = false) String received_at,
             @RequestParam(required = false) String note,
             @RequestParam(defaultValue = "1") int page) {
@@ -294,6 +295,7 @@ public class IngredientsController {
         Purchases p = new Purchases();
         p.setId(id);
         p.setStatus(status);
+        p.setSupplier_id(supplier_id);
         p.setNote(note);
         if (received_at != null && !received_at.isEmpty()) {
             p.setReceived_at(java.time.LocalDate.parse(received_at));

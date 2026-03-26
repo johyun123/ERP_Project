@@ -123,9 +123,11 @@
     <!-- 근태 상세 — 재직 직원 전체 + 해당 날짜 LEFT JOIN -->
     <select id="getAttendanceWithEmployees" parameterType="String" resultType="map">
         SELECT
-            e.id         AS employee_id,
+            e.id            AS employee_id,
             e.emp_num,
             e.name,
+            e.position,
+            e.contract_type,
             a.work_date,
             a.clock_in,
             a.clock_out,
@@ -136,6 +138,7 @@
             ON e.id = a.employee_id
             AND a.work_date = #{date}
         WHERE e.is_active = 1
+        ORDER BY e.id ASC
     </select>
 
     <!-- 근태 상세 페이징 -->

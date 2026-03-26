@@ -24,12 +24,6 @@ public class UserController {
 		return "login"; // JSP 그대로 사용
 	}
 
-	// 메인 페이지
-	@GetMapping("/MainPage")
-	public String Main() {
-		return "MainPage";
-	}
-
 	// 로그아웃 처리
 	@GetMapping("/logout")
 	public String logout(HttpSession session) {
