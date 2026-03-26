@@ -25,5 +25,22 @@
         WHERE pi.purchase_id = #{purchaseId}
         ORDER BY pi.id
     </select>
+    
+    
+    <select id="findAll" resultType="PurchaseItems">
+    SELECT
+        pi.id,
+        pi.purchase_id AS purchaseId,
+        pi.ingredient_id AS ingredientId,
+        i.name AS ingredientName,
+        i.unit,
+        pi.qty,
+        pi.unit_cost AS unitCost,
+        pi.subtotal,
+        pi.note
+    FROM purchase_items pi
+    LEFT JOIN ingredients i ON pi.ingredient_id = i.id
+    ORDER BY pi.purchase_id DESC, pi.id ASC
+	</select>
 
 </mapper>
