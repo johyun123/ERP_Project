@@ -7,10 +7,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.Domain.Order;
+import com.example.demo.Domain.PurchaseItems;
 import com.example.demo.Domain.StockLogs;
 import com.example.demo.dto.OrderDTO;
 import com.example.demo.dto.StockLogDTO;
 import com.example.demo.mapper.FinanceMapper;
+import com.example.demo.mapper.HRMMapper;
 import com.example.demo.mapper.IngredientsMapper;
 import com.example.demo.mapper.OrderItemsMapper;
 import com.example.demo.mapper.OrderMapper;
@@ -26,6 +28,7 @@ public class DataApiController {
 	private final OrderMapper orderMapper;
 	private final OrderItemsMapper orderItemsMapper;
 	private final FinanceMapper financeMapper;
+	private final HRMMapper hrmMapper;
 	private final IngredientsMapper ingredientsMapper;
 	private final PurchasesMapper purchasesMapper;
 	private final PurchaseItemsMapper purchaseItemsMapper;
@@ -33,11 +36,12 @@ public class DataApiController {
 	private final StockLogsMapper stockLogsMapper;
 
 	public DataApiController(OrderMapper orderMapper, OrderItemsMapper orderItemsMapper, FinanceMapper financeMapper,
-			IngredientsMapper ingredientsMapper, PurchasesMapper purchasesMapper,
+			HRMMapper hrmMapper, IngredientsMapper ingredientsMapper, PurchasesMapper purchasesMapper,
 			PurchaseItemsMapper purchaseItemsMapper, ProductMapper productMapper, StockLogsMapper stockLogsMapper) {
 		this.orderMapper = orderMapper;
 		this.orderItemsMapper = orderItemsMapper;
 		this.financeMapper = financeMapper;
+		this.hrmMapper = hrmMapper;
 		this.ingredientsMapper = ingredientsMapper;
 		this.purchasesMapper = purchasesMapper;
 		this.purchaseItemsMapper = purchaseItemsMapper;
@@ -120,6 +124,17 @@ public class DataApiController {
 		return financeMapper.selectPayrollList();
 	}
 
+	// 9. 직원 (급여 직책 분류용: position 필드 포함)
+	@GetMapping("/employees")
+	public List<?> getEmployees() {
+		return hrmMapper.selectAllEmployees();
+	}
+	
+	// 10. 카테고리
+	@GetMapping("/categories")
+	public List<?> getCategories() {
+		return productMapper.getCategoryList();
+	}
 //	@GetMapping("/stock-logs")
 //	public List<?> getStockLogs() {
 //		return stockLogsMapper.findAll();

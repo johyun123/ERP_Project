@@ -131,6 +131,7 @@
             p.deduction,
             p.net_pay      AS netPay,
             p.paid_at      AS paidAt,
+            p.pay_type     AS payType,
             p.note,
             p.created_at   AS createdAt,
             e.name         AS employeeName
