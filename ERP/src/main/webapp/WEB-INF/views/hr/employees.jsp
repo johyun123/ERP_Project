@@ -96,7 +96,9 @@
                             <td>
                                 <c:choose>
                                     <c:when test="${not empty emp.profile}">
-                                        <img class="emp-avatar" src="${emp.profile}" alt="${emp.name}" />
+                                        <img class="emp-avatar" src="${emp.profile}" alt="${emp.name}"
+                                             onclick="event.stopPropagation(); openProfileViewer('${emp.profile}', '${emp.name}')"
+                                             style="cursor:zoom-in;" />
                                     </c:when>
                                     <c:otherwise>
                                         <div class="emp-avatar-placeholder">&#128100;</div>
@@ -736,6 +738,37 @@ document.getElementById('editModal').addEventListener('click', function(e) {
 </script>
 
 
+
+<!-- ===== 프로필 확대 뷰어 ===== -->
+<div id="profileViewer" onclick="closeProfileViewer()"
+     style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.82);
+            z-index:9999; justify-content:center; align-items:center; flex-direction:column; gap:14px;">
+    <img id="profileViewerImg" src="" alt=""
+         style="width:300px; height:300px; border-radius:50%;
+                border:4px solid #fff; box-shadow:0 8px 40px rgba(0,0,0,0.5);
+                object-fit:cover; animation:pvZoom .2s ease;" />
+    <div id="profileViewerName"
+         style="color:#fff; font-size:1.05rem; font-weight:600; font-family:'Outfit',sans-serif;"></div>
+    <div style="color:rgba(255,255,255,0.5); font-size:0.78rem;">클릭하거나 ESC로 닫기</div>
+</div>
+<style>
+@keyframes pvZoom { from { transform:scale(0.7); opacity:0; } to { transform:scale(1); opacity:1; } }
+</style>
+
+<script>
+function openProfileViewer(src, name) {
+    var v = document.getElementById('profileViewer');
+    document.getElementById('profileViewerImg').src         = src;
+    document.getElementById('profileViewerName').innerText  = name || '';
+    v.style.display = 'flex';
+}
+function closeProfileViewer() {
+    document.getElementById('profileViewer').style.display = 'none';
+}
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeProfileViewer();
+});
+</script>
 
 </body>
 </html>
