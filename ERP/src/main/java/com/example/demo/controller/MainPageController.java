@@ -142,6 +142,7 @@ public class MainPageController {
             m.put("name",           row.get("name"));
             m.put("position",       row.get("position"));
             m.put("contract_type",  row.get("contract_type"));
+            m.put("profile",        row.get("profile"));
             m.put("clock_in",       row.get("clock_in"));
             m.put("clock_out",      row.get("clock_out"));
             m.put("work_hours",     row.get("work_hours"));

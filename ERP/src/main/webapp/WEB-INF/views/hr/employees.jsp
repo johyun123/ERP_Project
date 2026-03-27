@@ -64,6 +64,7 @@
         <table class="emp-table">
             <thead>
                 <tr>
+                    <th>프로필</th>
                     <th>사원번호</th>
                     <th>이름</th>
                     <th>연락처</th>
@@ -83,7 +84,7 @@
             <tbody id="empTableBody">
                 <c:choose>
                     <c:when test="${empty employees}">
-                        <tr><td colspan="14" class="empty-row">등록된 직원이 없습니다.</td></tr>
+                        <tr><td colspan="15" class="empty-row">등록된 직원이 없습니다.</td></tr>
                     </c:when>
                     <c:otherwise>
                         <c:forEach var="emp" items="${employees}">
@@ -92,6 +93,16 @@
                             data-position="${emp.position}"
                             data-status="${emp.is_active}">
 
+                            <td>
+                                <c:choose>
+                                    <c:when test="${not empty emp.profile}">
+                                        <img class="emp-avatar" src="${emp.profile}" alt="${emp.name}" />
+                                    </c:when>
+                                    <c:otherwise>
+                                        <div class="emp-avatar-placeholder">&#128100;</div>
+                                    </c:otherwise>
+                                </c:choose>
+                            </td>
                             <td class="td-empnum">${emp.emp_num}</td>
                             <td class="td-name">${emp.name}</td>
                             <td class="td-phone">${emp.phone}</td>
@@ -197,7 +208,7 @@
 
             <div class="page-nav">
                 <c:if test="${currentPage > 1}">
-                    <button class="page-btn" onclick="goPage(${currentPage - 1})">&#8249;</button>
+                    <button class="page-btn" onclick="goPage(${currentPage - 1})">◀</button>
                 </c:if>
 
                 <c:forEach var="i" begin="1" end="${totalPages}">
@@ -206,7 +217,7 @@
                 </c:forEach>
 
                 <c:if test="${currentPage < totalPages}">
-                    <button class="page-btn" onclick="goPage(${currentPage + 1})">&#8250;</button>
+                    <button class="page-btn" onclick="goPage(${currentPage + 1})">▶</button>
                 </c:if>
             </div>
 
@@ -289,6 +300,22 @@ function confirmDelete(empNum, name) {
     <div class="emp-modal-body">
       <form action="/hr/employees/register" method="post" id="registerForm">
         <div class="form-grid">
+
+          <!-- 프로필 사진 -->
+          <div class="form-group form-group-full profile-upload-wrap">
+            <div class="profile-upload-area" onclick="document.getElementById('regFileInput').click()">
+              <img id="regProfilePreview" src="" alt="" style="display:none;width:100%;height:100%;object-fit:cover;border-radius:50%;" />
+              <span class="profile-upload-icon" id="regProfileIcon">&#128100;</span>
+            </div>
+            <input type="file" id="regFileInput" accept="image/*" style="display:none"
+                   onchange="handleProfileSelect(this,'regProfilePreview','regProfileIcon','regProfilePath','regDeleteBtn')" />
+            <input type="hidden" id="regProfilePath" name="profile" value="" />
+            <button type="button" id="regDeleteBtn" class="btn-profile-delete" style="display:none"
+                    onclick="removeProfile('regProfilePreview','regProfileIcon','regProfilePath','regDeleteBtn','regFileInput')">
+              &#10005; 사진 삭제
+            </button>
+            <span class="profile-upload-hint">클릭하여 사진 업로드 (선택사항)</span>
+          </div>
 
           <div class="form-group">
             <label class="form-label">직원 번호</label>
@@ -400,6 +427,22 @@ function confirmDelete(empNum, name) {
     <div class="emp-modal-body">
       <form action="/hr/employees/update" method="post" id="editForm">
         <div class="form-grid">
+
+          <!-- 프로필 사진 -->
+          <div class="form-group form-group-full profile-upload-wrap">
+            <div class="profile-upload-area" onclick="document.getElementById('editFileInput').click()">
+              <img id="editProfilePreview" src="" alt="" style="display:none;width:100%;height:100%;object-fit:cover;border-radius:50%;" />
+              <span class="profile-upload-icon" id="editProfileIcon">&#128100;</span>
+            </div>
+            <input type="file" id="editFileInput" accept="image/*" style="display:none"
+                   onchange="handleProfileSelect(this,'editProfilePreview','editProfileIcon','editProfilePath','editDeleteBtn')" />
+            <input type="hidden" id="editProfilePath" name="profile" value="" />
+            <button type="button" id="editDeleteBtn" class="btn-profile-delete" style="display:none"
+                    onclick="removeProfile('editProfilePreview','editProfileIcon','editProfilePath','editDeleteBtn','editFileInput')">
+              &#10005; 사진 삭제
+            </button>
+            <span class="profile-upload-hint">클릭하여 변경 (미선택 시 기존 사진 유지)</span>
+          </div>
 
           <div class="form-group">
             <label class="form-label">직원 번호</label>
@@ -514,6 +557,12 @@ function openRegisterModal() {
     toggleRegSalary();
     document.getElementById('registerForm').reset();
     genEmpNum();
+    // 프로필 초기화
+    document.getElementById('regProfilePath').value            = '';
+    document.getElementById('regFileInput').value              = '';
+    document.getElementById('regProfilePreview').style.display = 'none';
+    document.getElementById('regProfileIcon').style.display    = '';
+    document.getElementById('regDeleteBtn').style.display      = 'none';
     document.getElementById('registerModal').classList.add('active');
 }
 
@@ -588,6 +637,21 @@ function openEditModal(empNum) {
             document.getElementById('editBankName').value      = emp.bank_name      || '';
             document.getElementById('editAccountNo').value     = emp.account_no     || '';
 
+            // 프로필
+            var profilePath = emp.profile || '';
+            document.getElementById('editProfilePath').value         = profilePath;
+            document.getElementById('editFileInput').value           = '';
+            var prev = document.getElementById('editProfilePreview');
+            var icon = document.getElementById('editProfileIcon');
+            var delBtn = document.getElementById('editDeleteBtn');
+            if (profilePath) {
+                prev.src = profilePath; prev.style.display = 'block';
+                icon.style.display = 'none'; delBtn.style.display = '';
+            } else {
+                prev.src = ''; prev.style.display = 'none';
+                icon.style.display = ''; delBtn.style.display = 'none';
+            }
+
             // 재직 여부 라디오
             var radios = document.querySelectorAll('#editIsActiveGroup input[type="radio"]');
             radios.forEach(function(r) {
@@ -601,6 +665,65 @@ function openEditModal(empNum) {
 
 function closeEditModal() {
     document.getElementById('editModal').classList.remove('active');
+}
+
+/* ================================================================
+   프로필 사진 선택 → 서버 업로드 → hidden 필드에 경로 저장
+================================================================ */
+function removeProfile(previewId, iconId, pathFieldId, btnId, fileInputId) {
+    document.getElementById(pathFieldId).value            = '';
+    document.getElementById(fileInputId).value            = '';
+    document.getElementById(previewId).style.display      = 'none';
+    document.getElementById(iconId).style.display         = '';
+    document.getElementById(btnId).style.display          = 'none';
+}
+
+function handleProfileSelect(input, previewId, iconId, pathFieldId, btnId) {
+    if (!input.files || !input.files[0]) return;
+    var file = input.files[0];
+    var reader = new FileReader();
+    reader.onload = function(e) {
+        var img = new Image();
+        img.onload = function() {
+            // 최대 800px 리사이즈 + JPEG 85% 압축
+            var MAX = 800, w = img.width, h = img.height;
+            if (w > MAX || h > MAX) {
+                if (w >= h) { h = Math.round(h * MAX / w); w = MAX; }
+                else        { w = Math.round(w * MAX / h); h = MAX; }
+            }
+            var canvas = document.createElement('canvas');
+            canvas.width = w; canvas.height = h;
+            canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+
+            // 미리보기 즉시 표시
+            document.getElementById(previewId).src           = canvas.toDataURL('image/jpeg', 0.85);
+            document.getElementById(previewId).style.display = 'block';
+            document.getElementById(iconId).style.display    = 'none';
+
+            // 압축 blob → 전용 업로드 엔드포인트로 전송
+            canvas.toBlob(function(blob) {
+                var fd = new FormData();
+                fd.append('file', blob, file.name);
+                fetch('/hr/employees/profile-upload', { method: 'POST', body: fd })
+                    .then(function(r) { return r.json(); })
+                    .then(function(data) {
+                        if (data.path) {
+                            document.getElementById(pathFieldId).value = data.path;
+                            document.getElementById(btnId).style.display = '';
+                        } else {
+                            alert('프로필 업로드 실패: ' + (data.error || '오류'));
+                            document.getElementById(pathFieldId).value = '';
+                        }
+                    })
+                    .catch(function() {
+                        alert('프로필 업로드 중 네트워크 오류가 발생했습니다.');
+                        document.getElementById(pathFieldId).value = '';
+                    });
+            }, 'image/jpeg', 0.85);
+        };
+        img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
 }
 
 /* 오버레이 클릭 시 닫기 */

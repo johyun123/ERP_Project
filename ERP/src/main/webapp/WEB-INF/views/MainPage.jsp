@@ -71,9 +71,9 @@
                 <div class="empty-msg">로딩 중...</div>
             </div>
             <div class="dash-pagination" id="lowStockPaging" style="display:none;">
-                <button class="dash-page-btn" id="lowStockPrev" onclick="changeLowStockPage(-1)">‹</button>
+                <button class="dash-page-btn" id="lowStockPrev" onclick="changeLowStockPage(-1)">◀</button>
                 <span id="lowStockPageInfo" style="font-size:0.82rem; color:var(--text-muted);"></span>
-                <button class="dash-page-btn" id="lowStockNext" onclick="changeLowStockPage(1)">›</button>
+                <button class="dash-page-btn" id="lowStockNext" onclick="changeLowStockPage(1)">▶</button>
             </div>
         </div>
 
@@ -90,9 +90,9 @@
                     <div class="empty-msg">로딩 중...</div>
                 </div>
                 <div class="dash-pagination" id="empPaging" style="display:none;">
-                    <button class="dash-page-btn" id="empPrev" onclick="changeEmpPage(-1)">‹</button>
+                    <button class="dash-page-btn" id="empPrev" onclick="changeEmpPage(-1)">◀</button>
                     <span id="empPageInfo" style="font-size:0.82rem; color:var(--text-muted);"></span>
-                    <button class="dash-page-btn" id="empNext" onclick="changeEmpPage(1)">›</button>
+                    <button class="dash-page-btn" id="empNext" onclick="changeEmpPage(1)">▶</button>
                 </div>
             </div>
         </div>
@@ -237,8 +237,11 @@ function renderEmployees() {
         var st        = statusMap[emp.status] || { label: '-', cls: '' };
         var clockIn   = emp.clock_in  ? String(emp.clock_in).substring(0,5)  : '-';
         var clockOut  = emp.clock_out ? String(emp.clock_out).substring(0,5) : '-';
+        var avatarHtml = emp.profile
+            ? '<img class="emp-avatar-photo" src="' + emp.profile + '" alt="' + (emp.name||'') + '">'
+            : '<div class="emp-avatar">' + avatarChar + '</div>';
         html += '<div class="employee-item">'
-            + '<div class="emp-avatar">' + avatarChar + '</div>'
+            + avatarHtml
             + '<div class="emp-info"><div class="emp-name">' + (emp.name||'-') + '</div><div class="emp-position">' + (emp.position||'-') + '</div></div>'
             + '<div class="emp-clock"><span style="font-size:0.72rem;color:var(--text-muted);">출근 ' + clockIn + '</span>'
             + (emp.status === 'done' ? '<span style="font-size:0.72rem;color:var(--text-muted);">퇴근 ' + clockOut + '</span>' : '')

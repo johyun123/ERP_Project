@@ -229,6 +229,11 @@
     display: flex; align-items: center; justify-content: center;
     flex-shrink: 0;
 }
+.emp-avatar-photo {
+    width: 36px; height: 36px; border-radius: 50%;
+    object-fit: cover; flex-shrink: 0;
+    border: 2px solid var(--border);
+}
 
 .emp-info { flex: 1; }
 .emp-name {
