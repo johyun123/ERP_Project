@@ -47,7 +47,7 @@ public class ProductService {
     }
     
     
-    public List<MenuDomain> getMenuList(int offset, int size) { return productMapper.getMenuList(offset, size); }
+    public List<MenuDomain> getMenuList(int offset, int size) { return productMapper.getMenuList(size, offset); }
     public int getMenuCount() { return productMapper.getMenuCount(); }
 
 

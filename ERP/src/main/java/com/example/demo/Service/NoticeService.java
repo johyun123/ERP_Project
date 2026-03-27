@@ -20,6 +20,16 @@ public class NoticeService {
         return noticeMapper.findAll();
     }
 
+    // 페이징 목록
+    public List<Notice> getPaged(String importance, int offset, int size) {
+        return noticeMapper.findPaged(importance, offset, size);
+    }
+
+    // 개수 (페이징용)
+    public int getCount(String importance) {
+        return noticeMapper.countAll(importance);
+    }
+
     // 최근 N개 (헤더 드롭다운)
     public List<Notice> getRecent(int limit) {
         return noticeMapper.findRecent(limit);

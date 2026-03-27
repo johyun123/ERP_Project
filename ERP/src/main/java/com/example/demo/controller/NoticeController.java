@@ -20,11 +20,24 @@ public class NoticeController {
     }
 
     // ============================================================
-    // 공지 목록 페이지
+    // 공지 목록 페이지 (페이징 + 중요도 필터)
     // ============================================================
     @GetMapping
-    public String list(Model model) {
-        model.addAttribute("list", noticeService.getAll());
+    public String list(Model model,
+                       @RequestParam(defaultValue = "1") int page,
+                       @RequestParam(defaultValue = "10") int size,
+                       @RequestParam(required = false) String importance) {
+        int offset     = (page - 1) * size;
+        int total      = noticeService.getCount(importance);
+        int totalPages = (int) Math.ceil((double) total / size);
+        if (totalPages == 0) totalPages = 1;
+
+        model.addAttribute("list",             noticeService.getPaged(importance, offset, size));
+        model.addAttribute("currentPage",      page);
+        model.addAttribute("totalPages",       totalPages);
+        model.addAttribute("totalCount",       total);
+        model.addAttribute("size",             size);
+        model.addAttribute("selectedImportance", importance);
         return "Notice/notice";
     }
 

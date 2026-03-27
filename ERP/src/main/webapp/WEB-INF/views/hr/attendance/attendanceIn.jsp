@@ -155,10 +155,10 @@
             <%-- 이전 블록 --%>
             <c:choose>
                 <c:when test="${startPage > 1}">
-                    <a href="/hr/attendanceIn?date=${date}&page=${startPage - 1}&size=${size}">&#8249; 이전</a>
+                    <a href="/hr/attendanceIn?date=${date}&page=${startPage - 1}&size=${size}">◀</a>
                 </c:when>
                 <c:otherwise>
-                    <span class="disabled">&#8249; 이전</span>
+                    <span class="disabled">◀</span>
                 </c:otherwise>
             </c:choose>
 
@@ -177,10 +177,10 @@
             <%-- 다음 블록 --%>
             <c:choose>
                 <c:when test="${endPage < totalPages}">
-                    <a href="/hr/attendanceIn?date=${date}&page=${endPage + 1}&size=${size}">다음 &#8250;</a>
+                    <a href="/hr/attendanceIn?date=${date}&page=${endPage + 1}&size=${size}">▶</a>
                 </c:when>
                 <c:otherwise>
-                    <span class="disabled">다음 &#8250;</span>
+                    <span class="disabled">▶</span>
                 </c:otherwise>
             </c:choose>
         </div>

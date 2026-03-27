@@ -122,14 +122,14 @@
 
             <div class="page-nav">
                 <c:if test="${result.hasPrev()}">
-                    <button class="page-btn" onclick="goPage(${result.startPage - 1})">‹</button>
+                    <button class="page-btn" onclick="goPage(${result.startPage - 1})">◀</button>
                 </c:if>
                 <c:forEach begin="${result.startPage}" end="${result.endPage}" var="p">
                     <button class="page-btn ${p == result.page ? 'active' : ''}"
                             onclick="goPage(${p})">${p}</button>
                 </c:forEach>
                 <c:if test="${result.hasNext()}">
-                    <button class="page-btn" onclick="goPage(${result.endPage + 1})">›</button>
+                    <button class="page-btn" onclick="goPage(${result.endPage + 1})">▶</button>
                 </c:if>
             </div>
 
