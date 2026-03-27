@@ -1,9 +1,11 @@
 package com.example.demo.controller;
 
+import java.io.File;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.http.ResponseEntity;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.example.demo.Domain.Attendances;
 import com.example.demo.Domain.Employees;
@@ -77,6 +80,26 @@ public class HRMController {
 	public String registerPage(Model model) {
 		model.addAttribute("employees", hrmService.getAllEmployees());
 		return "hr/employees/register";
+	}
+
+	/* ===== 프로필 사진 전용 업로드 ===== */
+	@PostMapping("/employees/profile-upload")
+	@ResponseBody
+	public ResponseEntity<Map<String, String>> uploadProfile(
+			@RequestParam("file") MultipartFile file) {
+		try {
+			String uploadDir = System.getProperty("user.dir") + "/src/main/resources/static/uploads/profiles/";
+			new File(uploadDir).mkdirs();
+			String ext = file.getOriginalFilename() != null && file.getOriginalFilename().contains(".")
+					? file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf('.'))
+					: ".jpg";
+			String saved = UUID.randomUUID().toString() + ext;
+			file.transferTo(new File(uploadDir + saved));
+			return ResponseEntity.ok(Map.of("path", "/uploads/profiles/" + saved));
+		} catch (Exception e) {
+			e.printStackTrace();
+			return ResponseEntity.internalServerError().body(Map.of("error", "업로드 실패"));
+		}
 	}
 
 	/* ===== 직원 등록 처리 ===== */

@@ -148,14 +148,14 @@
         <div class="pagination">
             <div class="page-nav">
                 <c:if test="${userPage > 1}">
-                    <button class="page-btn" onclick="goUserPage(${userPage - 1})">&#8249;</button>
+                    <button class="page-btn" onclick="goUserPage(${userPage - 1})">◀</button>
                 </c:if>
                 <c:forEach var="i" begin="1" end="${userTotalPages}">
                     <button class="page-btn ${i == userPage ? 'active' : ''}"
                             onclick="goUserPage(${i})">${i}</button>
                 </c:forEach>
                 <c:if test="${userPage < userTotalPages}">
-                    <button class="page-btn" onclick="goUserPage(${userPage + 1})">&#8250;</button>
+                    <button class="page-btn" onclick="goUserPage(${userPage + 1})">▶</button>
                 </c:if>
             </div>
             <div class="page-total">총 ${userTotalCount}개 계정</div>
@@ -241,14 +241,14 @@
         <div class="pagination">
             <div class="page-nav">
                 <c:if test="${empPage > 1}">
-                    <button class="page-btn" onclick="goEmpPage(${empPage - 1})">&#8249;</button>
+                    <button class="page-btn" onclick="goEmpPage(${empPage - 1})">◀</button>
                 </c:if>
                 <c:forEach var="i" begin="1" end="${empTotalPages}">
                     <button class="page-btn ${i == empPage ? 'active' : ''}"
                             onclick="goEmpPage(${i})">${i}</button>
                 </c:forEach>
                 <c:if test="${empPage < empTotalPages}">
-                    <button class="page-btn" onclick="goEmpPage(${empPage + 1})">&#8250;</button>
+                    <button class="page-btn" onclick="goEmpPage(${empPage + 1})">▶</button>
                 </c:if>
             </div>
             <div class="page-total">총 ${empTotalCount}명</div>
@@ -616,13 +616,13 @@ function renderRegPaging() {
     if (total <= 1) { pagingEl.innerHTML = ''; return; }
 
     var html = '<button type="button" class="page-btn" onclick="goRegPage(' + (regCurrentPage - 1) + ')"'
-             + (regCurrentPage === 1 ? ' disabled' : '') + '>&#8249;</button>';
+             + (regCurrentPage === 1 ? ' disabled' : '') + '>◀</button>';
     for (var p = 1; p <= total; p++) {
         html += '<button type="button" class="page-btn' + (p === regCurrentPage ? ' active' : '')
               + '" onclick="goRegPage(' + p + ')">' + p + '</button>';
     }
     html += '<button type="button" class="page-btn" onclick="goRegPage(' + (regCurrentPage + 1) + ')"'
-          + (regCurrentPage === total ? ' disabled' : '') + '>&#8250;</button>';
+          + (regCurrentPage === total ? ' disabled' : '') + '>▶</button>';
     pagingEl.innerHTML = html;
 }
 

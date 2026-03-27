@@ -71,9 +71,9 @@
                 <div class="empty-msg">로딩 중...</div>
             </div>
             <div class="dash-pagination" id="lowStockPaging" style="display:none;">
-                <button class="dash-page-btn" id="lowStockPrev" onclick="changeLowStockPage(-1)">‹</button>
+                <button class="dash-page-btn" id="lowStockPrev" onclick="changeLowStockPage(-1)">◀</button>
                 <span id="lowStockPageInfo" style="font-size:0.82rem; color:var(--text-muted);"></span>
-                <button class="dash-page-btn" id="lowStockNext" onclick="changeLowStockPage(1)">›</button>
+                <button class="dash-page-btn" id="lowStockNext" onclick="changeLowStockPage(1)">▶</button>
             </div>
         </div>
 
@@ -90,9 +90,9 @@
                     <div class="empty-msg">로딩 중...</div>
                 </div>
                 <div class="dash-pagination" id="empPaging" style="display:none;">
-                    <button class="dash-page-btn" id="empPrev" onclick="changeEmpPage(-1)">‹</button>
+                    <button class="dash-page-btn" id="empPrev" onclick="changeEmpPage(-1)">◀</button>
                     <span id="empPageInfo" style="font-size:0.82rem; color:var(--text-muted);"></span>
-                    <button class="dash-page-btn" id="empNext" onclick="changeEmpPage(1)">›</button>
+                    <button class="dash-page-btn" id="empNext" onclick="changeEmpPage(1)">▶</button>
                 </div>
             </div>
         </div>
@@ -237,8 +237,12 @@ function renderEmployees() {
         var st        = statusMap[emp.status] || { label: '-', cls: '' };
         var clockIn   = emp.clock_in  ? String(emp.clock_in).substring(0,5)  : '-';
         var clockOut  = emp.clock_out ? String(emp.clock_out).substring(0,5) : '-';
+        var avatarHtml = emp.profile
+            ? '<img class="emp-avatar-photo" src="' + emp.profile + '" alt="' + (emp.name||'') + '"'
+              + ' onclick="openProfileViewer(\'' + emp.profile + '\',\'' + (emp.name||'') + '\')" style="cursor:zoom-in;">'
+            : '<div class="emp-avatar">' + avatarChar + '</div>';
         html += '<div class="employee-item">'
-            + '<div class="emp-avatar">' + avatarChar + '</div>'
+            + avatarHtml
             + '<div class="emp-info"><div class="emp-name">' + (emp.name||'-') + '</div><div class="emp-position">' + (emp.position||'-') + '</div></div>'
             + '<div class="emp-clock"><span style="font-size:0.72rem;color:var(--text-muted);">출근 ' + clockIn + '</span>'
             + (emp.status === 'done' ? '<span style="font-size:0.72rem;color:var(--text-muted);">퇴근 ' + clockOut + '</span>' : '')
@@ -304,6 +308,36 @@ fetch('/api/main/today-employees')
         empPage = 1;
         renderEmployees();
     });
+/* ===== 프로필 확대 뷰어 ===== */
+function openProfileViewer(src, name) {
+    var v = document.getElementById('profileViewer');
+    document.getElementById('profileViewerImg').src        = src;
+    document.getElementById('profileViewerName').innerText = name || '';
+    v.style.display = 'flex';
+}
+function closeProfileViewer() {
+    document.getElementById('profileViewer').style.display = 'none';
+}
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeProfileViewer();
+});
 </script>
+
+<!-- ===== 프로필 확대 뷰어 ===== -->
+<div id="profileViewer" onclick="closeProfileViewer()"
+     style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.82);
+            z-index:9999; justify-content:center; align-items:center; flex-direction:column; gap:14px;">
+    <img id="profileViewerImg" src="" alt=""
+         style="max-width:340px; max-height:340px; border-radius:50%;
+                border:4px solid #fff; box-shadow:0 8px 40px rgba(0,0,0,0.5);
+                object-fit:cover; animation:pvZoom .2s ease;" />
+    <div id="profileViewerName"
+         style="color:#fff; font-size:1.05rem; font-weight:600; font-family:'Outfit',sans-serif;"></div>
+    <div style="color:rgba(255,255,255,0.5); font-size:0.78rem;">클릭하거나 ESC로 닫기</div>
+</div>
+<style>
+@keyframes pvZoom { from { transform:scale(0.7); opacity:0; } to { transform:scale(1); opacity:1; } }
+</style>
+
 </body>
 </html>

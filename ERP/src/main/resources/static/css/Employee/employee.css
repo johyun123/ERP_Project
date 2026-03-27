@@ -639,3 +639,52 @@
 }
 
 .page-total { font-size: 0.8rem; color: var(--text-muted); }
+
+/* ===== 프로필 아바타 (테이블) ===== */
+.emp-avatar {
+  width: 36px; height: 36px; border-radius: 50%;
+  object-fit: cover; border: 2px solid var(--border);
+  display: block; margin: 0 auto;
+}
+.emp-avatar-placeholder {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--primary-light); display: flex;
+  align-items: center; justify-content: center;
+  margin: 0 auto; font-size: 1rem;
+  border: 2px solid var(--border); color: var(--primary);
+}
+
+/* ===== 프로필 업로드 (모달) ===== */
+.profile-upload-wrap {
+  display: flex; flex-direction: column;
+  align-items: center; gap: 10px;
+  padding-bottom: 16px;
+  border-bottom: 1.5px solid var(--border-light);
+  margin-bottom: 4px;
+}
+.profile-upload-area {
+  width: 88px; height: 88px; border-radius: 50%;
+  border: 2px dashed var(--primary);
+  background: var(--primary-light); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden; position: relative;
+  transition: var(--transition); flex-shrink: 0;
+}
+.profile-upload-area:hover {
+  border-style: solid;
+  box-shadow: 0 0 0 4px rgba(91,110,245,0.12);
+}
+.profile-upload-icon { font-size: 1.8rem; }
+.profile-upload-hint {
+  font-size: 0.74rem; color: var(--text-muted);
+  text-align: center; line-height: 1.6;
+}
+.btn-profile-delete {
+  font-size: 0.75rem; color: #e53e3e;
+  background: #fff0f0; border: 1px solid #fca5a5;
+  border-radius: 20px; padding: 3px 12px;
+  cursor: pointer; transition: var(--transition);
+}
+.btn-profile-delete:hover {
+  background: #fee2e2;
+}

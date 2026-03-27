@@ -13,6 +13,27 @@
             created_at DESC
     </select>
 
+    <!-- 페이징 목록 (중요도 필터 포함) -->
+    <select id="findPaged" resultType="Notice">
+        SELECT id, title, content, importance, writer, is_active, created_at, updated_at
+        FROM notices
+        WHERE is_active = 1
+        <if test="importance != null and importance != ''">
+            AND importance = #{importance}
+        </if>
+        ORDER BY FIELD(importance, 'urgent', 'important', 'normal'), created_at DESC
+        LIMIT #{size} OFFSET #{offset}
+    </select>
+
+    <!-- 전체/중요도별 개수 -->
+    <select id="countAll" resultType="int">
+        SELECT COUNT(*) FROM notices
+        WHERE is_active = 1
+        <if test="importance != null and importance != ''">
+            AND importance = #{importance}
+        </if>
+    </select>
+
     <!-- 최근 N개 (헤더 드롭다운용) -->
     <select id="findRecent" resultType="Notice">
         SELECT id, title, content, importance, writer, is_active, created_at, updated_at

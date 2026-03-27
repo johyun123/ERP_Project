@@ -440,11 +440,11 @@ function renderPage() {
     var startP = Math.floor((currentPage - 1) / block) * block + 1;
     var endP   = Math.min(startP + block - 1, totalPages);
 
-    if (startP > 1) html += '<button class="page-btn" onclick="goToPage(' + (startP - 1) + ')">‹</button>';
+    if (startP > 1) html += '<button class="page-btn" onclick="goToPage(' + (startP - 1) + ')">◀</button>';
     for (var p = startP; p <= endP; p++) {
         html += '<button class="page-btn ' + (p === currentPage ? 'active' : '') + '" onclick="goToPage(' + p + ')">' + p + '</button>';
     }
-    if (endP < totalPages) html += '<button class="page-btn" onclick="goToPage(' + (endP + 1) + ')">›</button>';
+    if (endP < totalPages) html += '<button class="page-btn" onclick="goToPage(' + (endP + 1) + ')">▶</button>';
     nav.innerHTML = html;
 }
 

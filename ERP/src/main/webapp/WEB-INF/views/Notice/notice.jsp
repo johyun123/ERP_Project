@@ -34,13 +34,33 @@ request.setAttribute("loginPosition", loginPosition);
         <% } %>
     </div>
 
+    <%-- 요약 카드 --%>
+    <div class="summary-box">
+        <div class="summary-card">
+            <div class="summary-title">전체 공지</div>
+            <div class="summary-value">📢 ${totalCount}건</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-title">현재 페이지</div>
+            <div class="summary-value">📄 ${currentPage} / ${totalPages}</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-title">페이지당 항목</div>
+            <div class="summary-value">📊 ${size}건</div>
+        </div>
+    </div>
+
     <%-- 중요도 탭 --%>
     <div class="filter-bar">
         <div class="category-tabs">
-            <button class="tab-btn active"    onclick="filterImportance('all', this)">전체</button>
-            <button class="tab-btn urgent"    onclick="filterImportance('urgent', this)">🔴 긴급</button>
-            <button class="tab-btn important" onclick="filterImportance('important', this)">🟠 중요</button>
-            <button class="tab-btn normal"    onclick="filterImportance('normal', this)">🔵 일반</button>
+            <button class="tab-btn ${empty selectedImportance ? 'active' : ''}"
+                    onclick="location.href='/notice?page=1&size=${size}'">전체</button>
+            <button class="tab-btn ${selectedImportance == 'urgent' ? 'active' : ''}"
+                    onclick="location.href='/notice?page=1&size=${size}&importance=urgent'">🔴 긴급</button>
+            <button class="tab-btn ${selectedImportance == 'important' ? 'active' : ''}"
+                    onclick="location.href='/notice?page=1&size=${size}&importance=important'">🟠 중요</button>
+            <button class="tab-btn ${selectedImportance == 'normal' ? 'active' : ''}"
+                    onclick="location.href='/notice?page=1&size=${size}&importance=normal'">🔵 일반</button>
         </div>
     </div>
 
@@ -48,7 +68,7 @@ request.setAttribute("loginPosition", loginPosition);
     <div class="table-card">
         <div class="table-card-header">
             <h3>공지 목록</h3>
-            <span style="font-size:0.82rem; color:var(--text-muted);">총 ${list.size()}건</span>
+            <span style="font-size:0.82rem; color:var(--text-muted);">총 ${totalCount}건</span>
         </div>
         <table class="data-table">
             <thead>
@@ -112,6 +132,36 @@ request.setAttribute("loginPosition", loginPosition);
             </c:choose>
             </tbody>
         </table>
+
+        <%-- 테이블 하단: size 선택 + 총 개수 --%>
+        <div class="table-bottom-bar">
+            <select onchange="changeSize(this.value)">
+                <option value="10" ${size == 10 ? 'selected' : ''}>10건씩</option>
+                <option value="20" ${size == 20 ? 'selected' : ''}>20건씩</option>
+                <option value="50" ${size == 50 ? 'selected' : ''}>50건씩</option>
+            </select>
+            <div class="total-count">총 ${totalCount}건</div>
+        </div>
+    </div>
+
+    <%-- 페이지네이션 --%>
+    <div class="paging-box">
+        <div class="page-btns">
+            <c:if test="${currentPage > 1}">
+                <button class="page-btn"
+                    onclick="location.href='/notice?page=${currentPage-1}&size=${size}&importance=${selectedImportance}'">◀</button>
+            </c:if>
+
+            <c:forEach begin="1" end="${totalPages}" var="i">
+                <button class="page-btn ${i == currentPage ? 'active' : ''}"
+                    onclick="location.href='/notice?page=${i}&size=${size}&importance=${selectedImportance}'">${i}</button>
+            </c:forEach>
+
+            <c:if test="${currentPage < totalPages}">
+                <button class="page-btn"
+                    onclick="location.href='/notice?page=${currentPage+1}&size=${size}&importance=${selectedImportance}'">▶</button>
+            </c:if>
+        </div>
     </div>
 
 </div>
@@ -263,13 +313,12 @@ function openEditModal(id) {
         });
 }
 
-/* 중요도 필터 */
-function filterImportance(imp, btn) {
-    document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
-    btn.classList.add('active');
-    document.querySelectorAll('.notice-row').forEach(function(row) {
-        row.style.display = (imp === 'all' || row.dataset.importance === imp) ? '' : 'none';
-    });
+/* size 변경 */
+function changeSize(size) {
+    var params = new URLSearchParams(window.location.search);
+    params.set('size', size);
+    params.set('page', 1);
+    location.href = '/notice?' + params.toString();
 }
 
 /* 모달 외부 클릭 닫기 */
