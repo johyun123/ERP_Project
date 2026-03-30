@@ -60,12 +60,15 @@ String avatarChar = loginName.length() > 0 ? String.valueOf(loginName.charAt(0))
         <li class="has-submenu" onclick="toggleSubmenu(this)">📊 재고관리
             <ul class="submenu">
                 <li onclick="event.stopPropagation(); location.href='/inventory'">재고 현황</li>
+                <% if ("점장".equals(loginPosition)) { %>
                 <li onclick="event.stopPropagation(); location.href='/inventory/vendor'">거래처 관리</li>
+                <% } %>
                 <li onclick="event.stopPropagation(); location.href='/inventory/order/history'">발주 내역</li>
                 <li onclick="event.stopPropagation(); location.href='/inventory/order'">발주</li>
             </ul>
         </li>
 
+        <% if ("점장".equals(loginPosition)) { %>
         <li class="has-submenu" onclick="toggleSubmenu(this)">👥 인사관리
             <ul class="submenu">
                 <li onclick="event.stopPropagation(); location.href='/hr/attendance'">근태 관리</li>
@@ -73,6 +76,7 @@ String avatarChar = loginName.length() > 0 ? String.valueOf(loginName.charAt(0))
                 <li onclick="event.stopPropagation(); location.href='/hr/users'">ERP 사용자 관리</li>
             </ul>
         </li>
+        <% } %>
 
         <li class="has-submenu" onclick="toggleSubmenu(this)">🧾 주문관리
             <ul class="submenu">
@@ -83,7 +87,9 @@ String avatarChar = loginName.length() > 0 ? String.valueOf(loginName.charAt(0))
         <li class="has-submenu" onclick="toggleSubmenu(this)">💰 재무관리
             <ul class="submenu">
                 <li onclick="event.stopPropagation(); location.href='/f_list'">지출 내역</li>
+                <% if ("점장".equals(loginPosition)) { %>
                 <li onclick="event.stopPropagation(); location.href='/f_payrolls'">급여 내역</li>
+                <% } %>
             </ul>
         </li>
 

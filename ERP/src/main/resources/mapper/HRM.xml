@@ -221,7 +221,7 @@
             AND is_active = #{is_active}
         </if>
     </where>
-    ORDER BY id DESC
+    ORDER BY FIELD(position, '점장', '매니저', '스탭'), FIELD(contract_type, 'full', 'part'), id ASC
     LIMIT #{size} OFFSET #{offset}
 </select>
     

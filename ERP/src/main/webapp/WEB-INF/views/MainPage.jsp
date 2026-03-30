@@ -81,9 +81,12 @@
         <div class="dash-card">
             <div class="dash-card-header">
                 <h3>👥 금일 근무자</h3>
+                <% String mainLoginPosition = (String) session.getAttribute("loginPosition"); %>
+                <% if ("점장".equals(mainLoginPosition)) { %>
                 <a id="linkTodayAttendance" href="/hr/attendanceIn?date="
                    style="font-size:0.8rem; color:var(--primary);
                    text-decoration:none; font-weight:600;">근태 현황 →</a>
+                <% } %>
             </div>
             <div class="dash-card-body">
                 <div id="employeeArea">
@@ -115,7 +118,8 @@ var todayStr = '';
     todayStr = now.getFullYear() + '-' + mm + '-' + dd;
 
     // 근태 현황 링크도 오늘 날짜
-    document.getElementById('linkTodayAttendance').href = '/hr/attendanceIn?date=' + todayStr;
+    var attendanceLink = document.getElementById('linkTodayAttendance');
+    if (attendanceLink) attendanceLink.href = '/hr/attendanceIn?date=' + todayStr;
 })();
 
 /* ===== 오늘 매출/주문 ===== */
@@ -233,7 +237,8 @@ function renderEmployees() {
         var avatarChar = emp.name ? emp.name.charAt(0) : '?';
         var ct        = emp.contract_type || '';
         var typeLabel = (ct === 'full' || ct === '풀') ? '정규직' : '파트타임';
-        var typeClass = (ct === 'full' || ct === '풀') ? 'full' : 'part';
+        var posClassMap = { '점장': 'pos-owner', '매니저': 'pos-manager', '스탭': 'pos-staff' };
+        var posClass = posClassMap[emp.position] || 'pos-staff';
         var st        = statusMap[emp.status] || { label: '-', cls: '' };
         var clockIn   = emp.clock_in  ? String(emp.clock_in).substring(0,5)  : '-';
         var clockOut  = emp.clock_out ? String(emp.clock_out).substring(0,5) : '-';
@@ -241,14 +246,19 @@ function renderEmployees() {
             ? '<img class="emp-avatar-photo" src="' + emp.profile + '" alt="' + (emp.name||'') + '"'
               + ' onclick="openProfileViewer(\'' + emp.profile + '\',\'' + (emp.name||'') + '\')" style="cursor:zoom-in;">'
             : '<div class="emp-avatar">' + avatarChar + '</div>';
+        var clockHtml = '';
+        if (emp.status === 'working') {
+            clockHtml = '<div class="emp-clock"><span style="font-size:0.72rem;color:var(--text-muted);">출근 ' + clockIn + '</span></div>';
+        } else if (emp.status === 'done') {
+            clockHtml = '<div class="emp-clock"><span style="font-size:0.72rem;color:var(--text-muted);">출근 ' + clockIn + '</span>'
+                + '<span style="font-size:0.72rem;color:var(--text-muted);">퇴근 ' + clockOut + '</span></div>';
+        }
         html += '<div class="employee-item">'
             + avatarHtml
-            + '<div class="emp-info"><div class="emp-name">' + (emp.name||'-') + '</div><div class="emp-position">' + (emp.position||'-') + '</div></div>'
-            + '<div class="emp-clock"><span style="font-size:0.72rem;color:var(--text-muted);">출근 ' + clockIn + '</span>'
-            + (emp.status === 'done' ? '<span style="font-size:0.72rem;color:var(--text-muted);">퇴근 ' + clockOut + '</span>' : '')
-            + '</div>'
+            + '<div class="emp-info"><div class="emp-name">' + (emp.name||'-') + '</div><div class="emp-position">' + typeLabel + '</div></div>'
+            + clockHtml
             + '<span class="emp-status ' + st.cls + '">' + st.label + '</span>'
-            + '<span class="emp-type ' + typeClass + '">' + typeLabel + '</span>'
+            + '<span class="emp-type ' + posClass + '">' + (emp.position||'-') + '</span>'
             + '</div>';
     });
     html += '</div>';
@@ -297,12 +307,14 @@ function orderNow(ingredientId, name, unitCost, supplierId) {
 fetch('/api/main/today-employees')
     .then(function(r) { return r.json(); })
     .then(function(list) {
-        // 직급 순서 정렬
+        // 직급 순서 → 고용형태(정규직 우선) 정렬
         var posOrder = { '점장': 0, '매니저': 1, '스탭': 2 };
+        var typeOrder = function(ct) { return (ct === 'full' || ct === '풀') ? 0 : 1; };
         list.sort(function(a, b) {
             var pa = posOrder[a.position] !== undefined ? posOrder[a.position] : 99;
             var pb = posOrder[b.position] !== undefined ? posOrder[b.position] : 99;
-            return pa - pb;
+            if (pa !== pb) return pa - pb;
+            return typeOrder(a.contract_type) - typeOrder(b.contract_type);
         });
         empData = list;
         empPage = 1;
@@ -328,7 +340,7 @@ document.addEventListener('keydown', function(e) {
      style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.82);
             z-index:9999; justify-content:center; align-items:center; flex-direction:column; gap:14px;">
     <img id="profileViewerImg" src="" alt=""
-         style="max-width:340px; max-height:340px; border-radius:50%;
+         style="width:300px; height:300px; border-radius:50%;
                 border:4px solid #fff; box-shadow:0 8px 40px rgba(0,0,0,0.5);
                 object-fit:cover; animation:pvZoom .2s ease;" />
     <div id="profileViewerName"
