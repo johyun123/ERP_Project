@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(powershell -Command \"[System.IO.Path]::GetFullPath\\(''c:/Users/3class_020/git/ERP_Project/ERP/src/main/resources/static/uploads/excel''\\)\")"
+    ]
+  }
+}

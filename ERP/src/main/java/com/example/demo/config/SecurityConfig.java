@@ -36,6 +36,10 @@ public class SecurityConfig {
                 .requestMatchers("/hr/users/**").hasAnyRole("MANAGER", "STAFF")
                 // 분석용 API — Python(FastAPI) 내부 호출이므로 인증 제외
                 .requestMatchers("/api/**").permitAll()
+                // FastAPI → Spring 결과 수신 엔드포인트 — 인증 제외
+                .requestMatchers("/analysis/journal", "/analysis/statement",
+                                 "/analysis/forecast/result", "/analysis/inventory/result",
+                                 "/analysis/excel/register", "/api/revenue/excel-available").permitAll()
                 .anyRequest().authenticated()
             )
             .formLogin(login -> login

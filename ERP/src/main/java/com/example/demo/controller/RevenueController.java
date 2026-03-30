@@ -5,18 +5,15 @@ import com.example.demo.Service.IngredientsService;
 import com.example.demo.Service.OrderService;
 import com.example.demo.mapper.PurchasesMapper;
 import com.example.demo.mapper.StockLogMapper;
-import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
@@ -29,7 +26,6 @@ public class RevenueController {
     private final FinanceService     financeService;
     private final PurchasesMapper    purchasesMapper;
     private final StockLogMapper     stockLogMapper;
-    private final ServletContext     servletContext;
 
     // ── FastAPI 결과를 메모리에 보관 ──────────────────
     private static Map<String, Object> latestJournal   = new HashMap<>();
@@ -38,24 +34,19 @@ public class RevenueController {
     private static Map<String, Object> latestInventory = new HashMap<>();
     private static String              latestExcelPath = null;
 
+    private static final String EXCEL_DIR =
+        System.getProperty("user.dir") + "/src/main/resources/static/uploads/excel/";
+
     public RevenueController(OrderService orderService,
                              IngredientsService ingredientsService,
                              FinanceService financeService,
                              PurchasesMapper purchasesMapper,
-                             StockLogMapper stockLogMapper,
-                             ServletContext servletContext) {
+                             StockLogMapper stockLogMapper) {
         this.orderService       = orderService;
         this.ingredientsService = ingredientsService;
         this.financeService     = financeService;
         this.purchasesMapper    = purchasesMapper;
         this.stockLogMapper     = stockLogMapper;
-        this.servletContext     = servletContext;
-    }
-
-    private String getExcelDir() throws IOException {
-        String dir = servletContext.getRealPath("/") + "uploads/excel/";
-        Files.createDirectories(Paths.get(dir));
-        return dir;
     }
 
     // ============================================================
@@ -161,18 +152,15 @@ public class RevenueController {
         return result;
     }
 
-    // 엑셀 파일 수신
-    @PostMapping("/analysis/excel/upload")
+    // FastAPI → 엑셀 파일명 등록 (파일은 이미 static 폴더에 저장됨)
+    @PostMapping("/analysis/excel/register")
     @ResponseBody
-    public Map<String, Object> uploadExcel(@RequestParam MultipartFile file) throws IOException {
-        String filename  = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-        Files.write(Paths.get(getExcelDir() + filename), file.getBytes());
+    public Map<String, Object> registerExcel(@RequestBody Map<String, String> body) {
+        String filename = body.get("filename");
         latestExcelPath = "/uploads/excel/" + filename;
-
         Map<String, Object> result = new HashMap<>();
-        result.put("status",      "uploaded");
+        result.put("status",      "registered");
         result.put("excelPath",   latestExcelPath);
-        result.put("downloadUrl", "/analysis/excel/download");
         return result;
     }
 
@@ -203,6 +191,21 @@ public class RevenueController {
         return latestInventory;
     }
 
+    // 엑셀 파일 존재 여부 확인
+    @GetMapping("/api/revenue/excel-available")
+    @ResponseBody
+    public Map<String, Object> excelAvailable() {
+        Map<String, Object> result = new HashMap<>();
+        if (latestExcelPath == null) {
+            result.put("available", false);
+            return result;
+        }
+        File file = new File(EXCEL_DIR + Paths.get(latestExcelPath).getFileName().toString());
+        result.put("available", file.exists());
+        result.put("filename", Paths.get(latestExcelPath).getFileName().toString());
+        return result;
+    }
+
     // 엑셀 다운로드
     @GetMapping("/analysis/excel/download")
     public void downloadExcel(HttpServletResponse response) throws IOException {
@@ -210,9 +213,7 @@ public class RevenueController {
             response.sendError(HttpServletResponse.SC_NOT_FOUND, "생성된 엑셀 파일이 없습니다.");
             return;
         }
-        String filePath = servletContext.getRealPath("/")
-                + latestExcelPath.replaceFirst("^/", "");
-        File file = new File(filePath);
+        File file = new File(EXCEL_DIR + Paths.get(latestExcelPath).getFileName().toString());
         if (!file.exists()) {
             response.sendError(HttpServletResponse.SC_NOT_FOUND, "파일이 존재하지 않습니다.");
             return;

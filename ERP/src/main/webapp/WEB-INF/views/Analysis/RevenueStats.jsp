@@ -8,6 +8,17 @@
     <link rel="stylesheet" href="/css/header.css"/>
     <link rel="stylesheet" href="/css/Analysis/analysis.css"/>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+    <style>
+        .no-data-banner {
+            background: #fff8e1;
+            border: 1.5px solid #f59e0b;
+            border-radius: 8px;
+            padding: 14px 20px;
+            font-size: 0.88rem;
+            color: #92400e;
+            margin-bottom: 20px;
+        }
+    </style>
 </head>
 <body>
 <jsp:include page="/WEB-INF/views/header.jsp"/>
@@ -17,7 +28,7 @@
     <div class="page-header">
         <div class="page-title">수익통계 <span>매출분개 및 재무제표를 조회합니다</span></div>
         <div style="display:flex; gap:10px;">
-            <button class="btn btn-secondary" onclick="refreshData()">🔄 최신화</button>
+            <button class="btn btn-secondary" id="refreshBtn" onclick="refreshData()">🔄 최신화</button>
             <button class="btn btn-primary"   onclick="downloadExcel()">⬇ 다운로드</button>
         </div>
     </div>
@@ -30,7 +41,7 @@
 
     <%-- 데이터 없을 때 안내 배너 --%>
     <div id="noBanner" class="no-data-banner">
-        📭 FastAPI에서 아직 데이터를 받지 못했습니다. Python 분석 실행 후 최신화 버튼을 눌러주세요.
+        📭 FastAPI에서 아직 데이터를 받지 못했습니다. 최신화 버튼을 눌러 Python 분석을 실행하세요.
     </div>
 
     <%-- ===== 매출분개 탭 ===== --%>
@@ -88,6 +99,7 @@
             <div id="journalTable">
                 <div class="empty-placeholder">최신화 버튼을 눌러 데이터를 불러오세요.</div>
             </div>
+            <div id="journalPaging" style="display:none; padding:14px 0 4px; display:flex; justify-content:center; gap:6px;"></div>
         </div>
     </div>
 
@@ -113,8 +125,12 @@
 </div>
 
 <script>
-var currentTab = '${tab}';
+var FASTAPI_URL   = 'http://127.0.0.1:8000';
+var currentTab    = '${tab}';
 var barChart, donutChart, lineChart;
+var _journal = null, _statement = null, _forecast = null;
+var _journalPage  = 1;
+var _journalSize  = 20;
 
 /* ===== 탭 전환 ===== */
 function switchTab(tab, btn) {
@@ -124,178 +140,339 @@ function switchTab(tab, btn) {
     btn.classList.add('active');
     currentTab = tab;
     history.replaceState(null, '', '/analysis/stats?tab=' + tab);
+    if (_statement && Object.keys(_statement).length > 0) {
+        if (tab === 'journal' && _journal) renderJournal();
+        else if (tab === 'statement') renderStatement();
+    }
 }
 
-/* ===== 최신화 ===== */
+/* ===== 최신화 버튼 ===== */
 function refreshData() {
-    var btn = event.currentTarget;
+    var btn = document.getElementById('refreshBtn');
     btn.disabled = true;
-    btn.textContent = '⏳ 불러오는 중...';
+    btn.textContent = '⏳ 분석 실행 중...';
 
-    var api = currentTab === 'journal' ? '/api/revenue/journal' : '/api/revenue/statement';
-
-    fetch(api)
+    fetch(FASTAPI_URL + '/analysis/run', { method: 'POST' })
         .then(function(r) { return r.json(); })
-        .then(function(data) {
-            if (!data || Object.keys(data).length === 0) {
-                alert('아직 FastAPI에서 받은 데이터가 없습니다.\nPython 분석을 먼저 실행해주세요.');
-                return;
-            }
-            document.getElementById('noBanner').style.display = 'none';
-            if (currentTab === 'journal') renderJournal(data);
-            else                          renderStatement(data);
+        .then(function() {
+            btn.textContent = '⏳ 처리 중...';
+            pollAndLoad(btn);
         })
-        .catch(function(e) { alert('불러오기 실패: ' + e.message); })
-        .finally(function() {
+        .catch(function() {
+            alert('FastAPI 서버에 연결할 수 없습니다.\n\n아래 명령으로 서버를 먼저 실행하세요:\nuvicorn server:app --host 127.0.0.1 --port 8000');
             btn.disabled = false;
             btn.textContent = '🔄 최신화';
         });
 }
 
-/* ===== 매출분개 렌더링 ===== */
-function renderJournal(data) {
-    // 요약 카드
-    var totalRevenue = data.total_revenue || 0;
-    var totalExpense = data.total_expense || 0;
-    var netProfit    = data.net_profit    || (totalRevenue - totalExpense);
+function pollAndLoad(btn) {
+    fetch(FASTAPI_URL + '/status')
+        .then(function(r) { return r.json(); })
+        .then(function(status) {
+            if (status.is_analyzing) {
+                setTimeout(function() { pollAndLoad(btn); }, 2000);
+            } else {
+                loadAndRender(btn);
+            }
+        })
+        .catch(function() {
+            setTimeout(function() { pollAndLoad(btn); }, 2000);
+        });
+}
 
-    document.getElementById('totalRevenue').textContent = totalRevenue.toLocaleString() + '원';
-    document.getElementById('totalExpense').textContent = totalExpense.toLocaleString() + '원';
-    document.getElementById('netProfit').textContent    = netProfit.toLocaleString()    + '원';
+function loadAndRender(btn) {
+    btn.textContent = '⏳ 데이터 로딩...';
+    Promise.all([
+        fetch('/api/revenue/journal').then(function(r)   { return r.json(); }),
+        fetch('/api/revenue/statement').then(function(r) { return r.json(); }),
+        fetch('/api/revenue/forecast').then(function(r)  { return r.json(); })
+    ]).then(function(results) {
+        _journal   = results[0];
+        _statement = results[1];
+        _forecast  = results[2];
+        var hasData = _statement && _statement.income_statement
+                      && Object.keys(_statement.income_statement).length > 0;
+        if (hasData) {
+            document.getElementById('noBanner').style.display = 'none';
+            if (currentTab === 'journal') renderJournal();
+            else renderStatement();
+        } else {
+            alert('데이터가 없습니다. Python 분석 결과를 확인해주세요.');
+        }
+    }).catch(function(e) {
+        alert('데이터 로드 실패: ' + e.message);
+    }).finally(function() {
+        btn.disabled = false;
+        btn.textContent = '🔄 최신화';
+    });
+}
+
+/* ===== 페이지 로드 시 기존 데이터 자동 로드 ===== */
+document.addEventListener('DOMContentLoaded', function() {
+    Promise.all([
+        fetch('/api/revenue/journal').then(function(r)   { return r.json(); }),
+        fetch('/api/revenue/statement').then(function(r) { return r.json(); }),
+        fetch('/api/revenue/forecast').then(function(r)  { return r.json(); })
+    ]).then(function(results) {
+        var j = results[0], s = results[1], f = results[2];
+        var hasData = s && s.income_statement && Object.keys(s.income_statement).length > 0;
+        if (hasData) {
+            _journal = j; _statement = s; _forecast = f;
+            document.getElementById('noBanner').style.display = 'none';
+            if (currentTab === 'journal') renderJournal();
+            else renderStatement();
+        }
+    }).catch(function() {});
+});
+
+/* ===== 매출분개 렌더링 ===== */
+function renderJournal() {
+    var inc     = (_statement.income_statement || {});
+    var summary = inc.summary || {};
+    var totalRevenue = summary['총매출']      || 0;
+    var totalExpense = summary['총지출']      || 0;
+    var netProfit    = summary['당기순이익'] != null ? summary['당기순이익'] : (totalRevenue - totalExpense);
+
+    document.getElementById('totalRevenue').textContent = fmtWon(totalRevenue);
+    document.getElementById('totalExpense').textContent = fmtWon(totalExpense);
+    document.getElementById('netProfit').textContent    = fmtWon(netProfit);
     document.getElementById('netProfit').className      = 'value ' + (netProfit >= 0 ? 'green' : 'red');
 
-    // 월별 데이터 (monthly_trends: [{month, revenue, expense, net_profit}])
-    var trends   = data.monthly_trends || [];
-    var labels   = trends.map(function(t) { return t.month; });
-    var revenues = trends.map(function(t) { return t.revenue || 0; });
-    var expenses = trends.map(function(t) { return t.expense || 0; });
-    var profits  = trends.map(function(t) { return t.net_profit || (t.revenue - t.expense); });
+    // 월별 트렌드 (forecast history)
+    var history  = (_forecast && _forecast.history) ? _forecast.history : [];
+    var labels   = history.map(function(h) { return h.label || (h.year + '.' + h.month); });
+    var revenues = history.map(function(h) { return h.revenue   || 0; });
+    var expenses = history.map(function(h) { return h.expenses  || 0; });
+    var profits  = history.map(function(h) { return h.net_income || 0; });
 
     // ① 바 차트
     if (barChart) barChart.destroy();
-    barChart = new Chart(document.getElementById('barChart'), {
-        type: 'bar',
-        data: {
-            labels: labels,
-            datasets: [
-                { label: '매출', data: revenues, backgroundColor: 'rgba(91,110,245,0.7)', borderRadius: 6 },
-                { label: '지출', data: expenses, backgroundColor: 'rgba(239,68,68,0.5)',  borderRadius: 6 }
-            ]
-        },
-        options: {
-            responsive: true,
-            plugins: { legend: { position: 'top' } },
-            scales: { y: { ticks: { callback: function(v) { return v.toLocaleString() + '원'; } } } }
-        }
-    });
-
-    // ② 도넛 차트 (expense_details: [{expense_type, amount}])
-    var expTypes = data.expense_details || [];
-    if (donutChart) donutChart.destroy();
-    var colors = ['#5b6ef5','#ef4444','#f59e0b','#22c55e','#8b5cf6','#06b6d4','#ec4899'];
-    donutChart = new Chart(document.getElementById('donutChart'), {
-        type: 'doughnut',
-        data: {
-            labels: expTypes.map(function(e) { return e.expense_type; }),
-            datasets: [{
-                data: expTypes.map(function(e) { return e.amount || 0; }),
-                backgroundColor: colors.slice(0, expTypes.length),
-                borderWidth: 2, borderColor: '#fff'
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: { position: 'right' },
-                tooltip: { callbacks: { label: function(ctx) { return ctx.label + ': ' + ctx.raw.toLocaleString() + '원'; } } }
+    if (labels.length > 0) {
+        barChart = new Chart(document.getElementById('barChart'), {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    { label: '매출', data: revenues, backgroundColor: 'rgba(91,110,245,0.7)', borderRadius: 6 },
+                    { label: '지출', data: expenses, backgroundColor: 'rgba(239,68,68,0.5)',  borderRadius: 6 }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { position: 'top' } },
+                scales: { y: { ticks: { callback: function(v) { return fmtAxis(v); } } } }
             }
-        }
-    });
+        });
+    } else {
+        document.getElementById('barChart').parentElement.innerHTML = '<div class="no-data-msg">월별 이력 데이터가 없습니다.</div>';
+    }
+
+    // ② 도넛 차트 (지출 항목별)
+    var payrollData   = inc.payroll   || {};
+    var purchasesData = inc.purchases || {};
+    var expDetail     = inc.expenses  || {};
+    var donutItems = [
+        { name: '급여',   amount: payrollData['급여소계']   || 0 },
+        { name: '발주',   amount: purchasesData['발주소계'] || 0 },
+        { name: '임대료', amount: expDetail['임대료'] || 0 },
+        { name: '공과금', amount: expDetail['공과금'] || 0 },
+        { name: '소모품', amount: expDetail['소모품'] || 0 },
+        { name: '마케팅', amount: expDetail['마케팅'] || 0 },
+        { name: '재료비', amount: expDetail['재료비'] || 0 },
+        { name: '기타',   amount: expDetail['기타']   || 0 }
+    ].filter(function(d) { return d.amount > 0; });
+
+    if (donutChart) donutChart.destroy();
+    if (donutItems.length > 0) {
+        var colors = ['#5b6ef5','#ef4444','#f59e0b','#22c55e','#8b5cf6','#06b6d4','#ec4899','#84cc16'];
+        donutChart = new Chart(document.getElementById('donutChart'), {
+            type: 'doughnut',
+            data: {
+                labels: donutItems.map(function(d) { return d.name; }),
+                datasets: [{
+                    data: donutItems.map(function(d) { return d.amount; }),
+                    backgroundColor: colors.slice(0, donutItems.length),
+                    borderWidth: 2, borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'right' },
+                    tooltip: { callbacks: { label: function(ctx) { return ctx.label + ': ' + fmtWon(ctx.raw); } } }
+                }
+            }
+        });
+    } else {
+        document.getElementById('donutChart').parentElement.innerHTML = '<div class="no-data-msg">지출 항목 데이터가 없습니다.</div>';
+    }
 
     // ③ 순이익 라인 차트
     if (lineChart) lineChart.destroy();
-    lineChart = new Chart(document.getElementById('lineChart'), {
-        type: 'line',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: '순이익',
-                data: profits,
-                borderColor: '#22c55e',
-                backgroundColor: 'rgba(34,197,94,0.08)',
-                borderWidth: 2.5, pointRadius: 5, tension: 0.3, fill: true
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: { legend: { position: 'top' } },
-            scales: { y: { ticks: { callback: function(v) { return v.toLocaleString() + '원'; } } } }
-        }
-    });
+    if (labels.length > 0) {
+        lineChart = new Chart(document.getElementById('lineChart'), {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: '순이익',
+                    data: profits,
+                    borderColor: '#22c55e',
+                    backgroundColor: 'rgba(34,197,94,0.08)',
+                    borderWidth: 2.5, pointRadius: 5, tension: 0.3, fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { position: 'top' } },
+                scales: { y: { ticks: { callback: function(v) { return fmtAxis(v); } } } }
+            }
+        });
+    } else {
+        document.getElementById('lineChart').parentElement.innerHTML = '<div class="no-data-msg">월별 이력 데이터가 없습니다.</div>';
+    }
 
-    // ④ 분개장 테이블 (journal_entries: [{date, type, description, debit, credit}])
-    var entries = data.journal_entries || [];
-    document.getElementById('journalCount').textContent = '총 ' + entries.length + '건';
-    if (entries.length === 0) {
+    // ④ 분개장 테이블
+    _journalPage = 1;
+    renderJournalTable();
+}
+
+function getType(ref) {
+    if (!ref) return '기타';
+    var r = String(ref);
+    if (r.indexOf('ORD-') === 0) return '매출';
+    if (r.indexOf('PAY-') === 0) return '급여';
+    if (r.indexOf('EXP-') === 0) return '지출';
+    if (r.indexOf('PUR-') === 0) return '발주';
+    return '기타';
+}
+function getBadge(type) {
+    if (type === '매출') return 'badge-normal';
+    if (type === '급여' || type === '지출') return 'badge-low';
+    return 'badge-category';
+}
+
+function renderJournalTable() {
+    var entries = (_journal && _journal.entries) ? _journal.entries : [];
+    var period  = (_journal && _journal.period)  ? _journal.period  : '';
+    var total   = entries.length;
+    var totalPages = Math.max(1, Math.ceil(total / _journalSize));
+    if (_journalPage > totalPages) _journalPage = totalPages;
+
+    document.getElementById('journalCount').textContent = period + ' · 총 ' + total + '건';
+
+    if (total === 0) {
         document.getElementById('journalTable').innerHTML = '<div class="empty-placeholder">분개 데이터가 없습니다.</div>';
+        document.getElementById('journalPaging').style.display = 'none';
         return;
     }
-    var rows = entries.map(function(e) {
+
+    var start = (_journalPage - 1) * _journalSize;
+    var paged = entries.slice(start, start + _journalSize);
+
+    var rows = paged.map(function(e) {
+        var type = getType(e.ref);
         return '<tr>'
             + '<td>' + (e.date || '-') + '</td>'
-            + '<td><span class="badge badge-category">' + (e.type || '-') + '</span></td>'
+            + '<td><span class="badge ' + getBadge(type) + '">' + type + '</span></td>'
             + '<td style="text-align:left;">' + (e.description || '-') + '</td>'
-            + '<td class="amount-plus">' + (e.debit  ? '+' + Number(e.debit).toLocaleString()  + '원' : '-') + '</td>'
-            + '<td class="amount-minus">' + (e.credit ? '-' + Number(e.credit).toLocaleString() + '원' : '-') + '</td>'
+            + '<td>' + (e.debit  || '-') + '</td>'
+            + '<td>' + (e.credit || '-') + '</td>'
+            + '<td class="amount-plus">' + (e.amount != null ? fmtWon(Number(e.amount)) : '-') + '</td>'
             + '</tr>';
     }).join('');
+
     document.getElementById('journalTable').innerHTML =
         '<table class="data-table"><thead><tr>'
-        + '<th>날짜</th><th>유형</th><th>내용</th><th>수입(차변)</th><th>지출(대변)</th>'
+        + '<th>날짜</th><th>유형</th><th>내용</th><th>차변(계정)</th><th>대변(계정)</th><th>금액</th>'
         + '</tr></thead><tbody>' + rows + '</tbody></table>';
+
+    // 페이징 버튼
+    var pagingEl = document.getElementById('journalPaging');
+    pagingEl.style.display = 'flex';
+    var btns = '';
+    btns += '<button class="page-btn" onclick="changeJournalPage(' + (_journalPage - 1) + ')"'
+          + (_journalPage <= 1 ? ' disabled' : '') + '>◀</button>';
+    var start2 = Math.max(1, _journalPage - 2);
+    var end2   = Math.min(totalPages, _journalPage + 2);
+    for (var i = start2; i <= end2; i++) {
+        btns += '<button class="page-btn' + (i === _journalPage ? ' active' : '') + '" onclick="changeJournalPage(' + i + ')">' + i + '</button>';
+    }
+    btns += '<button class="page-btn" onclick="changeJournalPage(' + (_journalPage + 1) + ')"'
+          + (_journalPage >= totalPages ? ' disabled' : '') + '>▶</button>';
+    pagingEl.innerHTML = btns;
+}
+
+function changeJournalPage(page) {
+    var entries = (_journal && _journal.entries) ? _journal.entries : [];
+    var totalPages = Math.max(1, Math.ceil(entries.length / _journalSize));
+    if (page < 1 || page > totalPages) return;
+    _journalPage = page;
+    renderJournalTable();
 }
 
 /* ===== 재무제표 렌더링 ===== */
-function renderStatement(data) {
-    var totalRevenue   = data.total_revenue   || 0;
-    var totalExpense   = data.total_expense   || 0;
-    var netProfit      = data.net_profit      || (totalRevenue - totalExpense);
-    var initialCapital = data.initial_capital || 10000000;
-    var totalCapital   = data.total_capital   || (initialCapital + netProfit);
-    var expTypes       = data.expense_details || [];
+function renderStatement() {
+    var bs  = _statement.balance_sheet  || {};
+    var inc = _statement.income_statement || {};
+    var cc  = _statement.capital_changes  || {};
+
+    var current      = bs.current      || {};
+    var summary      = inc.summary     || {};
+    var payroll      = inc.payroll     || {};
+    var purchasesInc = inc.purchases   || {};
+    var expDetail    = inc.expenses    || {};
+    var revDetail    = inc.revenue     || {};
+
+    var netProfit    = summary['당기순이익'] != null ? summary['당기순이익'] : (bs.net_income || 0);
 
     // 재무상태표
     document.getElementById('balanceSheet').innerHTML = buildTable([
-        { label: '초기 자본',   value: initialCapital,  type: 'neutral' },
-        { label: '총 수익',     value: totalRevenue,    type: 'plus' },
-        { label: '총 지출',     value: totalExpense,    type: 'minus' },
-        { label: '당기순이익',  value: netProfit,       type: netProfit >= 0 ? 'plus' : 'minus' },
-        { label: '자본 총액',   value: totalCapital,    type: 'total' },
-        { label: '부채',        value: 0,               type: 'neutral' },
-        { label: '자산 총액',   value: totalCapital,    type: 'total' }
+        { label: '현금',          value: current['현금']     || 0, type: 'neutral' },
+        { label: '재고자산',      value: current['재고']     || 0, type: 'neutral' },
+        { label: '자산총액',      value: current['자산총액'] || 0, type: 'total',  bold: true },
+        { label: '미착재고(부채)',value: current['미착재고'] || 0, type: 'minus' },
+        { label: '부채합계',      value: current['부채합계'] || 0, type: 'minus' },
+        { label: '자본합계',      value: current['자본합계'] || 0, type: 'total',  bold: true }
     ]);
 
     // 손익계산서
-    var incomeRows = expTypes.map(function(e) {
-        return { label: (e.expense_type || '기타') + ' 지출', value: e.amount || 0, type: 'minus' };
+    var incRows = [];
+    Object.keys(revDetail).forEach(function(k) {
+        var v = revDetail[k];
+        if (k !== '총매출' && typeof v === 'number' && v > 0) {
+            incRows.push({ label: k, value: v, type: 'plus' });
+        }
     });
-    incomeRows.push({ label: '총 매출',    value: totalRevenue, type: 'plus' });
-    incomeRows.push({ label: '총 지출',    value: totalExpense, type: 'minus' });
-    incomeRows.push({ label: '당기순이익', value: netProfit,    type: netProfit >= 0 ? 'plus' : 'minus', bold: true });
-    document.getElementById('incomeStatement').innerHTML = buildTable(incomeRows);
+    incRows.push({ label: '총매출',    value: summary['총매출']    || 0, type: 'plus',  bold: true });
+    incRows.push({ label: '── 지출 ──', value: null, type: 'divider' });
+    incRows.push({ label: '급여소계',   value: payroll['급여소계']     || 0, type: 'minus' });
+    incRows.push({ label: '발주소계',   value: purchasesInc['발주소계'] || 0, type: 'minus' });
+    incRows.push({ label: '지출소계',   value: expDetail['지출소계']   || 0, type: 'minus' });
+    incRows.push({ label: '총지출',    value: summary['총지출']    || 0, type: 'minus', bold: true });
+    incRows.push({ label: '당기순이익', value: netProfit, type: netProfit >= 0 ? 'plus' : 'minus', bold: true });
+    document.getElementById('incomeStatement').innerHTML = buildTable(incRows);
 
     // 자본변동표
+    var prevCapital = (cc['기초자본'] || {})['자본합계'] || 0;
+    var currCapital = (cc['기말자본'] || {})['자본합계'] || 0;
+    var changeTotal = cc['변동총액'] != null ? cc['변동총액'] : (currCapital - prevCapital);
     document.getElementById('equityStatement').innerHTML = buildTable([
-        { label: '전기 자본',    value: initialCapital, type: 'neutral' },
-        { label: '당기순이익',   value: netProfit,      type: netProfit >= 0 ? 'plus' : 'minus' },
-        { label: '현재 자본',    value: totalCapital,   type: 'total' },
-        { label: '자본변동 총액', value: netProfit,     type: netProfit >= 0 ? 'plus' : 'minus', bold: true }
+        { label: '기초자본',    value: prevCapital,  type: 'neutral' },
+        { label: '당기순이익',  value: netProfit,    type: netProfit >= 0 ? 'plus' : 'minus' },
+        { label: '기말자본',    value: currCapital,  type: 'total',  bold: true },
+        { label: '변동총액',    value: changeTotal,  type: changeTotal >= 0 ? 'plus' : 'minus', bold: true }
     ]);
 }
 
 function buildTable(rows) {
     var html = '<table class="statement-table">';
     rows.forEach(function(row) {
+        if (row.type === 'divider') {
+            html += '<tr><td colspan="2" style="text-align:center;color:var(--text-muted);font-size:0.75rem;padding:5px;">' + row.label + '</td></tr>';
+            return;
+        }
+        if (row.value === null || row.value === undefined) return;
         var cls    = row.type === 'plus' ? 'amount-plus' : row.type === 'minus' ? 'amount-minus' : row.type === 'total' ? 'amount-total' : '';
         var prefix = row.type === 'plus' ? '+' : row.type === 'minus' ? '-' : '';
         html += '<tr' + (row.bold ? ' class="row-total"' : '') + '>'
@@ -306,9 +483,31 @@ function buildTable(rows) {
     return html + '</table>';
 }
 
-/* ===== 다운로드 ===== */
+function fmtWon(v) {
+    var n = Number(v);
+    if (Math.abs(n) >= 100000000) return (n / 100000000).toFixed(1) + '억원';
+    if (Math.abs(n) >= 10000)     return (n / 10000).toFixed(0) + '만원';
+    return n.toLocaleString() + '원';
+}
+function fmtAxis(v) {
+    if (Math.abs(v) >= 100000000) return (v / 100000000).toFixed(1) + '억';
+    if (Math.abs(v) >= 10000)     return (v / 10000).toFixed(0) + '만';
+    return v;
+}
+
 function downloadExcel() {
-    location.href = '/analysis/excel/download';
+    fetch('/api/revenue/excel-available')
+        .then(function(r) { return r.json(); })
+        .then(function(res) {
+            if (res.available) {
+                location.href = '/analysis/excel/download';
+            } else {
+                alert('다운로드할 파일이 없습니다.\n최신화 버튼을 눌러 분석을 먼저 실행해주세요.');
+            }
+        })
+        .catch(function() {
+            alert('다운로드할 파일이 없습니다.\n최신화 버튼을 눌러 분석을 먼저 실행해주세요.');
+        });
 }
 </script>
 </body>
