@@ -253,8 +253,9 @@
     padding: 3px 8px;
     border-radius: 20px;
 }
-.emp-type.full { background: var(--accent-green-light); color: var(--accent-green); }
-.emp-type.part { background: var(--primary-light);      color: var(--primary); }
+.emp-type.pos-owner   { background: var(--accent-green-light); color: var(--accent-green); }
+.emp-type.pos-manager { background: #fef3c7; color: #d97706; }
+.emp-type.pos-staff   { background: var(--primary-light); color: var(--primary); }
 
 .btn-attendance {
     padding: 5px 12px;
