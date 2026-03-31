@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find c:Users3class_007gitERP_ProjectERP -type f -name *PurchaseItem*)",
+      "Bash(ls -la \"c:\\\\Users\\\\3class_007\\\\git\\\\ERP_Project\\\\ERP\\\\src\\\\main\\\\resources\\\\mapper\"\" 2>/dev/null || ls -la \"/c/Users/3class_007/git/ERP_Project/ERP/src/main/resources/mapper/ \")"
+    ]
+  }
+}
