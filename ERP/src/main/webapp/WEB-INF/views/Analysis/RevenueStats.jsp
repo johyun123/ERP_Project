@@ -4,7 +4,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>수익통계 | ERP CAFE</title>
+    <title>수익 통계 | ERP CAFE</title>
     <link rel="stylesheet" href="/css/header.css"/>
     <link rel="stylesheet" href="/css/Analysis/analysis.css"/>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
@@ -26,8 +26,14 @@
 <div class="content">
 
     <div class="page-header">
-        <div class="page-title">수익통계 <span>매출분개 및 재무제표를 조회합니다</span></div>
-        <div style="display:flex; gap:10px;">
+        <div class="page-title">수익 통계 <span>매출분개 및 재무제표를 조회합니다</span></div>
+        <div style="display:flex; align-items:center; gap:8px;">
+            <input type="number" id="inputYear"  placeholder="년도" min="2020" max="2099"
+                   style="width:78px; padding:5px 8px; border:1px solid var(--border); border-radius:6px; font-size:0.85rem; font-family:inherit;">
+            <span style="font-size:0.85rem; color:var(--text-muted);">년</span>
+            <input type="number" id="inputMonth" placeholder="월" min="1" max="12"
+                   style="width:54px; padding:5px 8px; border:1px solid var(--border); border-radius:6px; font-size:0.85rem; font-family:inherit;">
+            <span style="font-size:0.85rem; color:var(--text-muted);">월</span>
             <button class="btn btn-secondary" id="refreshBtn" onclick="refreshData()">🔄 최신화</button>
             <button class="btn btn-primary"   onclick="downloadExcel()">⬇ 다운로드</button>
         </div>
@@ -41,7 +47,7 @@
 
     <%-- 데이터 없을 때 안내 배너 --%>
     <div id="noBanner" class="no-data-banner">
-        📭 FastAPI에서 아직 데이터를 받지 못했습니다. 최신화 버튼을 눌러 Python 분석을 실행하세요.
+        📭 아직 데이터가 없습니다. 최신화 버튼을 눌러 분석을 실행하세요.
     </div>
 
     <%-- ===== 매출분개 탭 ===== --%>
@@ -148,18 +154,27 @@ function switchTab(tab, btn) {
 
 /* ===== 최신화 버튼 ===== */
 function refreshData() {
-    var btn = document.getElementById('refreshBtn');
+    var btn   = document.getElementById('refreshBtn');
+    var year  = document.getElementById('inputYear').value.trim();
+    var month = document.getElementById('inputMonth').value.trim();
+
+    var url = FASTAPI_URL + '/analysis/run';
+    var params = [];
+    if (year)  params.push('year='  + year);
+    if (month) params.push('month=' + month);
+    if (params.length) url += '?' + params.join('&');
+
     btn.disabled = true;
     btn.textContent = '⏳ 분석 실행 중...';
 
-    fetch(FASTAPI_URL + '/analysis/run', { method: 'POST' })
+    fetch(url, { method: 'POST' })
         .then(function(r) { return r.json(); })
         .then(function() {
             btn.textContent = '⏳ 처리 중...';
             pollAndLoad(btn);
         })
         .catch(function() {
-            alert('FastAPI 서버에 연결할 수 없습니다.\n\n아래 명령으로 서버를 먼저 실행하세요:\nuvicorn server:app --host 127.0.0.1 --port 8000');
+            alert('분석 서버에 연결할 수 없습니다.\n분석 서버가 실행 중인지 확인하세요.');
             btn.disabled = false;
             btn.textContent = '🔄 최신화';
         });

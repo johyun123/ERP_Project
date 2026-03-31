@@ -1,0 +1,55 @@
+INFO:     Started server process [14640]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+INFO:     127.0.0.1:49420 - "POST /analysis/run HTTP/1.1" 200 OK
+[server] �м� ����: C:\Users\3class_007\AppData\Local\Programs\Python\Python314\python.exe C:\Users\3class_007\git\ERP_Project\ERP\DAP\main.py
+INFO:     127.0.0.1:49420 - "GET /status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49420 - "GET /status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49420 - "GET /status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49420 - "GET /status HTTP/1.1" 200 OK
+[server] ������ ������Ʈ �Ϸ� - 11:23:01
+[server] �� Spring journal: 200
+[server] �� Spring statement: 200
+[server] �� Spring result: 200
+[server] �� Spring result: 200
+[server] �� Spring excel/register: 200
+INFO:     127.0.0.1:49436 - "POST /internal/update HTTP/1.1" 200 OK
+
+============================================================
+[main] 분석 시작: 2026-03-31 11:22:56
+[main] 분석 기간: 2026년 전체
+============================================================
+
+[Step 1] 데이터 수신 중...
+  orders: 93271, order_items: 93271
+  purchases: 196, purchase_items: 749
+  expenses: 212, payrolls: 276
+  ingredients: 17, stock_logs: 3259
+  employees: 10, menus: 16, categories: 9
+
+[Step 2] 매출분개 생성 중...
+
+[Step 3] 재무제표 계산 중...
+  [전기] 2025년 전체
+  [전기] 2024년 전체
+  [전기] 2023년 전체
+  [전기] 2022년 전체
+  [전기] 2021년 전체
+  [전기] 데이터 없음 → 초기자본(100,000,000원)만 반영
+
+[Step 4] 예측 계산 중...
+
+[Step 5] 엑셀 생성 중...
+[excel] 저장 완료: C:\Users\3class_007\git\ERP_Project\ERP\src\main\resources\static\uploads\excel\재무분석_2026년_260331_112259.xlsx
+
+[Step 6] FastAPI 서버 업데이트 중...
+[Step 6] FastAPI 업데이트 성공
+
+============================================================
+[main] 분석 완료 - 소요시간: 5초
+[main] 엑셀 저장: C:\Users\3class_007\git\ERP_Project\ERP\src\main\resources\static\uploads\excel\재무분석_2026년_260331_112259.xlsx
+============================================================
+
+[server] �м� �Ϸ� (returncode=0)
+INFO:     127.0.0.1:49420 - "GET /status HTTP/1.1" 200 OK
