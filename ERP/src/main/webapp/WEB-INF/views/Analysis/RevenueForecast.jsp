@@ -86,7 +86,7 @@
         <div class="stat-card">
             <div class="stat-icon blue">📊</div>
             <div class="stat-info">
-                <div class="label">매출 트렌드</div>
+                <div class="label">수익 트렌드</div>
                 <div class="value" id="revenueTrend">-</div>
             </div>
         </div>

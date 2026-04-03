@@ -14,6 +14,7 @@ main.py — RPA가 실행하는 진입점
     python main.py 2026 3     → 2026년 3월만
 """
 
+import re
 import sys
 import requests
 from datetime import date, datetime
@@ -38,9 +39,25 @@ from processing.cashflow         import build_cash_flow
 from processing.capital_changes  import build_capital_changes
 from processing.forecast_revenue   import build_revenue_forecast
 from processing.forecast_inventory import build_inventory_forecast
+from processing.analysis           import build_financial_analysis
 
 # 엑셀 출력
 from export.excel import build_excel
+
+
+def _remove_old_excel(year, month):
+    """동일 분석 범위의 기존 엑셀 파일 삭제"""
+    if year and month:
+        pattern = re.compile(rf'재무분석_{year}년_{month}월_\d{{6}}_\d{{6}}\.xlsx')
+    elif year:
+        pattern = re.compile(rf'재무분석_{year}년_\d{{6}}_\d{{6}}\.xlsx')
+    else:
+        return
+
+    for f in EXCEL_OUTPUT_DIR.glob('*.xlsx'):
+        if pattern.match(f.name):
+            f.unlink()
+            print(f"  [excel] 기존 파일 삭제: {f.name}")
 
 
 def _prev_period(year: int, month: int):
@@ -235,8 +252,24 @@ def run(year: int = None, month: int = None):
     # ── Step 4: 예측 ────────────────────────────────────────────
     print("\n[Step 4] 예측 계산 중...")
 
-    revenue_forecast   = build_revenue_forecast(orders, expenses, payrolls, purchases)
+    revenue_forecast   = build_revenue_forecast(
+        orders, order_items, expenses, payrolls,
+        purchases, purchase_items,
+        ingredients=ingredients,
+        employees=employees,
+        menus=menus,
+        categories=categories,
+    )
     inventory_forecast = build_inventory_forecast(ingredients, stock_logs)
+
+    # ── Step 4.5: AI 재무 분석 ───────────────────────────────────
+    print("\n[Step 4.5] AI 재무 분석 중...")
+    ai_analysis = build_financial_analysis(
+        income   = income,
+        balance  = balance,
+        forecast = revenue_forecast,
+        period   = label,
+    )
 
     # ── Step 5: 엑셀 생성 ───────────────────────────────────────
     print("\n[Step 5] 엑셀 생성 중...")
@@ -249,6 +282,8 @@ def run(year: int = None, month: int = None):
         filename = f"재무분석_{year}년_{date_tag}.xlsx"
     else:
         filename = f"재무분석_{date_tag}.xlsx"
+
+    _remove_old_excel(year, month)
 
     excel_path = build_excel(
         journal            = journal,
@@ -271,6 +306,7 @@ def run(year: int = None, month: int = None):
         "capital_changes":    capital,
         "revenue_forecast":   revenue_forecast,
         "inventory_forecast": inventory_forecast,
+        "ai_analysis":        ai_analysis,
         "excel_path":         excel_path,
     }
 

@@ -32,6 +32,7 @@ public class RevenueController {
     private static Map<String, Object> latestStatement = new HashMap<>();
     private static Map<String, Object> latestForecast  = new HashMap<>();
     private static Map<String, Object> latestInventory = new HashMap<>();
+    private static String              latestAiReport  = "";
     private static String              latestExcelPath = null;
 
     private static final String EXCEL_DIR =
@@ -152,6 +153,16 @@ public class RevenueController {
         return result;
     }
 
+    @PostMapping("/analysis/ai-report/result")
+    @ResponseBody
+    public Map<String, Object> receiveAiReport(@RequestBody Map<String, Object> body) {
+        Object text = body.get("text");
+        latestAiReport = text != null ? text.toString() : "";
+        Map<String, Object> result = new HashMap<>();
+        result.put("status", "ok");
+        return result;
+    }
+
     // FastAPI → 엑셀 파일명 등록 (파일은 이미 static 폴더에 저장됨)
     @PostMapping("/analysis/excel/register")
     @ResponseBody
@@ -189,6 +200,14 @@ public class RevenueController {
     @ResponseBody
     public Map<String, Object> getLatestInventory() {
         return latestInventory;
+    }
+
+    @GetMapping("/api/revenue/ai-report")
+    @ResponseBody
+    public Map<String, Object> getLatestAiReport() {
+        Map<String, Object> result = new HashMap<>();
+        result.put("text", latestAiReport);
+        return result;
     }
 
     // 엑셀 파일 존재 여부 확인

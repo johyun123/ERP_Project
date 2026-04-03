@@ -311,7 +311,7 @@ def _write_revenue_forecast(ws, forecast: dict):
     _style(ws, r, 1, "월평균 매출",    font=SUBTOTAL_FONT, align=LEFT)
     _money(ws, r, 2, summary.get("avg_monthly_revenue", 0), is_subtotal=True)
     r += 1
-    _style(ws, r, 1, "매출 트렌드",    font=SUBTOTAL_FONT, align=LEFT)
+    _style(ws, r, 1, "수익 트렌드",  font=SUBTOTAL_FONT, align=LEFT)
     _style(ws, r, 2, summary.get("revenue_trend", ""), font=SUBTOTAL_FONT, align=CENTER)
 
 
