@@ -37,17 +37,34 @@
             border-bottom: 1px solid var(--border, #e2e8f0);
         }
         .ai-report-body {
-            font-size: 0.88rem;
+            font-size: 0.95rem;
             color: var(--text, #334155);
-            line-height: 1.75;
-            white-space: pre-wrap;
+            line-height: 1.8;
         }
-        .ai-report-body strong {
-            display: block;
-            margin-top: 14px;
-            margin-bottom: 4px;
-            font-size: 0.9rem;
+        .ai-report-body .ai-h1 {
+            font-size: 1.15rem;
+            font-weight: 700;
             color: var(--text, #1e293b);
+            margin: 0 0 16px 0;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border, #e2e8f0);
+        }
+        .ai-report-body .ai-section {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text, #1e293b);
+            margin: 20px 0 6px 0;
+        }
+        .ai-report-body .ai-hr {
+            display: none;
+        }
+        .ai-report-body .ai-list-item {
+            margin: 6px 0 2px 0;
+            font-weight: 700;
+            color: var(--text, #1e293b);
+        }
+        .ai-report-body p {
+            margin: 0 0 6px 0;
         }
         .ai-report-loading {
             display: flex;
@@ -494,12 +511,63 @@ function renderAiReport() {
         card.style.display = 'none';
         return;
     }
-    // **굵게** 마크다운을 <strong> 태그로 변환
-    var html = text
-        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+
+    // 줄 단위로 파싱
+    var lines = text.split('\n');
+    var html = '';
+    var i = 0;
+    while (i < lines.length) {
+        var line = lines[i];
+        var trimmed = line.trim();
+
+        // 빈 줄 건너뜀
+        if (trimmed === '') { i++; continue; }
+
+        // --- 구분선 숨김
+        if (/^---+$/.test(trimmed)) { i++; continue; }
+
+        // # 제목
+        if (trimmed.charAt(0) === '#') {
+            var headText = esc(trimmed.replace(/^[#]+\s*/, ''));
+            html += '<div class="ai-h1">' + headText + '</div>';
+            i++; continue;
+        }
+
+        // **섹션 헤더** (줄 전체가 bold)
+        if (/^\*\*(.+)\*\*$/.test(trimmed)) {
+            var secText = esc(trimmed.replace(/^\*\*|\*\*$/g, ''));
+            html += '<div class="ai-section">' + secText + '</div>';
+            i++; continue;
+        }
+
+        // 번호 항목: "1." 또는 "1. **제목**" — 다음 줄이 bold 제목이면 합침
+        if (/^\d+\.$/.test(trimmed)) {
+            var num = trimmed;
+            // 앞으로 빈 줄 건너뛰고 제목 줄 탐색
+            var j = i + 1;
+            while (j < lines.length && lines[j].trim() === '') j++;
+            var nextLine = j < lines.length ? lines[j].trim() : '';
+            if (/^\*\*(.+)\*\*$/.test(nextLine)) {
+                var itemTitle = esc(nextLine.replace(/^\*\*|\*\*$/g, ''));
+                html += '<div class="ai-list-item">' + num + ' ' + itemTitle + '</div>';
+                i = j + 1; continue;
+            } else {
+                html += '<div class="ai-list-item">' + esc(num) + '</div>';
+                i++; continue;
+            }
+        }
+
+        // 일반 텍스트 — 인라인 bold 처리
+        var lineHtml = esc(trimmed).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+        html += '<p>' + lineHtml + '</p>';
+        i++;
+    }
+
     body.innerHTML = html;
     card.style.display = 'block';
+}
+function esc(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
 /* ===== 재무제표 렌더링 ===== */
