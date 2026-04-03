@@ -39,6 +39,7 @@ public class SecurityConfig {
                 // FastAPI → Spring 결과 수신 엔드포인트 — 인증 제외
                 .requestMatchers("/analysis/journal", "/analysis/statement",
                                  "/analysis/forecast/result", "/analysis/inventory/result",
+                                 "/analysis/ai-report/result",
                                  "/analysis/excel/register", "/api/revenue/excel-available").permitAll()
                 .anyRequest().authenticated()
             )

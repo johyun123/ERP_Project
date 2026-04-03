@@ -46,6 +46,7 @@ _store: dict = {
     "capital_changes":    {},
     "revenue_forecast":   {},
     "inventory_forecast": [],
+    "ai_analysis":        "",
     "excel_path":         None,
     "last_updated":       None,
     "is_running":         False,
@@ -67,6 +68,7 @@ async def _push_to_spring(data: dict):
         },
         f"{spring_url}/analysis/forecast/result":   data.get("revenue_forecast", {}),
         f"{spring_url}/analysis/inventory/result":  {"forecasts": data.get("inventory_forecast", [])},
+        f"{spring_url}/analysis/ai-report/result":  {"text": data.get("ai_analysis", "")},
     }
 
     async with httpx.AsyncClient(timeout=30.0) as client:
@@ -129,6 +131,7 @@ async def internal_update(body: dict):
         "capital_changes":    body.get("capital_changes",    {}),
         "revenue_forecast":   body.get("revenue_forecast",   {}),
         "inventory_forecast": body.get("inventory_forecast", []),
+        "ai_analysis":        body.get("ai_analysis",        ""),
         "excel_path":         body.get("excel_path"),
         "last_updated":       datetime.now().isoformat(),
     })
@@ -166,6 +169,12 @@ async def get_forecast():
 async def get_inventory():
     """재고 소진 예측 조회"""
     return {"forecasts": _store.get("inventory_forecast", [])}
+
+
+@app.get("/analysis/ai-report")
+async def get_ai_report():
+    """AI 재무 분석 보고서 조회"""
+    return {"text": _store.get("ai_analysis", "")}
 
 
 @app.post("/analysis/run")

@@ -18,6 +18,71 @@
             color: #92400e;
             margin-bottom: 20px;
         }
+        .ai-report-card {
+            background: #fff;
+            border: 1.5px solid var(--border, #e2e8f0);
+            border-radius: 12px;
+            padding: 24px 28px;
+            margin-top: 24px;
+        }
+        .ai-report-card-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text, #1e293b);
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border, #e2e8f0);
+        }
+        .ai-report-body {
+            font-size: 0.95rem;
+            color: var(--text, #334155);
+            line-height: 1.8;
+        }
+        .ai-report-body .ai-h1 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--text, #1e293b);
+            margin: 0 0 16px 0;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border, #e2e8f0);
+        }
+        .ai-report-body .ai-section {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text, #1e293b);
+            margin: 20px 0 6px 0;
+        }
+        .ai-report-body .ai-hr {
+            display: none;
+        }
+        .ai-report-body .ai-list-item {
+            margin: 6px 0 2px 0;
+            font-weight: 700;
+            color: var(--text, #1e293b);
+        }
+        .ai-report-body p {
+            margin: 0 0 6px 0;
+        }
+        .ai-report-loading {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text-muted, #64748b);
+            font-size: 0.88rem;
+            padding: 10px 0;
+        }
+        .ai-spinner {
+            width: 18px;
+            height: 18px;
+            border: 2px solid #e2e8f0;
+            border-top-color: #5b6ef5;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
@@ -126,6 +191,12 @@
                 <div id="equityStatement"><div class="empty-placeholder">최신화 버튼을 눌러 데이터를 불러오세요.</div></div>
             </div>
         </div>
+
+        <%-- AI 재무 분석 카드 --%>
+        <div class="ai-report-card" id="aiReportCard" style="display:none;">
+            <div class="ai-report-card-header">🤖 AI 재무 동향 분석</div>
+            <div id="aiReportBody" class="ai-report-body"></div>
+        </div>
     </div>
 
 </div>
@@ -134,7 +205,7 @@
 var FASTAPI_URL   = 'http://127.0.0.1:8000';
 var currentTab    = '${tab}';
 var barChart, donutChart, lineChart;
-var _journal = null, _statement = null, _forecast = null;
+var _journal = null, _statement = null, _forecast = null, _aiReport = null;
 var _journalPage  = 1;
 var _journalSize  = 20;
 
@@ -148,7 +219,7 @@ function switchTab(tab, btn) {
     history.replaceState(null, '', '/analysis/stats?tab=' + tab);
     if (_statement && Object.keys(_statement).length > 0) {
         if (tab === 'journal' && _journal) renderJournal();
-        else if (tab === 'statement') renderStatement();
+        else if (tab === 'statement') { renderStatement(); renderAiReport(); }
     }
 }
 
@@ -198,19 +269,22 @@ function pollAndLoad(btn) {
 function loadAndRender(btn) {
     btn.textContent = '⏳ 데이터 로딩...';
     Promise.all([
-        fetch('/api/revenue/journal').then(function(r)   { return r.json(); }),
-        fetch('/api/revenue/statement').then(function(r) { return r.json(); }),
-        fetch('/api/revenue/forecast').then(function(r)  { return r.json(); })
+        fetch('/api/revenue/journal').then(function(r)    { return r.json(); }),
+        fetch('/api/revenue/statement').then(function(r)  { return r.json(); }),
+        fetch('/api/revenue/forecast').then(function(r)   { return r.json(); }),
+        fetch('/api/revenue/ai-report').then(function(r)  { return r.json(); })
     ]).then(function(results) {
         _journal   = results[0];
         _statement = results[1];
         _forecast  = results[2];
+        _aiReport  = results[3];
         var hasData = _statement && _statement.income_statement
                       && Object.keys(_statement.income_statement).length > 0;
         if (hasData) {
             document.getElementById('noBanner').style.display = 'none';
             if (currentTab === 'journal') renderJournal();
             else renderStatement();
+            renderAiReport();
         } else {
             alert('데이터가 없습니다. Python 분석 결과를 확인해주세요.');
         }
@@ -227,15 +301,17 @@ document.addEventListener('DOMContentLoaded', function() {
     Promise.all([
         fetch('/api/revenue/journal').then(function(r)   { return r.json(); }),
         fetch('/api/revenue/statement').then(function(r) { return r.json(); }),
-        fetch('/api/revenue/forecast').then(function(r)  { return r.json(); })
+        fetch('/api/revenue/forecast').then(function(r)  { return r.json(); }),
+        fetch('/api/revenue/ai-report').then(function(r) { return r.json(); })
     ]).then(function(results) {
-        var j = results[0], s = results[1], f = results[2];
+        var j = results[0], s = results[1], f = results[2], a = results[3];
         var hasData = s && s.income_statement && Object.keys(s.income_statement).length > 0;
         if (hasData) {
-            _journal = j; _statement = s; _forecast = f;
+            _journal = j; _statement = s; _forecast = f; _aiReport = a;
             document.getElementById('noBanner').style.display = 'none';
             if (currentTab === 'journal') renderJournal();
             else renderStatement();
+            renderAiReport();
         }
     }).catch(function() {});
 });
@@ -424,6 +500,74 @@ function changeJournalPage(page) {
     if (page < 1 || page > totalPages) return;
     _journalPage = page;
     renderJournalTable();
+}
+
+/* ===== AI 분석 렌더링 ===== */
+function renderAiReport() {
+    var card = document.getElementById('aiReportCard');
+    var body = document.getElementById('aiReportBody');
+    var text = _aiReport && _aiReport.text ? _aiReport.text.trim() : '';
+    if (!text) {
+        card.style.display = 'none';
+        return;
+    }
+
+    // 줄 단위로 파싱
+    var lines = text.split('\n');
+    var html = '';
+    var i = 0;
+    while (i < lines.length) {
+        var line = lines[i];
+        var trimmed = line.trim();
+
+        // 빈 줄 건너뜀
+        if (trimmed === '') { i++; continue; }
+
+        // --- 구분선 숨김
+        if (/^---+$/.test(trimmed)) { i++; continue; }
+
+        // # 제목
+        if (trimmed.charAt(0) === '#') {
+            var headText = esc(trimmed.replace(/^[#]+\s*/, ''));
+            html += '<div class="ai-h1">' + headText + '</div>';
+            i++; continue;
+        }
+
+        // **섹션 헤더** (줄 전체가 bold)
+        if (/^\*\*(.+)\*\*$/.test(trimmed)) {
+            var secText = esc(trimmed.replace(/^\*\*|\*\*$/g, ''));
+            html += '<div class="ai-section">' + secText + '</div>';
+            i++; continue;
+        }
+
+        // 번호 항목: "1." 또는 "1. **제목**" — 다음 줄이 bold 제목이면 합침
+        if (/^\d+\.$/.test(trimmed)) {
+            var num = trimmed;
+            // 앞으로 빈 줄 건너뛰고 제목 줄 탐색
+            var j = i + 1;
+            while (j < lines.length && lines[j].trim() === '') j++;
+            var nextLine = j < lines.length ? lines[j].trim() : '';
+            if (/^\*\*(.+)\*\*$/.test(nextLine)) {
+                var itemTitle = esc(nextLine.replace(/^\*\*|\*\*$/g, ''));
+                html += '<div class="ai-list-item">' + num + ' ' + itemTitle + '</div>';
+                i = j + 1; continue;
+            } else {
+                html += '<div class="ai-list-item">' + esc(num) + '</div>';
+                i++; continue;
+            }
+        }
+
+        // 일반 텍스트 — 인라인 bold 처리
+        var lineHtml = esc(trimmed).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+        html += '<p>' + lineHtml + '</p>';
+        i++;
+    }
+
+    body.innerHTML = html;
+    card.style.display = 'block';
+}
+function esc(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
 /* ===== 재무제표 렌더링 ===== */

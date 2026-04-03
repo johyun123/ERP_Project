@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Skill(claude-api)",
+      "Skill(claude-api:*)",
+      "Bash(git -C \"c:/Users/3class_007/git/ERP_Project\" check-ignore -v \"ERP/DAP/.env\")",
+      "Bash(git -C \"c:/Users/3class_007/git/ERP_Project\" ls-files --error-unmatch \"ERP/DAP/.env\")",
+      "Bash(git -C \"c:/Users/3class_007/git/ERP_Project\" check-ignore -v \"ERP/src/main/resources/application.properties\")",
+      "Bash(echo \"exit=$?\")",
+      "Bash(git -C \"c:/Users/3class_007/git/ERP_Project\" ls-files \"ERP/DAP/.env\" \"ERP/src/main/resources/application.properties\")",
+      "Bash(python -c ':*)"
+    ]
+  }
+}
