@@ -146,14 +146,17 @@ ERP_Project/
 
 ### Spring Boot 실행
 ```bash
-cd ERP
-./mvnw spring-boot:run
-```
-
-### FastAPI 분석 서버 실행
-```bash
 cd DAP
 pip install -r requirements.txt
+
+cd ERP
+./mvnw spring-boot:run
+
+```
+
+### FastAPI 분석 서버 실행 (Spring 실행 시 자동 실행)
+```bash
+cd DAP
 uvicorn main:app --host 0.0.0.0 --port 8000
 ```
 
