@@ -17,7 +17,13 @@
 <div class="content">
 
     <div class="page-header">
-        <div class="page-title">거래처 관리 <span>등록된 거래처를 관리합니다</span></div>
+        <div class="page-title-wrap">
+            <span class="page-icon">🏪</span>
+            <div>
+                <h1 class="page-title">거래처 관리</h1>
+                <p class="page-sub">재고관리 &gt; 거래처 관리</p>
+            </div>
+        </div>
         <button class="btn btn-primary" onclick="openModal('registerModal')">+ 거래처 등록</button>
     </div>
 

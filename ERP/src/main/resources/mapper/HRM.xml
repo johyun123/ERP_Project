@@ -63,6 +63,11 @@
         )
     </insert>
 
+    <!-- 프로필 사진만 업데이트 -->
+    <update id="updateProfile">
+        UPDATE employees SET profile = #{profile} WHERE emp_num = #{empNum}
+    </update>
+
     <!-- emp_num → employees.id 조회 -->
     <select id="selectEmployeeIdByEmpNum" parameterType="String" resultType="Long">
         SELECT id FROM employees WHERE emp_num = #{emp_num}

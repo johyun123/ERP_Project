@@ -14,4 +14,6 @@ public interface PurchaseItemsMapper {
 	List<Map<String, Object>> findByPurchaseId(long purchaseId);
 
 	List<PurchaseItems> findAll();
+
+	List<Long> findIngredientIdsWithActiveOrder();
 }

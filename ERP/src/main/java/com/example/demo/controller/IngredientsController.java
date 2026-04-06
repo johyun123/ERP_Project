@@ -58,16 +58,19 @@ public class IngredientsController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false)    String category,
             @RequestParam(required = false)    String keyword,
+            @RequestParam(required = false)    String stockStatus,
             Model model) {
 
         PageRequest req = new PageRequest(page, size);
         req.setCategory(category);
         req.setKeyword(keyword);
+        req.setStockStatus(stockStatus);
 
         model.addAttribute("result",       ingredientsService.getByPage(req));
         model.addAttribute("supplierList", suppliersService.getAll());
         model.addAttribute("category",     category);
         model.addAttribute("keyword",      keyword);
+        model.addAttribute("stockStatus",  stockStatus);
         model.addAttribute("size",         size);
         return "Ingredients/ingredient";
     }
@@ -112,7 +115,8 @@ public class IngredientsController {
             @RequestParam(required = false)   Long   supplier_id,
             @RequestParam(defaultValue = "1") int    page,
             @RequestParam(required = false)   String cat,
-            @RequestParam(required = false)   String keyword) {
+            @RequestParam(required = false)   String keyword,
+            @RequestParam(required = false)   String stockStatus) {
 
         Ingredients i = new Ingredients();
         i.setId(id);
@@ -128,8 +132,10 @@ public class IngredientsController {
         String redirect = "redirect:/inventory?page=" + page;
         String encCat = encode(cat);
         String encKw  = encode(keyword);
-        if (encCat != null) redirect += "&category=" + encCat;
-        if (encKw  != null) redirect += "&keyword="  + encKw;
+        String encSt  = encode(stockStatus);
+        if (encCat != null) redirect += "&category="    + encCat;
+        if (encKw  != null) redirect += "&keyword="     + encKw;
+        if (encSt  != null) redirect += "&stockStatus=" + encSt;
         return redirect;
     }
 
@@ -137,14 +143,17 @@ public class IngredientsController {
     public String stockDelete(@PathVariable long id,
                               @RequestParam(defaultValue = "1") int    page,
                               @RequestParam(required = false)   String cat,
-                              @RequestParam(required = false)   String keyword) {
+                              @RequestParam(required = false)   String keyword,
+                              @RequestParam(required = false)   String stockStatus) {
         ingredientsService.remove(id);
 
         String redirect = "redirect:/inventory?page=" + page;
         String encCat = encode(cat);
         String encKw  = encode(keyword);
-        if (encCat != null) redirect += "&category=" + encCat;
-        if (encKw  != null) redirect += "&keyword="  + encKw;
+        String encSt  = encode(stockStatus);
+        if (encCat != null) redirect += "&category="    + encCat;
+        if (encKw  != null) redirect += "&keyword="     + encKw;
+        if (encSt  != null) redirect += "&stockStatus=" + encSt;
         return redirect;
     }
 

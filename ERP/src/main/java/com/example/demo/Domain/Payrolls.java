@@ -16,6 +16,7 @@ public class Payrolls {
 
     // 조인용 (employees 테이블에서)
     private String  employeeName;
+    private String  employeeNo;
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -55,4 +56,7 @@ public class Payrolls {
 
     public String getEmployeeName() { return employeeName; }
     public void setEmployeeName(String employeeName) { this.employeeName = employeeName; }
+
+    public String getEmployeeNo() { return employeeNo; }
+    public void setEmployeeNo(String employeeNo) { this.employeeNo = employeeNo; }
 }

@@ -105,14 +105,17 @@ String avatarChar = loginName.length() > 0 ? String.valueOf(loginName.charAt(0))
 
     <!-- 사이드바 하단 유저 정보 -->
     <div class="user-info">
-        <% if (loginProfile != null && !loginProfile.isEmpty()) { %>
-            <div class="user-avatar" style="padding:0; overflow:hidden;">
-                <img src="<%=loginProfile%>" alt="프로필"
-                     style="width:100%; height:100%; object-fit:cover; border-radius:50%;">
-            </div>
-        <% } else { %>
-            <div class="user-avatar"><%=avatarChar%></div>
-        <% } %>
+        <div class="user-avatar-wrap" onclick="openProfileModal()" title="프로필 사진 변경">
+            <% if (loginProfile != null && !loginProfile.isEmpty()) { %>
+                <div class="user-avatar" id="sidebarAvatar" style="padding:0; overflow:hidden;">
+                    <img src="<%=loginProfile%>" alt="프로필"
+                         style="width:100%; height:100%; object-fit:cover; border-radius:50%;">
+                </div>
+            <% } else { %>
+                <div class="user-avatar" id="sidebarAvatar"><%=avatarChar%></div>
+            <% } %>
+            <div class="avatar-edit-overlay">✏️</div>
+        </div>
         <div class="user-details">
             <div class="user-name"><%=loginName%></div>
             <div class="user-id"><%=loginEmpNum%></div>
@@ -120,6 +123,37 @@ String avatarChar = loginName.length() > 0 ? String.valueOf(loginName.charAt(0))
         </div>
     </div>
 
+</div>
+
+<!-- ===== 프로필 사진 변경 모달 ===== -->
+<div class="profile-modal-overlay" id="profileModalOverlay">
+    <div class="profile-modal">
+        <div class="profile-modal-header">
+            <span class="profile-modal-title">프로필 사진 변경</span>
+            <button class="profile-modal-close" onclick="closeProfileModal()">✕</button>
+        </div>
+
+        <div class="profile-preview-wrap">
+            <% if (loginProfile != null && !loginProfile.isEmpty()) { %>
+                <img id="profilePreviewImg" class="profile-preview" src="<%=loginProfile%>" alt="미리보기">
+            <% } else { %>
+                <div id="profilePreviewText" class="profile-preview-text"><%=avatarChar%></div>
+                <img id="profilePreviewImg" class="profile-preview" src="" alt="미리보기" style="display:none;">
+            <% } %>
+            <div>
+                <label class="profile-file-label">
+                    📁 파일 선택
+                    <input type="file" id="profileFileInput" accept="image/*" onchange="onProfileFileChange(this)">
+                </label>
+                <div class="profile-selected-name" id="profileSelectedName">선택된 파일 없음</div>
+            </div>
+        </div>
+
+        <div class="profile-modal-footer">
+            <button class="btn-cancel" onclick="closeProfileModal()">취소</button>
+            <button class="btn-save" id="profileSaveBtn" onclick="saveProfile()" disabled>저장</button>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -229,6 +263,63 @@ String avatarChar = loginName.length() > 0 ? String.valueOf(loginName.charAt(0))
         if (wrap && !wrap.contains(e.target)) {
             document.getElementById('notifDropdown').classList.remove('open');
         }
+    });
+
+    /* ===== 프로필 사진 변경 모달 ===== */
+    function openProfileModal() {
+        document.getElementById('profileModalOverlay').classList.add('open');
+    }
+    function closeProfileModal() {
+        document.getElementById('profileModalOverlay').classList.remove('open');
+        document.getElementById('profileFileInput').value = '';
+        document.getElementById('profileSelectedName').textContent = '선택된 파일 없음';
+        document.getElementById('profileSaveBtn').disabled = true;
+    }
+    function onProfileFileChange(input) {
+        var file = input.files[0];
+        if (!file) return;
+        document.getElementById('profileSelectedName').textContent = file.name;
+        document.getElementById('profileSaveBtn').disabled = false;
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            var img = document.getElementById('profilePreviewImg');
+            var txt = document.getElementById('profilePreviewText');
+            img.src = e.target.result;
+            img.style.display = 'block';
+            if (txt) txt.style.display = 'none';
+        };
+        reader.readAsDataURL(file);
+    }
+    function saveProfile() {
+        var file = document.getElementById('profileFileInput').files[0];
+        if (!file) return;
+        var btn = document.getElementById('profileSaveBtn');
+        btn.disabled = true;
+        btn.textContent = '저장 중...';
+
+        var formData = new FormData();
+        formData.append('file', file);
+
+        fetch('/profile/update', { method: 'POST', body: formData })
+            .then(function(r) { return r.json(); })
+            .then(function(res) {
+                if (res.success) {
+                    location.reload();
+                } else {
+                    alert(res.message || '저장에 실패했습니다.');
+                    btn.disabled = false;
+                    btn.textContent = '저장';
+                }
+            })
+            .catch(function() {
+                alert('서버 오류가 발생했습니다.');
+                btn.disabled = false;
+                btn.textContent = '저장';
+            });
+    }
+    // 모달 외부 클릭 시 닫기
+    document.getElementById('profileModalOverlay').addEventListener('click', function(e) {
+        if (e.target === this) closeProfileModal();
     });
 
     /* ===== 페이지 로드 시 읽지 않은 공지 수 뱃지 표시 ===== */

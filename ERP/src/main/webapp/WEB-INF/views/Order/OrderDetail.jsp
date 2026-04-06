@@ -14,7 +14,13 @@
     <div class="content">
 
         <div class="page-header">
-            <h2>주문 내역</h2>
+            <div class="page-title-wrap">
+                <span class="page-icon">📑</span>
+                <div>
+                    <h1 class="page-title">주문 내역</h1>
+                    <p class="page-sub">주문관리 &gt; 주문 내역</p>
+                </div>
+            </div>
             <button class="btn-add" onclick="openAddPopup()">+ 주문 추가</button>
         </div>
 

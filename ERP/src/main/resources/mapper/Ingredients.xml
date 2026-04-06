@@ -26,6 +26,19 @@
         ORDER BY FIELD(i.category,'원두','유제품','시럽/소스','파우더','차류','소모품','기타'), i.name
     </select>
 
+    <sql id="stockStatusCondition">
+        <if test="stockStatus == 'low'">
+            AND i.stock_qty &lt;= i.min_stock
+        </if>
+        <if test="stockStatus == 'warning'">
+            AND i.stock_qty &gt; i.min_stock
+            AND i.stock_qty &lt;= i.min_stock * 1.5
+        </if>
+        <if test="stockStatus == 'normal'">
+            AND i.stock_qty &gt; i.min_stock * 1.5
+        </if>
+    </sql>
+
     <select id="findByPage" parameterType="PageRequest" resultType="Ingredients">
         <include refid="selectIngredient"/>
         <where>
@@ -35,6 +48,7 @@
             <if test="keyword != null and keyword != ''">
                 AND i.name LIKE CONCAT('%', #{keyword}, '%')
             </if>
+            <include refid="stockStatusCondition"/>
         </where>
         ORDER BY FIELD(i.category,'원두','유제품','시럽/소스','파우더','차류','소모품','기타'), i.name
         LIMIT #{size} OFFSET #{offset}
@@ -49,6 +63,7 @@
             <if test="keyword != null and keyword != ''">
                 AND i.name LIKE CONCAT('%', #{keyword}, '%')
             </if>
+            <include refid="stockStatusCondition"/>
         </where>
     </select>
 

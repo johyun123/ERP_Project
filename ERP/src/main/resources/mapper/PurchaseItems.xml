@@ -27,6 +27,14 @@
     </select>
     
     
+    <!-- 발주 진행 중(ordered)인 원재료 ID 목록 -->
+    <select id="findIngredientIdsWithActiveOrder" resultType="long">
+        SELECT DISTINCT pi.ingredient_id
+        FROM purchase_items pi
+        JOIN purchases p ON pi.purchase_id = p.id
+        WHERE p.status = 'ordered'
+    </select>
+
     <select id="findAll" resultType="map">
     SELECT
         pi.id,

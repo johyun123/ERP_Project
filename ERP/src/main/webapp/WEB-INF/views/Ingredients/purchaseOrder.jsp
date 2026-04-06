@@ -28,7 +28,13 @@ request.setAttribute("emojiMap", emojiMap);
 <div class="content">
 
     <div class="page-header">
-        <div class="page-title">발주 등록 <span>재고를 선택하여 발주합니다</span></div>
+        <div class="page-title-wrap">
+            <span class="page-icon">🛒</span>
+            <div>
+                <h1 class="page-title">발주 등록</h1>
+                <p class="page-sub">재고관리 &gt; 발주 등록</p>
+            </div>
+        </div>
     </div>
 
     <div class="supplier-banner">

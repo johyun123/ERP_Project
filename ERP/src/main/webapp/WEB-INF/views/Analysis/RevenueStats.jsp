@@ -91,7 +91,13 @@
 <div class="content">
 
     <div class="page-header">
-        <div class="page-title">수익 통계 <span>매출분개 및 재무제표를 조회합니다</span></div>
+        <div class="page-title-wrap">
+            <span class="page-icon">📊</span>
+            <div>
+                <h1 class="page-title">수익 통계</h1>
+                <p class="page-sub">수익분석 &gt; 수익 통계</p>
+            </div>
+        </div>
         <div style="display:flex; align-items:center; gap:8px;">
             <input type="number" id="inputYear"  placeholder="년도" min="2020" max="2099"
                    style="width:78px; padding:5px 8px; border:1px solid var(--border); border-radius:6px; font-size:0.85rem; font-family:inherit;">
@@ -481,16 +487,19 @@ function renderJournalTable() {
     // 페이징 버튼
     var pagingEl = document.getElementById('journalPaging');
     pagingEl.style.display = 'flex';
+    var blockSize = 5;
+    var blockStart = Math.floor((_journalPage - 1) / blockSize) * blockSize + 1;
+    var blockEnd   = Math.min(blockStart + blockSize - 1, totalPages);
     var btns = '';
-    btns += '<button class="page-btn" onclick="changeJournalPage(' + (_journalPage - 1) + ')"'
-          + (_journalPage <= 1 ? ' disabled' : '') + '>◀</button>';
-    var start2 = Math.max(1, _journalPage - 2);
-    var end2   = Math.min(totalPages, _journalPage + 2);
-    for (var i = start2; i <= end2; i++) {
+    if (blockStart > 1) {
+        btns += '<button class="page-btn" onclick="changeJournalPage(' + (blockStart - 1) + ')">◀</button>';
+    }
+    for (var i = blockStart; i <= blockEnd; i++) {
         btns += '<button class="page-btn' + (i === _journalPage ? ' active' : '') + '" onclick="changeJournalPage(' + i + ')">' + i + '</button>';
     }
-    btns += '<button class="page-btn" onclick="changeJournalPage(' + (_journalPage + 1) + ')"'
-          + (_journalPage >= totalPages ? ' disabled' : '') + '>▶</button>';
+    if (blockEnd < totalPages) {
+        btns += '<button class="page-btn" onclick="changeJournalPage(' + (blockEnd + 1) + ')">▶</button>';
+    }
     pagingEl.innerHTML = btns;
 }
 
