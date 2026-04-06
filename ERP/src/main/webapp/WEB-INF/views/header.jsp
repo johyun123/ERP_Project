@@ -266,6 +266,8 @@ String avatarChar = loginName.length() > 0 ? String.valueOf(loginName.charAt(0))
     });
 
     /* ===== 프로필 사진 변경 모달 ===== */
+    var _profileDataUrl = null; // 파일 선택 시 로컬 data URL 보관
+
     function openProfileModal() {
         document.getElementById('profileModalOverlay').classList.add('open');
     }
@@ -274,6 +276,7 @@ String avatarChar = loginName.length() > 0 ? String.valueOf(loginName.charAt(0))
         document.getElementById('profileFileInput').value = '';
         document.getElementById('profileSelectedName').textContent = '선택된 파일 없음';
         document.getElementById('profileSaveBtn').disabled = true;
+        _profileDataUrl = null;
     }
     function onProfileFileChange(input) {
         var file = input.files[0];
@@ -282,6 +285,7 @@ String avatarChar = loginName.length() > 0 ? String.valueOf(loginName.charAt(0))
         document.getElementById('profileSaveBtn').disabled = false;
         var reader = new FileReader();
         reader.onload = function(e) {
+            _profileDataUrl = e.target.result; // 로컬 data URL 저장
             var img = document.getElementById('profilePreviewImg');
             var txt = document.getElementById('profilePreviewText');
             img.src = e.target.result;
@@ -304,7 +308,13 @@ String avatarChar = loginName.length() > 0 ? String.valueOf(loginName.charAt(0))
             .then(function(r) { return r.json(); })
             .then(function(res) {
                 if (res.success) {
-                    location.reload();
+                    // 이미 FileReader로 읽어둔 data URL을 바로 적용 → 네트워크 없이 즉시 반영
+                    var avatar = document.getElementById('sidebarAvatar');
+                    avatar.style.padding  = '0';
+                    avatar.style.overflow = 'hidden';
+                    var src = _profileDataUrl || (res.path + '?t=' + Date.now());
+                    avatar.innerHTML = '<img src="' + src + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" alt="프로필">';
+                    closeProfileModal();
                 } else {
                     alert(res.message || '저장에 실패했습니다.');
                     btn.disabled = false;

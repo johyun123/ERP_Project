@@ -166,7 +166,56 @@ ANTHROPIC_API_KEY=your_api_key_here
 
 ## 스크린샷
 
-> 추후 추가 예정
+### 로그인
+![로그인](docs/images/01_login.png)
+
+### 업무 대시보드
+![대시보드](docs/images/02_dashboard.png)
+
+### 제품 관리
+![제품관리](docs/images/03_product.png)
+
+### 재고 현황
+![재고현황](docs/images/04_ingredient.png)
+
+### 거래처 관리
+![거래처관리](docs/images/05_suppliers.png)
+
+### 발주 내역
+![발주내역](docs/images/06_purchases.png)
+
+### 발주 등록
+![발주등록](docs/images/07_add_purchase.png)
+
+### 근태 관리
+![근태관리](docs/images/08_attandances.png)
+
+### 직원 관리
+![직원관리](docs/images/09_employees.png)
+
+### ERP 사용자 관리
+![사용자관리](docs/images/10_user_manager.png)
+
+### 주문 내역
+![주문내역](docs/images/11_orders.png)
+
+### 지출 내역
+![지출내역](docs/images/12_expenses.png)
+
+### 급여 내역
+![급여내역](docs/images/13_payrolls.png)
+
+### 수익 통계
+![수익통계](docs/images/14_analysis_revenue.png)
+
+### 수익 예측
+![수익예측](docs/images/15_learn_revenue.png)
+
+### 재고 소진 추이 예측
+![재고예측](docs/images/16_learn_ingredient.png)
+
+### 공지사항
+![공지사항](docs/images/17_notice.png)
 
 ---
 
@@ -174,5 +223,7 @@ ANTHROPIC_API_KEY=your_api_key_here
 
 | 이름 | 역할 |
 |---|---|
-| johyun123 | 재무관리, 수익 분석, AI 연동, 대시보드, 전체 UI 통합 |
-| (팀원 추가) | |
+| 유조현(팀장) | SW 아키텍처 설계, 재무관리, 주문관리, 수익 분석 알고리즘, OCR 및 문장 생성 AI 연동, 전체 UI 통합, RPA 구현 |
+| 김찬 | DB 스키마 설계, 재고관리, 수익 분석 UI, 업무 대시보드, 공지사항, 프로필 |
+| 신은지 | UX/UI 디자인 설계, 헤더 및 사이드바, 메뉴관리, RPA 보고서 템플릿 설계 |
+| 이연우 | 기능 설계, 인사관리, 계정 인증/인가(AAA), REST API 구축 |
