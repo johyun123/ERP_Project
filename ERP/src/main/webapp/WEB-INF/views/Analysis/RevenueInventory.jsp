@@ -58,7 +58,13 @@
 <div class="content">
 
     <div class="page-header">
-        <div class="page-title">재고 소진 예측 <span>원재료별 소진 예상일 분석</span></div>
+        <div class="page-title-wrap">
+            <span class="page-icon">⏳</span>
+            <div>
+                <h1 class="page-title">재고 소진 추이 예측</h1>
+                <p class="page-sub">수익분석 &gt; 재고 소진 추이 예측</p>
+            </div>
+        </div>
         <div style="display:flex; align-items:center; gap:8px;">
             <input type="number" id="inputYear"  placeholder="년도" min="2020" max="2099"
                    style="width:78px; padding:5px 8px; border:1px solid var(--border); border-radius:6px; font-size:0.85rem; font-family:inherit;">

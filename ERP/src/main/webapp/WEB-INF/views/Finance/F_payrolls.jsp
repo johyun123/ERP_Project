@@ -89,7 +89,7 @@
                         <tr class="payroll-row">
                             <td class="td-no">${(result.page - 1) * result.size + s.count}</td>
                             <td class="td-name">${empty p.employeeName ? '-' : p.employeeName}</td>
-                            <td class="td-empid">${p.employeeId}</td>
+                            <td class="td-empid">${empty p.employeeNo ? p.employeeId : p.employeeNo}</td>
                             <td>
                                 <c:choose>
                                     <c:when test="${empty p.payType || p.payType == 0}">

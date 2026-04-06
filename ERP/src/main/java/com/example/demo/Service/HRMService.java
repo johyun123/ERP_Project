@@ -28,6 +28,11 @@ public class HRMService {
         return hrmMapper.selectAllEmployees();
     }
 
+    // 프로필 사진 업데이트
+    public void updateProfile(String empNum, String profile) {
+        hrmMapper.updateProfile(empNum, profile);
+    }
+
     // 단일 직원 조회
     public Employees getEmployeeById(String emp_num) {
         return hrmMapper.selectEmployeeById(emp_num);

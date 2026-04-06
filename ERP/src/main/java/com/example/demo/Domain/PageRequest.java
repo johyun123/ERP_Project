@@ -3,8 +3,9 @@ package com.example.demo.Domain;
 public class PageRequest {
     private int page;       // 현재 페이지 (1부터 시작)
     private int size;       // 페이지당 항목 수
-    private String category; // 카테고리 필터 (null이면 전체)
-    private String keyword;  // 검색어 (null이면 전체)
+    private String category;    // 카테고리 필터 (null이면 전체)
+    private String keyword;     // 검색어 (null이면 전체)
+    private String stockStatus; // 재고 상태 필터: low / warning / normal (null이면 전체)
 
     // ── Finance (Expense) 전용 ──────────────────────
     private String expenseType;
@@ -41,6 +42,9 @@ public class PageRequest {
 
     public String getKeyword()             { return keyword; }
     public void setKeyword(String keyword) { this.keyword = keyword; }
+
+    public String getStockStatus()                  { return stockStatus; }
+    public void   setStockStatus(String stockStatus){ this.stockStatus = stockStatus; }
 
     public String getExpenseType()               { return expenseType; }
     public void   setExpenseType(String v)       { this.expenseType = v; }

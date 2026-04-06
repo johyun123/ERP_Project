@@ -307,14 +307,17 @@ function orderNow(ingredientId, name, unitCost, supplierId) {
 fetch('/api/main/today-employees')
     .then(function(r) { return r.json(); })
     .then(function(list) {
-        // 직급 순서 → 고용형태(정규직 우선) 정렬
-        var posOrder = { '점장': 0, '매니저': 1, '스탭': 2 };
-        var typeOrder = function(ct) { return (ct === 'full' || ct === '풀') ? 0 : 1; };
+        // 1순위: 출근(working) → 퇴근(done) → 미출근(absent)
+        // 2순위: 직급 (점장 → 매니저 → 스탭)
+        var posOrder    = { '점장': 0, '매니저': 1, '스탭': 2 };
+        var statusOrder = { 'working': 0, 'done': 1, 'absent': 2 };
         list.sort(function(a, b) {
+            var sa = statusOrder[a.status] !== undefined ? statusOrder[a.status] : 99;
+            var sb = statusOrder[b.status] !== undefined ? statusOrder[b.status] : 99;
+            if (sa !== sb) return sa - sb;
             var pa = posOrder[a.position] !== undefined ? posOrder[a.position] : 99;
             var pb = posOrder[b.position] !== undefined ? posOrder[b.position] : 99;
-            if (pa !== pb) return pa - pb;
-            return typeOrder(a.contract_type) - typeOrder(b.contract_type);
+            return pa - pb;
         });
         empData = list;
         empPage = 1;

@@ -15,10 +15,14 @@
 <div class="content">
 
     <div class="page-header">
-        <div class="page-title">제품 관리 <span>메뉴를 관리합니다</span></div>
-        <div style="margin-right: 5px;">
-            <button class="register-btn" onclick="openProductModal()">+ 제품등록</button>
+        <div class="page-title-wrap">
+            <span class="page-icon">🍽️</span>
+            <div>
+                <h1 class="page-title">제품 관리</h1>
+                <p class="page-sub">메뉴관리 &gt; 제품 관리</p>
+            </div>
         </div>
+        <button class="register-btn" onclick="openProductModal()">+ 제품등록</button>
     </div>
     
    <div class="summary-box">

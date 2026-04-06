@@ -2,8 +2,10 @@ package com.example.demo.controller;
 
 import com.example.demo.Service.FinanceService;
 import com.example.demo.Service.UserService;
+import com.example.demo.Domain.Employees;
 import com.example.demo.Domain.FinanceExpense;
 import com.example.demo.Domain.PageRequest;
+import com.example.demo.Domain.PageResult;
 import com.example.demo.Domain.Payrolls;
 // Employee는 Service 내부에서만 사용하므로 Controller에선 import 불필요
 
@@ -18,6 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.File;
+import java.util.List;
 import java.util.UUID;
 
 @Controller
@@ -201,10 +204,13 @@ public class FinanceController {
         req.setPayYear(payYear);
         req.setPayMonth(payMonth);
         req.setKeyword(keyword);
-
-        model.addAttribute("result",       financeService.getPayrollByPage(req));
+        
+        PageResult<Payrolls> result = financeService.getPayrollByPage(req);
+        List<Employees> employeeList = financeService.getActiveEmployeeList();
+        
+        model.addAttribute("result",       result);
         model.addAttribute("size",         size);
-        model.addAttribute("employeeList", financeService.getActiveEmployeeList());
+        model.addAttribute("employeeList", employeeList);
         return "Finance/F_payrolls";
     }
 

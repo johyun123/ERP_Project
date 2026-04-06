@@ -28,7 +28,13 @@ request.setAttribute("emojiMap", emojiMap);
 <div class="content">
 
     <div class="page-header">
-        <div class="page-title">재고 현황 <span>원재료 재고를 관리합니다</span></div>
+        <div class="page-title-wrap">
+            <span class="page-icon">📦</span>
+            <div>
+                <h1 class="page-title">재고 현황</h1>
+                <p class="page-sub">재고관리 &gt; 재고 현황</p>
+            </div>
+        </div>
         <button class="btn btn-primary" onclick="openModal('registerModal')">+ 원재료 등록</button>
     </div>
 
@@ -76,6 +82,16 @@ request.setAttribute("emojiMap", emojiMap);
                     onclick="goFilter('소모품', '${keyword}')">🧴 소모품</button>
             <button class="tab-btn ${category == '기타' ? 'active' : ''}"
                     onclick="goFilter('기타', '${keyword}')">📦 기타</button>
+        </div>
+        <div class="category-tabs" style="margin-top:6px;">
+            <button class="tab-btn ${empty stockStatus ? 'active' : ''}"
+                    onclick="goStatusFilter('')">전체 상태</button>
+            <button class="tab-btn ${stockStatus == 'low' ? 'active' : ''}"
+                    onclick="goStatusFilter('low')">⚠ 부족</button>
+            <button class="tab-btn ${stockStatus == 'warning' ? 'active' : ''}"
+                    onclick="goStatusFilter('warning')">△ 주의</button>
+            <button class="tab-btn ${stockStatus == 'normal' ? 'active' : ''}"
+                    onclick="goStatusFilter('normal')">✓ 정상</button>
         </div>
         <div class="search-box">
             <input type="text" id="keywordInput" placeholder="원재료명 검색..."
@@ -168,6 +184,9 @@ request.setAttribute("emojiMap", emojiMap);
                                 </c:if>
                                 <c:if test="${not empty keyword}">
                                     <input type="hidden" name="keyword" value="${keyword}">
+                                </c:if>
+                                <c:if test="${not empty stockStatus}">
+                                    <input type="hidden" name="stockStatus" value="${stockStatus}">
                                 </c:if>
                                 <button type="submit" class="btn btn-delete">삭제</button>
                             </form>
@@ -279,6 +298,9 @@ request.setAttribute("emojiMap", emojiMap);
             <c:if test="${not empty category}">
                 <input type="hidden" name="cat" value="${category}">
             </c:if>
+            <c:if test="${not empty stockStatus}">
+                <input type="hidden" name="stockStatus" value="${stockStatus}">
+            </c:if>
             <div class="form-row">
                 <div class="form-group">
                     <label>원재료명 *</label>
@@ -337,30 +359,32 @@ request.setAttribute("emojiMap", emojiMap);
 </div>
 
 <script>
-var currentCategory = '${category}';
-var currentKeyword  = '${keyword}';
-var currentSize     = ${size};
+var currentCategory    = '${category}';
+var currentKeyword     = '${keyword}';
+var currentSize        = ${size};
+var currentStockStatus = '${stockStatus}';
 
+function buildUrl(page, size, cat, kw, st) {
+    var url = '/inventory?page=' + page + '&size=' + size;
+    if (cat) url += '&category='    + encodeURIComponent(cat);
+    if (kw)  url += '&keyword='     + encodeURIComponent(kw);
+    if (st)  url += '&stockStatus=' + encodeURIComponent(st);
+    return url;
+}
 function goPage(p) {
-    var url = '/inventory?page=' + p + '&size=' + currentSize;
-    if (currentCategory) url += '&category=' + encodeURIComponent(currentCategory);
-    if (currentKeyword)  url += '&keyword='  + encodeURIComponent(currentKeyword);
-    location.href = url;
+    location.href = buildUrl(p, currentSize, currentCategory, currentKeyword, currentStockStatus);
 }
 function goFilter(cat, kw) {
-    var url = '/inventory?page=1&size=' + currentSize;
-    if (cat) url += '&category=' + encodeURIComponent(cat);
-    if (kw)  url += '&keyword='  + encodeURIComponent(kw);
-    location.href = url;
+    location.href = buildUrl(1, currentSize, cat, kw, currentStockStatus);
+}
+function goStatusFilter(st) {
+    location.href = buildUrl(1, currentSize, currentCategory, currentKeyword, st);
 }
 function doSearch() {
     goFilter(currentCategory, document.getElementById('keywordInput').value.trim());
 }
 function changeSize(s) {
-    var url = '/inventory?page=1&size=' + s;
-    if (currentCategory) url += '&category=' + encodeURIComponent(currentCategory);
-    if (currentKeyword)  url += '&keyword='  + encodeURIComponent(currentKeyword);
-    location.href = url;
+    location.href = buildUrl(1, s, currentCategory, currentKeyword, currentStockStatus);
 }
 function openModal(id)  { document.getElementById(id).classList.add('active'); }
 function closeModal(id) { document.getElementById(id).classList.remove('active'); }

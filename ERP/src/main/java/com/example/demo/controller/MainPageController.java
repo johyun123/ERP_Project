@@ -5,32 +5,38 @@ import com.example.demo.Service.FinanceService;
 import com.example.demo.Service.HRMService;
 import com.example.demo.Service.IngredientsService;
 import com.example.demo.Service.OrderService;
+import com.example.demo.mapper.PurchaseItemsMapper;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.time.LocalDate;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Controller
 public class MainPageController {
 
-    private final OrderService       orderService;
-    private final IngredientsService ingredientsService;
-    private final FinanceService     financeService;
-    private final HRMService         hrmService;
+    private final OrderService         orderService;
+    private final IngredientsService   ingredientsService;
+    private final FinanceService       financeService;
+    private final HRMService           hrmService;
+    private final PurchaseItemsMapper  purchaseItemsMapper;
 
     public MainPageController(OrderService orderService,
                               IngredientsService ingredientsService,
                               FinanceService financeService,
-                              HRMService hrmService) {
-        this.orderService       = orderService;
-        this.ingredientsService = ingredientsService;
-        this.financeService     = financeService;
-        this.hrmService         = hrmService;
+                              HRMService hrmService,
+                              PurchaseItemsMapper purchaseItemsMapper) {
+        this.orderService        = orderService;
+        this.ingredientsService  = ingredientsService;
+        this.financeService      = financeService;
+        this.hrmService          = hrmService;
+        this.purchaseItemsMapper = purchaseItemsMapper;
     }
 
     @GetMapping("/MainPage")
@@ -107,9 +113,13 @@ public class MainPageController {
     @GetMapping("/api/main/low-stock")
     @ResponseBody
     public List<Map<String, Object>> getLowStock() {
+        // 발주 진행 중(ordered)인 원재료는 제외
+        Set<Long> orderedIds = new HashSet<>(purchaseItemsMapper.findIngredientIdsWithActiveOrder());
+
         List<Ingredients> all = ingredientsService.getAll();
         return all.stream()
                 .filter(i -> i.getStock_qty() <= i.getMin_stock())
+                .filter(i -> !orderedIds.contains(i.getId()))
                 .map(i -> {
                     Map<String, Object> m = new HashMap<>();
                     m.put("id",           i.getId());

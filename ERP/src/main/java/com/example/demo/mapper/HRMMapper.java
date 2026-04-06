@@ -41,6 +41,7 @@ public interface HRMMapper {
 
     // 직원 정보 수정
     void updateEmployee(Employees employee);
+    void updateProfile(@Param("empNum") String empNum, @Param("profile") String profile);
 
     // users 삭제 (FK 해제용)
     void deleteUserByEmployeeId(@Param("employee_id") Long employee_id);

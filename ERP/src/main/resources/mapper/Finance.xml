@@ -134,7 +134,8 @@
             p.pay_type     AS payType,
             p.note,
             p.created_at   AS createdAt,
-            e.name         AS employeeName
+            e.name         AS employeeName,
+            e.emp_num      AS employeeNo
         FROM payrolls p
         LEFT JOIN employees e ON p.employee_id = e.id
         ORDER BY p.pay_year DESC, p.pay_month DESC, p.id DESC
@@ -155,7 +156,8 @@
             p.note,
             p.created_at   AS createdAt,
             p.pay_type     AS payType,
-            e.name         AS employeeName
+            e.name         AS employeeName,
+            e.emp_num      AS employeeNo
         FROM payrolls p
         LEFT JOIN employees e ON p.employee_id = e.id
         <where>
