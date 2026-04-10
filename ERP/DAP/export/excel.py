@@ -269,50 +269,61 @@ def _write_journal(ws, journal: dict):
 # ⑤ 수익 예측
 # ═══════════════════════════════════════════════════════════════════
 def _write_revenue_forecast(ws, forecast: dict):
-    ws.column_dimensions["A"].width = 16
+    ws.column_dimensions["A"].width = 20
     ws.column_dimensions["B"].width = 18
     ws.column_dimensions["C"].width = 18
     ws.column_dimensions["D"].width = 18
-
-    _title_row(ws, "수익 예측", 4)
-    _header_row(ws, ["기간", "예측 매출 (원)", "예측 지출 (원)", "예측 순이익 (원)"], 2)
+    ws.column_dimensions["E"].width = 26
 
     history   = forecast.get("history",   [])
     forecasts = forecast.get("forecasts", [])
     summary   = forecast.get("summary",   {})
 
+    model_used  = summary.get("model", "holt")
+    model_label = "Prophet ML" if model_used == "prophet" else "Holt's 통계"
+    title_text  = f"수익 예측  [예측 모델: {model_label}]"
+
+    _title_row(ws, title_text, 5)
+    _header_row(ws, ["기간", "예측 매출 (원)", "예측 지출 (원)", "예측 순이익 (원)", "매출 예측 범위 (95%)"], 2)
+
     r = 3
     # 실적 (회색 배경)
     for h in history:
         fill = PatternFill("solid", fgColor="D5D8DC")
-        _style(ws, r, 1, h.get("label", ""),   fill=fill, font=BODY_FONT, align=CENTER)
-        _money(ws, r, 2, h.get("revenue", 0))
-        ws.cell(row=r, column=2).fill = fill
-        _money(ws, r, 3, h.get("expenses", 0))
-        ws.cell(row=r, column=3).fill = fill
-        _money(ws, r, 4, h.get("net_income", 0))
-        ws.cell(row=r, column=4).fill = fill
+        _style(ws, r, 1, h.get("label", ""),    fill=fill, font=BODY_FONT, align=CENTER)
+        _money(ws, r, 2, h.get("revenue", 0));  ws.cell(row=r, column=2).fill = fill
+        _money(ws, r, 3, h.get("expenses", 0)); ws.cell(row=r, column=3).fill = fill
+        _money(ws, r, 4, h.get("net_income", 0)); ws.cell(row=r, column=4).fill = fill
+        _style(ws, r, 5, "실적", fill=fill, font=BODY_FONT, align=CENTER)
         r += 1
 
     # 예측 (파란 배경)
     for fc in forecasts:
         fill = PatternFill("solid", fgColor="D6EAF8")
         _style(ws, r, 1, f"▶ {fc.get('label', '')} (예측)", fill=fill, font=SUBTOTAL_FONT, align=CENTER)
-        _money(ws, r, 2, fc.get("predicted_revenue", 0))
-        ws.cell(row=r, column=2).fill = fill
-        _money(ws, r, 3, fc.get("predicted_expenses", 0))
-        ws.cell(row=r, column=3).fill = fill
-        _money(ws, r, 4, fc.get("predicted_net_income", 0))
-        ws.cell(row=r, column=4).fill = fill
+        _money(ws, r, 2, fc.get("predicted_revenue", 0));   ws.cell(row=r, column=2).fill = fill
+        _money(ws, r, 3, fc.get("predicted_expenses", 0));  ws.cell(row=r, column=3).fill = fill
+        _money(ws, r, 4, fc.get("predicted_net_income", 0)); ws.cell(row=r, column=4).fill = fill
+
+        lower = fc.get("revenue_lower")
+        upper = fc.get("revenue_upper")
+        if lower is not None and upper is not None:
+            range_text = f"{lower:,}원 ~ {upper:,}원"
+        else:
+            range_text = "-"
+        _style(ws, r, 5, range_text, fill=fill, font=BODY_FONT, align=CENTER)
         r += 1
 
     # 요약
     r += 1
-    _style(ws, r, 1, "월평균 매출",    font=SUBTOTAL_FONT, align=LEFT)
+    _style(ws, r, 1, "월평균 매출",  font=SUBTOTAL_FONT, align=LEFT)
     _money(ws, r, 2, summary.get("avg_monthly_revenue", 0), is_subtotal=True)
     r += 1
-    _style(ws, r, 1, "수익 트렌드",  font=SUBTOTAL_FONT, align=LEFT)
+    _style(ws, r, 1, "수익 트렌드", font=SUBTOTAL_FONT, align=LEFT)
     _style(ws, r, 2, summary.get("revenue_trend", ""), font=SUBTOTAL_FONT, align=CENTER)
+    r += 1
+    _style(ws, r, 1, "예측 모델",   font=SUBTOTAL_FONT, align=LEFT)
+    _style(ws, r, 2, model_label,   font=SUBTOTAL_FONT, align=CENTER)
 
 
 # ═══════════════════════════════════════════════════════════════════

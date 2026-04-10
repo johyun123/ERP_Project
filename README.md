@@ -2,7 +2,7 @@
 
 카페 운영에 필요한 전반적인 업무를 통합 관리하는 웹 기반 ERP 시스템입니다.  
 주문, 재고, 인사, 재무, 수익 분석까지 하나의 플랫폼에서 처리할 수 있으며,  
-AI 기반 수익 예측 및 재무 분석 리포트 기능을 포함합니다.
+**Prophet ML 기반 수익 예측**과 **Claude AI 재무 분석 리포트** 기능을 포함합니다.
 
 ---
 
@@ -41,8 +41,11 @@ AI 기반 수익 예측 및 재무 분석 리포트 기능을 포함합니다.
 - 급여 내역 조회 (점장 전용)
 
 ### 수익 분석 (AI 연동)
-- **수익 통계**: 기간별 매출/지출/순이익 통계 + AI 재무 분석 리포트 (Claude API)
-- **수익 예측**: 향후 매출 트렌드 예측 (Python 머신러닝 모델)
+- **수익 통계**: 기간별 매출/지출/순이익 통계
+- **수익 예측**: Prophet ML (Facebook Research) 기반 향후 6개월 매출 예측
+  - 95% 신뢰 구간(예측 범위 상한/하한) 제공
+  - 데이터 3개월 미만 시 Holt's 이중지수평활법으로 자동 전환
+- **AI 재무 분석 리포트**: Prophet 예측 결과 + 재무 현황을 Claude API에 전달하여 경영 평가 및 개선안 자동 생성
 - **재고 소진 추이 예측**: 원재료별 소진 속도 예측 및 발주 시점 제안
 
 ### 공지사항
@@ -70,10 +73,12 @@ AI 기반 수익 예측 및 재무 분석 리포트 기능을 포함합니다.
 | 구분 | 기술 |
 |---|---|
 | Framework | FastAPI (Python) |
-| AI 모델 | Claude claude-haiku-4-5 (Anthropic API) |
+| AI 분석 | Claude claude-haiku-4-5 (Anthropic API) — 재무 리포트 생성 |
+| 수익 예측 | Prophet >= 1.1.5 (Facebook Research) — ML 기반 시계열 예측, 95% 신뢰 구간 |
+| 예측 Fallback | Holt's 이중지수평활법 — 데이터 부족 시 자동 전환 |
 | 재무 분석 | 분개장, 손익계산서, 대차대조표, 현금흐름표 자동 생성 |
-| 예측 모델 | 시계열 기반 매출/재고 예측 |
-| 기타 | openpyxl (엑셀 내보내기) |
+| 재고 예측 | 일평균 소비량 기반 소진 예정일 계산 |
+| 기타 | pandas >= 2.0.0, openpyxl (엑셀 내보내기) |
 
 ### Frontend
 | 구분 | 기술 |
@@ -144,20 +149,27 @@ ERP_Project/
 - Python 3.10+
 - MariaDB
 
-### Spring Boot 실행
+### Python 의존성 설치
 ```bash
-cd DAP
+cd ERP/DAP
 pip install -r requirements.txt
-
-cd ERP
-./mvnw spring-boot:run
-
 ```
 
-### FastAPI 분석 서버 실행 (Spring 실행 시 자동 실행)
+> **Windows 환경 주의**: `prophet` 첫 설치 시 `cmdstanpy` 컴파일이 진행되어 시간이 걸릴 수 있습니다.  
+> 설치 확인: `python -c "from prophet import Prophet; print('OK')"`
+
+### Spring Boot 실행
 ```bash
-cd DAP
-uvicorn main:app --host 0.0.0.0 --port 8000
+cd ERP
+./mvnw spring-boot:run
+```
+
+Spring Boot 시작 시 `UvicornLauncher`가 FastAPI 분석 서버(포트 8000)를 자동으로 함께 실행합니다.
+
+### FastAPI 분석 서버 단독 실행 (선택)
+```bash
+cd ERP/DAP
+uvicorn server:app --host 127.0.0.1 --port 8000
 ```
 
 ### 환경 변수 설정 (DAP/.env)
